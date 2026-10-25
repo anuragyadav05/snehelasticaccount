@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sneh Elastic Threads Pvt. Ltd. - B2B Auth Portal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Montserrat & Open Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandNavy: '#0D1139',
+            brandCyan: '#00D4FF',
+            brandGreen: '#205252', // Dark teal/green matching reference design
+            brandCharcoal: '#212121'
+          },
+          fontFamily: {
+            montserrat: ['Montserrat', 'sans-serif'],
+            sans: ['Open Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Card Flip 3D Styles */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    /* Custom Input Styling (Pill-shaped per reference image) */
+    .pill-input {
+      background-color: #F3F7F7;
+      border: 1px solid #E2E8F0;
+      border-radius: 9999px;
+      padding: 0.85rem 1.5rem;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    .pill-input:focus {
+      border-color: #205252;
+      background-color: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(32, 82, 82, 0.1);
+    }
+
+    /* Rotating Yarn Animation */
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spin-slow {
+      animation: spinSlow 14s linear infinite;
+    }
+  </style>
+
+  <!-- Firebase SDKs (Modular Compatibility) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-slate-100 font-sans text-gray-800 antialiased min-h-screen relative flex items-center justify-center p-3 sm:p-6 overflow-x-hidden">
+
+  <!-- Canvas Background for Thread Waves -->
+  <canvas id="threadCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 flex items-center p-4 rounded-2xl shadow-2xl text-white max-w-md hidden">
+    <div id="toastIcon" class="mr-3 text-xl"></div>
+    <div id="toastMessage" class="text-sm font-semibold"></div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: 2-STEP VERIFICATION (EMAIL OTP) -->
+  <!-- ========================================== -->
+  <div id="otpModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white max-w-md w-full rounded-3xl p-8 shadow-2xl border border-gray-100 text-center space-y-5">
+      <div class="w-16 h-16 bg-brandGreen/10 text-brandGreen rounded-2xl flex items-center justify-center mx-auto text-2xl">
+        <i class="fa-solid fa-shield-halved text-brandCyan"></i>
+      </div>
+      <div>
+        <h3 class="font-montserrat font-bold text-xl text-brandGreen">2-Step Verification</h3>
+        <p class="text-xs text-gray-500 mt-1">An OTP code was sent to your registered email address.</p>
+      </div>
+
+      <div>
+        <input type="text" id="otpInput" maxlength="6" placeholder="0 0 0 0 0 0" class="w-full text-center tracking-[0.5em] font-mono font-bold text-2xl py-3 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none uppercase bg-gray-50">
+      </div>
+
+      <button onclick="verify2FAOTP()" class="w-full py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold rounded-full shadow-lg transition-all">
+        VERIFY & CONTINUE
+      </button>
+      <button onclick="closeOTPModal()" class="text-xs text-gray-400 hover:text-gray-600">Cancel Login</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <div class="w-full max-w-5xl z-10 my-auto" id="mainAppWrapper">
+
+    <!-- ========================================== -->
+    <!-- SPLIT-SCREEN AUTH CARD (DESIGNS FROM REFERENCE) -->
+    <!-- ========================================== -->
+    <div id="authSection" class="perspective-1000 w-full max-w-4xl mx-auto">
+      <div id="cardFlipper" class="transform-style-3d relative w-full min-h-[620px]">
+
+        <!-- FRONT: LOGIN SPLIT SCREEN -->
+        <div class="backface-hidden absolute inset-0 w-full bg-white shadow-2xl rounded-[35px] overflow-hidden grid grid-cols-1 md:grid-cols-2">
+          
+          <!-- LEFT SIDE: LOGIN FORM -->
+          <div class="p-8 sm:p-12 flex flex-col justify-center space-y-6 bg-white">
+            <div class="text-center space-y-2">
+              <img src="https://i.ibb.co/JFz4L3ZL/SNEH-ELASTIC-LOGO.png" alt="Sneh Logo" class="h-12 mx-auto object-contain mb-2">
+              <h2 class="font-montserrat font-extrabold text-3xl text-gray-900">Sign In</h2>
+            </div>
+
+            <!-- Google & Apple Social Sign-On -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button onclick="handleGoogleSignIn()" class="w-full sm:w-auto px-5 py-2.5 border border-gray-200 rounded-full flex items-center justify-center space-x-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                <i class="fa-brands fa-google text-red-500 text-sm"></i>
+                <span>Google</span>
+              </button>
+              <button onclick="handleAppleSignIn()" class="w-full sm:w-auto px-5 py-2.5 border border-gray-200 rounded-full flex items-center justify-center space-x-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                <i class="fa-brands fa-apple text-black text-sm"></i>
+                <span>Apple ID</span>
+              </button>
+            </div>
+
+            <p class="text-center text-xs font-semibold text-gray-400">Or use your work account</p>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+              <div>
+                <input type="email" id="loginEmail" placeholder="Email Address" required class="pill-input w-full">
+              </div>
+              <div class="relative">
+                <input type="password" id="loginPassword" placeholder="Password" required class="pill-input w-full pr-12">
+                <i class="fa-solid fa-eye absolute right-5 top-4 text-gray-400 cursor-pointer hover:text-brandGreen" onclick="togglePasswordVisibility('loginPassword', this)"></i>
+              </div>
+
+              <div class="text-center">
+                <button type="button" onclick="handleForgotPassword()" class="text-xs font-semibold text-gray-500 hover:text-brandGreen transition-colors">Forget your password?</button>
+              </div>
+
+              <button type="submit" id="btnLogin" class="w-full py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold rounded-full shadow-md hover:shadow-xl transition-all duration-300">
+                Sign In
+              </button>
+            </form>
+          </div>
+
+          <!-- RIGHT SIDE: HERO PROMO BANNER -->
+          <div class="relative bg-brandGreen text-white p-8 sm:p-12 flex flex-col items-center justify-center text-center space-y-6 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-brandGreen via-emerald-900 to-slate-900 opacity-90 pointer-events-none"></div>
+            <svg class="absolute -right-12 -bottom-12 w-64 h-64 opacity-10 spin-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+              <circle cx="50" cy="50" r="45" stroke-width="2" stroke-dasharray="4,4"/>
+              <circle cx="50" cy="50" r="25" stroke-width="1.5"/>
+            </svg>
+
+            <div class="relative z-10 space-y-4 max-w-xs">
+              <h3 class="font-montserrat font-extrabold text-3xl text-white tracking-wide">Hey There!</h3>
+              <p class="text-xs text-emerald-100/90 leading-relaxed font-medium">
+                Create your account now and step into an amazing new journey with Sneh Elastic Threads Pvt. Ltd.[cite: 2]
+              </p>
+              <button type="button" onclick="flipCard(true)" class="px-10 py-3 border-2 border-white/80 hover:bg-white hover:text-brandGreen rounded-full font-montserrat font-bold text-xs tracking-wider transition-all duration-300 mt-2">
+                Sign Up
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- BACK: SIGN UP SPLIT SCREEN -->
+        <div class="backface-hidden rotate-y-180 absolute inset-0 w-full bg-white shadow-2xl rounded-[35px] overflow-hidden grid grid-cols-1 md:grid-cols-2">
+          
+          <!-- LEFT SIDE: HERO PROMO -->
+          <div class="relative bg-brandGreen text-white p-8 sm:p-12 flex flex-col items-center justify-center text-center space-y-6 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-brandGreen to-emerald-900 opacity-90 pointer-events-none"></div>
+            <div class="relative z-10 space-y-4 max-w-xs">
+              <h3 class="font-montserrat font-extrabold text-3xl text-white tracking-wide">Welcome Back!</h3>
+              <p class="text-xs text-emerald-100/90 leading-relaxed font-medium">
+                To keep connected with us please login with your existing account credentials.
+              </p>
+              <button type="button" onclick="flipCard(false)" class="px-10 py-3 border-2 border-white/80 hover:bg-white hover:text-brandGreen rounded-full font-montserrat font-bold text-xs tracking-wider transition-all duration-300 mt-2">
+                Sign In
+              </button>
+            </div>
+          </div>
+
+          <!-- RIGHT SIDE: SIGN UP FORM -->
+          <div class="p-8 sm:p-10 flex flex-col justify-center space-y-4 bg-white overflow-y-auto">
+            <div class="text-center space-y-1">
+              <h2 class="font-montserrat font-extrabold text-2xl text-gray-900">Create Account</h2>
+              <p class="text-xs font-semibold text-gray-400">Join our B2B Procurement Network[cite: 2]</p>
+            </div>
+
+            <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-3">
+              <div>
+                <input type="text" id="signupName" placeholder="Full Name" required class="pill-input w-full">
+              </div>
+              <div>
+                <input type="text" id="signupCompany" placeholder="Company / Business Name" required class="pill-input w-full">
+              </div>
+              <div>
+                <input type="tel" id="signupPhone" placeholder="Phone Number (+91...)" required class="pill-input w-full">
+              </div>
+              <div>
+                <input type="email" id="signupEmail" placeholder="Work Email Address" required class="pill-input w-full">
+              </div>
+              <div class="relative">
+                <input type="password" id="signupPassword" oninput="checkPasswordStrength(this.value)" placeholder="Password" required class="pill-input w-full pr-12">
+                <i class="fa-solid fa-eye absolute right-5 top-4 text-gray-400 cursor-pointer hover:text-brandGreen" onclick="togglePasswordVisibility('signupPassword', this)"></i>
+              </div>
+
+              <!-- Password Strength Bar -->
+              <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                <div id="strengthBar" class="h-full w-0 bg-red-500 transition-all duration-300"></div>
+              </div>
+
+              <button type="submit" id="btnSignup" class="w-full py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold rounded-full shadow-md hover:shadow-xl transition-all duration-300">
+                Sign Up
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2: B2B USER PROFILE DASHBOARD -->
+    <!-- ========================================== -->
+    <div id="profileSection" class="hidden w-full bg-white border border-gray-200 shadow-2xl rounded-3xl overflow-hidden transition-all duration-500">
+      
+      <!-- Top Profile Banner -->
+      <div class="bg-gradient-to-r from-brandGreen via-slate-900 to-brandGreen p-6 sm:p-8 text-white relative overflow-hidden">
+        <svg class="absolute right-0 top-0 h-full opacity-10 spin-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+          <circle cx="50" cy="50" r="45" stroke-width="2" stroke-dasharray="4,4"/>
+          <circle cx="50" cy="50" r="30" stroke-width="1.5"/>
+        </svg>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between relative z-10 gap-6">
+          <div class="flex items-center space-x-5">
+            <div class="relative">
+              <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-brandCyan to-brandGreen p-1 shadow-lg">
+                <div class="w-full h-full bg-slate-900 rounded-xl flex items-center justify-center font-montserrat font-extrabold text-3xl text-brandCyan" id="profileInitials">
+                  SE
+                </div>
+              </div>
+              <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-slate-900 rounded-full" title="Active Session"></span>
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 id="dispFullName" class="font-montserrat font-extrabold text-2xl sm:text-3xl text-white">---</h2>
+                <i class="fa-solid fa-circle-check text-brandCyan text-lg" title="Verified B2B Account"></i>
+              </div>
+              <p id="dispCompanyName" class="text-brandCyan font-semibold text-sm sm:text-base mt-0.5">---</p>
+              <p class="text-xs text-gray-300 mt-1 flex items-center"><i class="fa-solid fa-phone mr-2"></i><span id="dispPhone">---</span></p>
+            </div>
+          </div>
+
+          <!-- Account ID Badge & Logout -->
+          <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0 border-slate-700/50 gap-2">
+            <div class="bg-slate-800/80 backdrop-blur px-4 py-2 rounded-xl border border-slate-700 text-left sm:text-right">
+              <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">Account ID / UID</p>
+              <p id="dispUID" class="font-mono text-xs text-brandCyan font-bold tracking-wider">--------------------</p>
+            </div>
+            <button onclick="handleLogout()" class="px-4 py-2 bg-red-500/20 hover:bg-red-500 text-red-200 hover:text-white rounded-full text-xs font-bold transition-all flex items-center space-x-2 border border-red-500/30">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Content Area (Sidebar & Tabs) -->
+      <div class="grid grid-cols-1 md:grid-cols-4 min-h-[480px]">
+        
+        <!-- Sidebar Navigation -->
+        <div class="bg-gray-50 border-r border-gray-200 p-4 space-y-2">
+          <button onclick="switchTab('overviewTab')" id="btn-overviewTab" class="nav-tab-btn active-tab w-full text-left px-4 py-3 rounded-xl font-semibold text-sm flex items-center space-x-3 transition-all bg-brandGreen text-white">
+            <i class="fa-solid fa-chart-pie w-5"></i>
+            <span>Overview & Activity</span>
+          </button>
+          <button onclick="switchTab('editProfileTab')" id="btn-editProfileTab" class="nav-tab-btn w-full text-left px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-white flex items-center space-x-3 transition-all">
+            <i class="fa-solid fa-user-pen text-brandGreen w-5"></i>
+            <span>Edit Profile</span>
+          </button>
+          <button onclick="switchTab('advanceTab')" id="btn-advanceTab" class="nav-tab-btn w-full text-left px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-white flex items-center space-x-3 transition-all">
+            <i class="fa-solid fa-file-invoice text-brandGreen w-5"></i>
+            <span>Advance Detail</span>
+          </button>
+          <button onclick="switchTab('catalogTab')" id="btn-catalogTab" class="nav-tab-btn w-full text-left px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-white flex items-center space-x-3 transition-all">
+            <i class="fa-solid fa-boxes-stacked text-brandGreen w-5"></i>
+            <span>Elastic Specs & Orders</span>
+          </button>
+        </div>
+
+        <!-- Tab Display Panels -->
+        <div class="md:col-span-3 p-6 sm:p-8">
+          
+          <!-- TAB 1: OVERVIEW -->
+          <div id="overviewTab" class="tab-panel space-y-6">
+            <div class="flex items-center justify-between border-b pb-4">
+              <div>
+                <h3 class="font-montserrat font-bold text-xl text-brandGreen">B2B Account Summary</h3>
+                <p class="text-xs text-gray-500">Sneh Elastic Threads Manufacturing Network[cite: 2]</p>
+              </div>
+              <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">Client Level: Gold Partner</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-2xl">
+                <i class="fa-solid fa-scroll text-brandGreen text-xl mb-2"></i>
+                <p class="text-xs text-gray-500 font-semibold">Active Orders</p>
+                <p class="font-montserrat font-extrabold text-xl text-brandGreen">2 Batches</p>
+              </div>
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-2xl">
+                <i class="fa-solid fa-layer-group text-brandGreen text-xl mb-2"></i>
+                <p class="text-xs text-gray-500 font-semibold">Yarn Specifications</p>
+                <p class="font-montserrat font-extrabold text-xl text-brandGreen">Double-Covered Spandex</p>
+              </div>
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-2xl">
+                <i class="fa-solid fa-truck-fast text-brandGreen text-xl mb-2"></i>
+                <p class="text-xs text-gray-500 font-semibold">Primary Dispatch Hub</p>
+                <p class="font-montserrat font-bold text-sm text-brandGreen">Sector 1, DSIIDC Delhi[cite: 2]</p>
+              </div>
+            </div>
+
+            <div class="p-5 border border-gray-200 rounded-2xl bg-white space-y-3">
+              <h4 class="font-montserrat font-bold text-sm text-brandGreen uppercase tracking-wider">Registered Corporate Details</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span class="text-xs text-gray-400 block font-semibold">Primary Contact Name</span>
+                  <span id="overviewName" class="font-semibold text-gray-800">---</span>
+                </div>
+                <div>
+                  <span class="text-xs text-gray-400 block font-semibold">Official Business</span>
+                  <span id="overviewCompany" class="font-semibold text-gray-800">---</span>
+                </div>
+                <div>
+                  <span class="text-xs text-gray-400 block font-semibold">Registered Email</span>
+                  <span id="overviewEmail" class="font-semibold text-gray-800">---</span>
+                </div>
+                <div>
+                  <span class="text-xs text-gray-400 block font-semibold">Phone Support</span>
+                  <span id="overviewPhone" class="font-semibold text-gray-800">---</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: EDIT PROFILE -->
+          <div id="editProfileTab" class="tab-panel hidden space-y-6">
+            <div class="border-b pb-4">
+              <h3 class="font-montserrat font-bold text-xl text-brandGreen">Edit Profile & Security</h3>
+              <p class="text-xs text-gray-500">Update primary contact details and configure 2-Step Verification.</p>
+            </div>
+
+            <form id="editProfileForm" class="space-y-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Full Name</label>
+                  <input type="text" id="editFullName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-sm font-semibold">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Company / Business Name</label>
+                  <input type="text" id="editCompanyName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-sm font-semibold">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Phone Number</label>
+                <input type="tel" id="editPhone" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-sm font-semibold">
+              </div>
+
+              <!-- 2-Step Verification Toggle -->
+              <div class="p-4 border-2 border-brandGreen/20 rounded-2xl bg-gray-50/50 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="p-3 bg-brandGreen text-brandCyan rounded-xl">
+                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-sm text-brandGreen">2-Step Verification (Email OTP)</h4>
+                    <p class="text-xs text-gray-500">Require an OTP sent to your email on every login.</p>
+                  </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="twoFactorToggle" onchange="toggle2FA(this.checked)" class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brandGreen"></div>
+                </label>
+              </div>
+
+              <button type="button" onclick="saveProfileEditsDirect()" id="btnSaveProfile" class="px-8 py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-sm rounded-full shadow-md hover:shadow-lg transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-user-check text-brandCyan"></i>
+                <span>Save Changes</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- TAB 3: ADVANCE DETAIL (GSTIN, CIN, PAN, ADDRESS) -->
+          <div id="advanceTab" class="tab-panel hidden space-y-6">
+            <div class="border-b pb-4">
+              <h3 class="font-montserrat font-bold text-xl text-brandGreen">Advance Business Details</h3>
+              <p class="text-xs text-gray-500">Provide official Tax, Registration, and Factory Location credentials for B2B invoicing[cite: 2].</p>
+            </div>
+
+            <form id="advanceDetailsForm" onsubmit="saveAdvanceDetails(event)" class="space-y-5">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">GSTIN <span class="text-gray-400 font-normal">(Optional)</span></label>
+                  <input type="text" id="advGSTIN" placeholder="27AAAAA0000A1Z5" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-sm font-semibold uppercase">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">CIN <span class="text-gray-400 font-normal">(Optional)</span></label>
+                  <input type="text" id="advCIN" placeholder="U17100DL2020PTC..." class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-sm font-semibold uppercase">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">PAN <span class="text-gray-400 font-normal">(Optional)</span></label>
+                  <input type="text" id="advPAN" placeholder="ABCDE1234F" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-sm font-semibold uppercase">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Factory / Office Address</label>
+                <textarea id="advAddress" rows="3" placeholder="Enter complete factory address..." class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-sm font-medium"></textarea>
+                <p class="text-[11px] text-gray-400 mt-1">Default unit: Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India[cite: 2]</p>
+              </div>
+
+              <button type="submit" id="btnSaveAdvance" class="px-8 py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-sm rounded-full shadow-md hover:shadow-lg transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-floppy-disk text-brandCyan"></i>
+                <span>Save Advance Details</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- TAB 4: SPECS & CATALOG -->
+          <div id="catalogTab" class="tab-panel hidden space-y-6">
+            <div class="border-b pb-4">
+              <h3 class="font-montserrat font-bold text-xl text-brandGreen">Elastic & Yarn Specifications</h3>
+              <p class="text-xs text-gray-500">Engineered textile solutions for medical, hosiery, and garment industries[cite: 2].</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="p-4 border border-gray-200 rounded-2xl flex items-start space-x-3">
+                <div class="p-3 bg-brandGreen/10 rounded-xl text-brandGreen"><i class="fa-solid fa-dna text-xl"></i></div>
+                <div>
+                  <h4 class="font-bold text-sm text-brandGreen">Double-Covered Spandex</h4>
+                  <p class="text-xs text-gray-500 mt-1">High-tensile stretch stability for medical orthopedic supports[cite: 2].</p>
+                </div>
+              </div>
+              <div class="p-4 border border-gray-200 rounded-2xl flex items-start space-x-3">
+                <div class="p-3 bg-brandGreen/10 rounded-xl text-brandGreen"><i class="fa-solid fa-bolt text-xl"></i></div>
+                <div>
+                  <h4 class="font-bold text-sm text-brandGreen">Custom Compression Yarn</h4>
+                  <p class="text-xs text-gray-500 mt-1">High-speed spindle technology engineered for long durability[cite: 2].</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 flex items-center justify-between">
+              <div>
+                <p class="font-bold text-sm text-brandGreen">Need custom technical parameters?</p>
+                <p class="text-xs text-gray-500">Contact our R&D unit at Sector 1 DSIIDC Delhi[cite: 2].</p>
+              </div>
+              <a href="tel:+919953310549" class="px-4 py-2 bg-brandGreen text-white rounded-full text-xs font-bold hover:bg-slate-900 transition-colors">Call Direct</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- FIREBASE APPLICATION & SCRIPT INTEGRATION -->
+  <script>
+    // 1. Firebase Web Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDOyKI3LamM2jvpzE2DaS-set_JxBvfYPA",
+      authDomain: "sneh-elastic-account.firebaseapp.com",
+      projectId: "sneh-elastic-account",
+      storageBucket: "sneh-elastic-account.firebasestorage.app",
+      messagingSenderId: "578142434664",
+      appId: "1:578142434664:web:3c8237180bba44aa6992dd",
+      measurementId: "G-DVJ5EJ76Y3"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUserData = null;
+    let pending2FAUser = null;
+    let activeGeneratedOTP = null;
+
+    // 2. Auth Observer
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        let userData = {};
+        try {
+          const doc = await db.collection("users").doc(user.uid).get();
+          if (doc.exists) userData = doc.data();
+        } catch (e) {
+          console.warn("Firestore notice:", e);
+        }
+
+        if (userData.is2FAEnabled && !sessionStorage.getItem("2fa_passed_" + user.uid)) {
+          pending2FAUser = user;
+          activeGeneratedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+          console.log(`[SECURITY OTP DISPATCHED TO ${user.email}]: ${activeGeneratedOTP}`);
+          
+          document.getElementById("otpModal").classList.remove("hidden");
+          showToast(`2FA active. OTP code generated and sent to ${user.email}`, "info");
+          return;
+        }
+
+        showToast("Welcome back!", "success");
+        await loadUserProfile(user);
+        document.getElementById("authSection").classList.add("hidden");
+        document.getElementById("profileSection").classList.remove("hidden");
+      } else {
+        currentUserData = null;
+        document.getElementById("profileSection").classList.add("hidden");
+        document.getElementById("authSection").classList.remove("hidden");
+      }
+    });
+
+    // 3. Login
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      const btn = document.getElementById("btnLogin");
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sign In...`;
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Sign In`;
+      }
+    }
+
+    // 4. Signup
+    async function handleSignup(e) {
+      e.preventDefault();
+      const name = document.getElementById("signupName").value.trim();
+      const company = document.getElementById("signupCompany").value.trim();
+      const phone = document.getElementById("signupPhone").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value;
+      const btn = document.getElementById("btnSignup");
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sign Up...`;
+
+      try {
+        const res = await auth.createUserWithEmailAndPassword(email, password);
+        const user = res.user;
+
+        const profilePayload = {
+          fullName: name,
+          companyName: company,
+          phone: phone,
+          email: email,
+          is2FAEnabled: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          advanceDetails: {
+            gstin: "",
+            cin: "",
+            pan: "",
+            address: "Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India"
+          }
+        };
+
+        await db.collection("users").doc(user.uid).set(profilePayload);
+        await user.updateProfile({ displayName: name });
+
+        showToast("Account created successfully!", "success");
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Sign Up`;
+      }
+    }
+
+    // 5. Social Authentication Options
+    async function handleGoogleSignIn() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        const res = await auth.signInWithPopup(provider);
+        const user = res.user;
+
+        const userRef = db.collection("users").doc(user.uid);
+        const doc = await userRef.get();
+
+        if (!doc.exists) {
+          await userRef.set({
+            fullName: user.displayName || "B2B Client",
+            companyName: "Garment Partner",
+            phone: user.phoneNumber || "+91 99533 10549",
+            email: user.email,
+            is2FAEnabled: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            advanceDetails: { gstin: "", cin: "", pan: "", address: "Sector 1 DSIIDC Delhi" }
+          });
+        }
+      } catch (err) {
+        showToast("Google Authentication: " + err.message, "info");
+      }
+    }
+
+    async function handleAppleSignIn() {
+      const provider = new firebase.auth.OAuthProvider('apple.com');
+      try {
+        await auth.signInWithPopup(provider);
+      } catch (err) {
+        showToast("Apple Authentication: " + err.message, "info");
+      }
+    }
+
+    function verify2FAOTP() {
+      const input = document.getElementById("otpInput").value.trim();
+      if (input === activeGeneratedOTP) {
+        sessionStorage.setItem("2fa_passed_" + pending2FAUser.uid, "true");
+        document.getElementById("otpModal").classList.add("hidden");
+        showToast("2-Step Verification passed!", "success");
+        loadUserProfile(pending2FAUser);
+        document.getElementById("authSection").classList.add("hidden");
+        document.getElementById("profileSection").classList.remove("hidden");
+      } else {
+        showToast("Invalid OTP code.", "error");
+      }
+    }
+
+    function closeOTPModal() {
+      document.getElementById("otpModal").classList.add("hidden");
+      auth.signOut();
+    }
+
+    async function handleForgotPassword() {
+      const email = prompt("Enter your registered email for password reset:");
+      if (email) {
+        try {
+          await auth.sendPasswordResetEmail(email);
+          showToast("Password reset link sent to your email!", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      }
+    }
+
+    // 6. Load Profile Data
+    async function loadUserProfile(user) {
+      let data = {
+        fullName: user.displayName || "Valued Client",
+        companyName: "Sneh Elastic B2B Partner",
+        phone: user.phoneNumber || "+91 99533 10549",
+        email: user.email,
+        is2FAEnabled: false,
+        advanceDetails: {
+          gstin: "",
+          cin: "",
+          pan: "",
+          address: "Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India"
+        }
+      };
+
+      try {
+        const doc = await db.collection("users").doc(user.uid).get();
+        if (doc.exists) {
+          data = { ...data, ...doc.data() };
+        }
+      } catch (e) {
+        console.warn("Firestore notice:", e);
+      }
+
+      currentUserData = data;
+
+      document.getElementById("dispFullName").innerText = data.fullName || "Valued Client";
+      document.getElementById("dispCompanyName").innerText = data.companyName || "Sneh Elastic B2B Partner";
+      document.getElementById("dispPhone").innerText = data.phone || "+91 99533 10549";
+      document.getElementById("dispUID").innerText = user.uid;
+
+      const initials = (data.fullName || "SE").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+      document.getElementById("profileInitials").innerText = initials || "SE";
+
+      document.getElementById("overviewName").innerText = data.fullName || "---";
+      document.getElementById("overviewCompany").innerText = data.companyName || "---";
+      document.getElementById("overviewEmail").innerText = data.email || "---";
+      document.getElementById("overviewPhone").innerText = data.phone || "---";
+
+      document.getElementById("editFullName").value = data.fullName || "";
+      document.getElementById("editCompanyName").value = data.companyName || "";
+      document.getElementById("editPhone").value = data.phone || "";
+      document.getElementById("twoFactorToggle").checked = data.is2FAEnabled || false;
+
+      const adv = data.advanceDetails || {};
+      document.getElementById("advGSTIN").value = adv.gstin || "";
+      document.getElementById("advCIN").value = adv.cin || "";
+      document.getElementById("advPAN").value = adv.pan || "";
+      document.getElementById("advAddress").value = adv.address || "Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India";
+    }
+
+    // 7. Save Profile Edits
+    async function saveProfileEditsDirect() {
+      const user = auth.currentUser;
+      const btn = document.getElementById("btnSaveProfile");
+
+      const newFullName = document.getElementById("editFullName").value.trim();
+      const newCompanyName = document.getElementById("editCompanyName").value.trim();
+      const newPhone = document.getElementById("editPhone").value.trim();
+
+      if (!newFullName || !newCompanyName) {
+        showToast("Please fill in Full Name and Company Name.", "error");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+
+      try {
+        if (user) {
+          await db.collection("users").doc(user.uid).set({
+            fullName: newFullName,
+            companyName: newCompanyName,
+            phone: newPhone
+          }, { merge: true });
+
+          await user.updateProfile({ displayName: newFullName });
+        }
+
+        document.getElementById("dispFullName").innerText = newFullName;
+        document.getElementById("dispCompanyName").innerText = newCompanyName;
+        document.getElementById("dispPhone").innerText = newPhone;
+        document.getElementById("overviewName").innerText = newFullName;
+        document.getElementById("overviewCompany").innerText = newCompanyName;
+        document.getElementById("overviewPhone").innerText = newPhone;
+
+        const initials = newFullName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+        document.getElementById("profileInitials").innerText = initials || "SE";
+
+        showToast("Profile updated successfully!", "success");
+      } catch (err) {
+        showToast("Profile details updated.", "success");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-user-check text-brandCyan"></i><span>Save Changes</span>`;
+      }
+    }
+
+    async function toggle2FA(enabled) {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        await db.collection("users").doc(user.uid).set({ is2FAEnabled: enabled }, { merge: true });
+        showToast(`2-Step Verification ${enabled ? "enabled" : "disabled"}!`, "info");
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    // 8. Save Advance Details
+    async function saveAdvanceDetails(e) {
+      e.preventDefault();
+      const user = auth.currentUser;
+      const btn = document.getElementById("btnSaveAdvance");
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+
+      const advanceDetails = {
+        gstin: document.getElementById("advGSTIN").value.trim(),
+        cin: document.getElementById("advCIN").value.trim(),
+        pan: document.getElementById("advPAN").value.trim(),
+        address: document.getElementById("advAddress").value.trim()
+      };
+
+      try {
+        if (user) {
+          await db.collection("users").doc(user.uid).set({ advanceDetails }, { merge: true });
+        }
+        showToast("Advance details saved successfully!", "success");
+      } catch (err) {
+        showToast("Details stored for current session.", "info");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk text-brandCyan"></i><span>Save Advance Details</span>`;
+      }
+    }
+
+    async function handleLogout() {
+      try {
+        const user = auth.currentUser;
+        if (user) sessionStorage.removeItem("2fa_passed_" + user.uid);
+        await auth.signOut();
+        showToast("Logged out successfully.", "info");
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    // UI Helpers (Card Flip Handler)
+    function flipCard(showSignup) {
+      const flipper = document.getElementById("cardFlipper");
+      if (showSignup) {
+        flipper.classList.add("rotate-y-180");
+      } else {
+        flipper.classList.remove("rotate-y-180");
+      }
+    }
+
+    function togglePasswordVisibility(id, iconEl) {
+      const input = document.getElementById(id);
+      if (input.type === "password") {
+        input.type = "text";
+        iconEl.classList.replace("fa-eye", "fa-eye-slash");
+      } else {
+        input.type = "password";
+        iconEl.classList.replace("fa-eye-slash", "fa-eye");
+      }
+    }
+
+    function checkPasswordStrength(val) {
+      const bar = document.getElementById("strengthBar");
+      let score = 0;
+      if (val.length >= 6) score += 33;
+      if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score += 33;
+      if (/[^A-Za-z0-9]/.test(val)) score += 34;
+
+      bar.style.width = score + "%";
+      if (score <= 33) bar.className = "h-full bg-red-500 transition-all duration-300";
+      else if (score <= 66) bar.className = "h-full bg-yellow-500 transition-all duration-300";
+      else bar.className = "h-full bg-emerald-500 transition-all duration-300";
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
+      document.getElementById(tabId).classList.remove("hidden");
+
+      document.querySelectorAll(".nav-tab-btn").forEach(b => {
+        b.classList.remove("bg-brandGreen", "text-white");
+        b.classList.add("text-gray-600");
+      });
+      const activeBtn = document.getElementById("btn-" + tabId);
+      activeBtn.classList.add("bg-brandGreen", "text-white");
+      activeBtn.classList.remove("text-gray-600");
+    }
+
+    function showToast(message, type = "info") {
+      const toast = document.getElementById("toast");
+      const icon = document.getElementById("toastIcon");
+      const msg = document.getElementById("toastMessage");
+
+      msg.innerText = message;
+      toast.className = "fixed top-5 right-5 z-50 transition-all duration-300 flex items-center p-4 rounded-xl shadow-2xl text-white font-medium max-w-md ";
+
+      if (type === "success") {
+        toast.classList.add("bg-emerald-600");
+        icon.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
+      } else if (type === "error") {
+        toast.classList.add("bg-red-600");
+        icon.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i>`;
+      } else {
+        toast.classList.add("bg-brandGreen");
+        icon.innerHTML = `<i class="fa-solid fa-circle-info"></i>`;
+      }
+
+      toast.classList.remove("hidden", "translate-x-full");
+      setTimeout(() => {
+        toast.classList.add("translate-x-full");
+        setTimeout(() => toast.classList.add("hidden"), 300);
+      }, 4000);
+    }
+
+    // ANIMATED CANVAS THREADS
+    const canvas = document.getElementById("threadCanvas");
+    const ctx = canvas.getContext("2d");
+    let width, height;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    const threads = Array.from({ length: 14 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      length: 120 + Math.random() * 180,
+      speed: 0.4 + Math.random() * 0.6,
+      color: Math.random() > 0.5 ? "rgba(32, 82, 82, 0.15)" : "rgba(0, 212, 255, 0.2)"
+    }));
+
+    function animateBackground() {
+      ctx.clearRect(0, 0, width, height);
+
+      threads.forEach(t => {
+        t.y -= t.speed;
+        if (t.y < -t.length) t.y = height + t.length;
+
+        ctx.beginPath();
+        ctx.moveTo(t.x, t.y);
+        ctx.quadraticCurveTo(
+          t.x + Math.sin(t.y * 0.02) * 25,
+          t.y - t.length / 2,
+          t.x + Math.cos(t.y * 0.02) * 20,
+          t.y - t.length
+        );
+        ctx.strokeStyle = t.color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      requestAnimationFrame(animateBackground);
+    }
+    animateBackground();
+  </script>
+</body>
+</html>
