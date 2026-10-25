@@ -20,7 +20,7 @@ const db = firebase.firestore();
 
 let currentUserData = null;
 let pending2FAUser = null;
-let activeGeneratedOTP = null;
+let activeUid = null;
 
 // ==========================================
 // 2. AUTHENTICATION STATE OBSERVER
@@ -37,12 +37,12 @@ auth.onAuthStateChanged(async (user) => {
       console.warn("Firestore Document Fetch Error:", e);
     }
 
-    if (userData.is2FAEnabled && !sessionStorage.getItem("2fa_passed_" + user.uid)) {
+    // Handle 2FA Custom 4-Digit PIN verification
+    if (userData.is2FAEnabled && userData.customPin && !sessionStorage.getItem("2fa_passed_" + user.uid)) {
       pending2FAUser = user;
-      activeGeneratedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      
+      activeUid = user.uid;
       document.getElementById("otpModal").classList.remove("hidden");
-      showToast(`2FA active. OTP code generated and sent to ${user.email}`, "info");
+      showToast("2-Step Verification required. Enter your 4-digit PIN.", "info");
       return;
     }
 
@@ -52,6 +52,7 @@ auth.onAuthStateChanged(async (user) => {
     document.getElementById("profileSection").classList.remove("hidden");
   } else {
     currentUserData = null;
+    activeUid = null;
     document.getElementById("profileSection").classList.add("hidden");
     document.getElementById("authSection").classList.remove("hidden");
   }
@@ -63,7 +64,6 @@ auth.onAuthStateChanged(async (user) => {
 async function handleSignup(e) {
   e.preventDefault();
   
-  // Input fields se values get karna
   const name = document.getElementById("signupName").value.trim();
   const company = document.getElementById("signupCompany").value.trim();
   const phone = document.getElementById("signupPhone").value.trim();
@@ -75,17 +75,16 @@ async function handleSignup(e) {
   btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sign Up...`;
 
   try {
-    // 1. Firebase Authentication mein user create karna
     const res = await auth.createUserWithEmailAndPassword(email, password);
     const user = res.user;
 
-    // 2. User Profile Data Object create karna (Name, Company Name, Phone Number, Email Address ke sath)
     const userProfileData = {
       fullName: name,
       companyName: company,
       phone: phone,
       email: email,
       is2FAEnabled: false,
+      customPin: "",
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       advanceDetails: {
         gstin: "",
@@ -95,10 +94,7 @@ async function handleSignup(e) {
       }
     };
 
-    // 3. Firestore database ke 'users' collection mein data save karna (UID ke basis par)
     await db.collection("users").doc(user.uid).set(userProfileData);
-
-    // 4. Firebase Auth profile ka display name update karna
     await user.updateProfile({ displayName: name });
 
     showToast("Account created & details saved successfully!", "success");
@@ -151,6 +147,7 @@ async function handleGoogleSignIn() {
         phone: user.phoneNumber || "+91 99533 10549",
         email: user.email,
         is2FAEnabled: false,
+        customPin: "",
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         advanceDetails: { gstin: "", cin: "", pan: "", address: "Sector 1 DSIIDC Delhi" }
       });
@@ -170,25 +167,76 @@ async function handleAppleSignIn() {
 }
 
 // ==========================================
-// 6. 2FA & SECURITY UTILITIES
+// 6. 2FA PIN & SECURITY UTILITIES
 // ==========================================
-function verify2FAOTP() {
-  const input = document.getElementById("otpInput").value.trim();
-  if (input === activeGeneratedOTP) {
-    sessionStorage.setItem("2fa_passed_" + pending2FAUser.uid, "true");
-    document.getElementById("otpModal").classList.add("hidden");
-    showToast("2-Step Verification passed!", "success");
-    loadUserProfile(pending2FAUser);
-    document.getElementById("authSection").classList.add("hidden");
-    document.getElementById("profileSection").classList.remove("hidden");
-  } else {
-    showToast("Invalid OTP code.", "error");
+async function verify2FAOTP() {
+  const inputPin = document.getElementById("otpInput").value.trim();
+  if (!pending2FAUser) return;
+
+  try {
+    const doc = await db.collection("users").doc(pending2FAUser.uid).get();
+    if (doc.exists && doc.data().customPin === inputPin) {
+      sessionStorage.setItem("2fa_passed_" + pending2FAUser.uid, "true");
+      document.getElementById("otpModal").classList.add("hidden");
+      document.getElementById("otpInput").value = "";
+      showToast("2-Step Verification passed!", "success");
+      await loadUserProfile(pending2FAUser);
+      document.getElementById("authSection").classList.add("hidden");
+      document.getElementById("profileSection").classList.remove("hidden");
+    } else {
+      showToast("Invalid 4-digit PIN code.", "error");
+    }
+  } catch (e) {
+    showToast("Verification error: " + e.message, "error");
   }
 }
 
 function closeOTPModal() {
   document.getElementById("otpModal").classList.add("hidden");
+  document.getElementById("otpInput").value = "";
   auth.signOut();
+}
+
+function toggle2FAState(enabled) {
+  const setupContainer = document.getElementById("pinSetupContainer");
+  if (enabled) {
+    setupContainer.classList.remove("hidden");
+  } else {
+    setupContainer.classList.add("hidden");
+    // Disable 2FA in DB directly if toggled off
+    const user = auth.currentUser;
+    if (user) {
+      db.collection("users").doc(user.uid).set({ is2FAEnabled: false, customPin: "" }, { merge: true });
+      showToast("2-Step Verification disabled.", "info");
+    }
+  }
+}
+
+async function saveCustomPin() {
+  const user = auth.currentUser;
+  const pin1 = document.getElementById("setupPin").value.trim();
+  const pin2 = document.getElementById("confirmPin").value.trim();
+
+  if (pin1.length !== 4 || !/^\d+$/.test(pin1)) {
+    showToast("PIN must be exactly 4 digits.", "error");
+    return;
+  }
+  if (pin1 !== pin2) {
+    showToast("PIN codes do not match.", "error");
+    return;
+  }
+
+  try {
+    await db.collection("users").doc(user.uid).set({
+      is2FAEnabled: true,
+      customPin: pin1
+    }, { merge: true });
+
+    document.getElementById("twoFactorToggle").checked = true;
+    showToast("Custom 4-digit PIN configured successfully!", "success");
+  } catch (err) {
+    showToast("Error saving PIN: " + err.message, "error");
+  }
 }
 
 async function handleForgotPassword() {
@@ -207,12 +255,14 @@ async function handleForgotPassword() {
 // 7. PROFILE DISPLAY & EDIT MANAGEMENT
 // ==========================================
 async function loadUserProfile(user) {
+  activeUid = user.uid;
   let data = {
     fullName: user.displayName || "Valued Client",
     companyName: "Sneh Elastic B2B Partner",
     phone: user.phoneNumber || "+91 99533 10549",
     email: user.email,
     is2FAEnabled: false,
+    customPin: "",
     advanceDetails: {
       gstin: "",
       cin: "",
@@ -248,13 +298,50 @@ async function loadUserProfile(user) {
   document.getElementById("editFullName").value = data.fullName || "";
   document.getElementById("editCompanyName").value = data.companyName || "";
   document.getElementById("editPhone").value = data.phone || "";
-  document.getElementById("twoFactorToggle").checked = data.is2FAEnabled || false;
+  
+  const is2fa = data.is2FAEnabled || false;
+  document.getElementById("twoFactorToggle").checked = is2fa;
+  if (is2fa) {
+    document.getElementById("pinSetupContainer").classList.remove("hidden");
+  } else {
+    document.getElementById("pinSetupContainer").classList.add("hidden");
+  }
 
   const adv = data.advanceDetails || {};
   document.getElementById("advGSTIN").value = adv.gstin || "";
   document.getElementById("advCIN").value = adv.cin || "";
   document.getElementById("advPAN").value = adv.pan || "";
   document.getElementById("advAddress").value = adv.address || "Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India";
+}
+
+// QR Code Modal Handler
+function openQRModal() {
+  if (!activeUid) return;
+  document.getElementById("modalFullUID").innerText = activeUid;
+  
+  const qrContainer = document.getElementById("qrcodeContainer");
+  qrContainer.innerHTML = "";
+  
+  try {
+    // Generate QR code using qrcode-generator
+    const qr = qrcode(0, 'M');
+    qr.addData(activeUid);
+    qr.make();
+    qrContainer.innerHTML = qr.createSvgTag({ scalable: true, margin: 2 });
+    const svgEl = qrContainer.querySelector("svg");
+    if (svgEl) {
+      svgEl.style.width = "160px";
+      svgEl.style.height = "160px";
+    }
+  } catch (e) {
+    qrContainer.innerHTML = `<p class="text-xs text-red-500">QR Generation Failed</p>`;
+  }
+
+  document.getElementById("qrModal").classList.remove("hidden");
+}
+
+function closeQRModal() {
+  document.getElementById("qrModal").classList.add("hidden");
 }
 
 async function saveProfileEditsDirect() {
@@ -300,18 +387,6 @@ async function saveProfileEditsDirect() {
   } finally {
     btn.disabled = false;
     btn.innerHTML = `<i class="fa-solid fa-user-check text-brandCyan"></i><span>Save Changes</span>`;
-  }
-}
-
-async function toggle2FA(enabled) {
-  const user = auth.currentUser;
-  if (!user) return;
-
-  try {
-    await db.collection("users").doc(user.uid).set({ is2FAEnabled: enabled }, { merge: true });
-    showToast(`2-Step Verification ${enabled ? "enabled" : "disabled"}!`, "info");
-  } catch (err) {
-    showToast(err.message, "error");
   }
 }
 
