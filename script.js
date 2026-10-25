@@ -37,11 +37,9 @@ auth.onAuthStateChanged(async (user) => {
       console.warn("Firestore Document Fetch Error:", e);
     }
 
-    // Handle 2-Step Verification if turned on
     if (userData.is2FAEnabled && !sessionStorage.getItem("2fa_passed_" + user.uid)) {
       pending2FAUser = user;
       activeGeneratedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log(`[SECURITY OTP DISPATCHED TO ${user.email}]: ${activeGeneratedOTP}`);
       
       document.getElementById("otpModal").classList.remove("hidden");
       showToast(`2FA active. OTP code generated and sent to ${user.email}`, "info");
@@ -60,12 +58,12 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 // ==========================================
-// 3. REGISTRATION / SIGNUP HANDLER (FIRESTORE DATA SAVE)
+// 3. REGISTRATION / SIGNUP HANDLER
 // ==========================================
 async function handleSignup(e) {
   e.preventDefault();
   
-  // Extract user details from form fields
+  // Input fields se values get karna
   const name = document.getElementById("signupName").value.trim();
   const company = document.getElementById("signupCompany").value.trim();
   const phone = document.getElementById("signupPhone").value.trim();
@@ -77,11 +75,11 @@ async function handleSignup(e) {
   btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sign Up...`;
 
   try {
-    // 1. Create User Authentication in Firebase
+    // 1. Firebase Authentication mein user create karna
     const res = await auth.createUserWithEmailAndPassword(email, password);
     const user = res.user;
 
-    // 2. Construct Firestore User Document Payload
+    // 2. User Profile Data Object create karna (Name, Company Name, Phone Number, Email Address ke sath)
     const userProfileData = {
       fullName: name,
       companyName: company,
@@ -97,10 +95,10 @@ async function handleSignup(e) {
       }
     };
 
-    // 3. Save User Details into Firestore 'users' Collection
+    // 3. Firestore database ke 'users' collection mein data save karna (UID ke basis par)
     await db.collection("users").doc(user.uid).set(userProfileData);
 
-    // 4. Update Display Name in Firebase Auth Profile
+    // 4. Firebase Auth profile ka display name update karna
     await user.updateProfile({ displayName: name });
 
     showToast("Account created & details saved successfully!", "success");
@@ -147,7 +145,6 @@ async function handleGoogleSignIn() {
     const doc = await userRef.get();
 
     if (!doc.exists) {
-      // Save details for new Google Auth User
       await userRef.set({
         fullName: user.displayName || "B2B Client",
         companyName: "Garment Partner",
@@ -235,29 +232,24 @@ async function loadUserProfile(user) {
 
   currentUserData = data;
 
-  // Render Top Profile Banner Elements
   document.getElementById("dispFullName").innerText = data.fullName || "Valued Client";
   document.getElementById("dispCompanyName").innerText = data.companyName || "Sneh Elastic B2B Partner";
   document.getElementById("dispPhone").innerText = data.phone || "+91 99533 10549";
   document.getElementById("dispUID").innerText = user.uid;
 
-  // Render Initials Badge
   const initials = (data.fullName || "SE").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
   document.getElementById("profileInitials").innerText = initials || "SE";
 
-  // Render Overview Details
   document.getElementById("overviewName").innerText = data.fullName || "---";
   document.getElementById("overviewCompany").innerText = data.companyName || "---";
   document.getElementById("overviewEmail").innerText = data.email || "---";
   document.getElementById("overviewPhone").innerText = data.phone || "---";
 
-  // Fill Edit Form Fields
   document.getElementById("editFullName").value = data.fullName || "";
   document.getElementById("editCompanyName").value = data.companyName || "";
   document.getElementById("editPhone").value = data.phone || "";
   document.getElementById("twoFactorToggle").checked = data.is2FAEnabled || false;
 
-  // Fill Advance Details Fields
   const adv = data.advanceDetails || {};
   document.getElementById("advGSTIN").value = adv.gstin || "";
   document.getElementById("advCIN").value = adv.cin || "";
