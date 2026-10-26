@@ -41,7 +41,6 @@ auth.onAuthStateChanged(async (user) => {
       console.warn("Firestore Document Fetch Error:", e);
     }
 
-    // Check 2FA PIN requirement on Auth page / Login
     if (userData.is2FAEnabled && userData.customPin && !sessionStorage.getItem("2fa_passed_" + user.uid)) {
       pending2FAUser = user;
       activeUid = user.uid;
@@ -51,18 +50,15 @@ auth.onAuthStateChanged(async (user) => {
       return;
     }
 
-    // If logged in and on index/root, redirect to profile.html
     if (isAuthPage && !isProfilePage) {
       window.location.replace("profile.html");
       return;
     }
 
-    // If on profile.html, load user profile data
     if (isProfilePage) {
       await loadUserProfile(user);
     }
   } else {
-    // If NOT logged in and trying to access profile.html, redirect to index.html
     if (isProfilePage) {
       window.location.replace("index.html");
       return;
@@ -112,8 +108,6 @@ async function handleSignup(e) {
     await user.updateProfile({ displayName: name });
 
     showToast("Account created successfully! Redirecting...", "success");
-    
-    // Immediate and explicit redirection
     window.location.replace("profile.html");
   } catch (err) {
     showToast(err.message, "error");
@@ -142,7 +136,6 @@ async function handleLogin(e) {
     const res = await auth.signInWithEmailAndPassword(email, password);
     const user = res.user;
 
-    // Check if 2FA is active
     const doc = await db.collection("users").doc(user.uid).get();
     let is2FAActive = false;
     if (doc.exists && doc.data().is2FAEnabled && doc.data().customPin) {
@@ -290,7 +283,56 @@ async function handleForgotPassword() {
 }
 
 // ==========================================
-// 7. PROFILE DISPLAY & EDIT MANAGEMENT
+// 7. ACCOUNT SETTING ACTIONS
+// ==========================================
+async function handleResetPassword() {
+  const user = auth.currentUser;
+  if (!user || !user.email) {
+    showToast("No active user email found.", "error");
+    return;
+  }
+  if (confirm(`Send password reset link to ${user.email}?`)) {
+    try {
+      await auth.sendPasswordResetEmail(user.email);
+      showToast("Password reset email sent!", "success");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  }
+}
+
+async function handleResetEmail() {
+  const newEmail = prompt("Enter your new work email address:");
+  if (newEmail) {
+    const user = auth.currentUser;
+    try {
+      await user.updateEmail(newEmail);
+      await db.collection("users").doc(user.uid).set({ email: newEmail }, { merge: true });
+      showToast("Email updated successfully! Please re-login.", "success");
+      setTimeout(() => { handleLogout(); }, 1500);
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  }
+}
+
+async function handleDeleteAccount() {
+  const confirmText = prompt("Type 'DELETE' to permanently delete your B2B account and data:");
+  if (confirmText === "DELETE") {
+    const user = auth.currentUser;
+    try {
+      await db.collection("users").doc(user.uid).delete();
+      await user.delete();
+      showToast("Account permanently deleted.", "info");
+      setTimeout(() => { window.location.replace("index.html"); }, 1000);
+    } catch (err) {
+      showToast("Error deleting account: " + err.message + " (Please re-login and try again)", "error");
+    }
+  }
+}
+
+// ==========================================
+// 8. PROFILE DISPLAY & EDIT MANAGEMENT
 // ==========================================
 async function loadUserProfile(user) {
   activeUid = user.uid;
@@ -485,6 +527,29 @@ async function saveAdvanceDetails(e) {
   }
 }
 
+function searchInvoice() {
+  const invInput = document.getElementById("invoiceNumberInput").value.trim().toUpperCase();
+  const resultContainer = document.getElementById("invoiceResultContainer");
+
+  if (!invInput) {
+    showToast("Please enter an invoice number.", "error");
+    resultContainer.classList.add("hidden");
+    return;
+  }
+
+  resultContainer.classList.remove("hidden");
+  resultContainer.className = "p-4 rounded-2xl border text-xs sm:text-sm font-medium bg-red-50 border-red-200 text-red-700 animate-fade-in";
+  resultContainer.innerHTML = `
+    <div class="flex items-center space-x-2">
+      <i class="fa-solid fa-circle-exclamation text-base"></i>
+      <div>
+        <p class="font-bold">No invoice found</p>
+        <p class="text-[11px] mt-0.5 opacity-90">Invoice number "<strong>${invInput}</strong>" does not exist in our active B2B billing records. Please check the number or contact support.</p>
+      </div>
+    </div>
+  `;
+}
+
 async function handleLogout() {
   try {
     const user = auth.currentUser;
@@ -498,7 +563,24 @@ async function handleLogout() {
 }
 
 // ==========================================
-// 8. INTERFACE HELPERS & ANIMATIONS
+// 9. TAB SWITCHING & MENU HIGHLIGHT FIX
+// ==========================================
+function switchTab(tabId) {
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
+  const target = document.getElementById(tabId);
+  if (target) target.classList.remove("hidden");
+
+  document.querySelectorAll(".menu-btn").forEach(b => {
+    b.classList.remove("active-menu");
+  });
+  const activeBtn = document.getElementById("btn-" + tabId);
+  if (activeBtn) {
+    activeBtn.classList.add("active-menu");
+  }
+}
+
+// ==========================================
+// 10. INTERFACE HELPERS & ANIMATIONS
 // ==========================================
 function flipCard(showSignup) {
   const flipper = document.getElementById("cardFlipper");
@@ -533,22 +615,6 @@ function checkPasswordStrength(val) {
   if (score <= 33) bar.className = "h-full bg-red-500 transition-all duration-300";
   else if (score <= 66) bar.className = "h-full bg-yellow-500 transition-all duration-300";
   else bar.className = "h-full bg-emerald-500 transition-all duration-300";
-}
-
-function switchTab(tabId) {
-  document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
-  const target = document.getElementById(tabId);
-  if (target) target.classList.remove("hidden");
-
-  document.querySelectorAll(".nav-tab-btn").forEach(b => {
-    b.classList.remove("bg-brandGreen", "text-white");
-    b.classList.add("text-gray-600");
-  });
-  const activeBtn = document.getElementById("btn-" + tabId);
-  if (activeBtn) {
-    activeBtn.classList.add("bg-brandGreen", "text-white");
-    activeBtn.classList.remove("text-gray-600");
-  }
 }
 
 function showToast(message, type = "info") {
