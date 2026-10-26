@@ -11,8 +11,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Google Fonts: Montserrat & Open Sans -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- QRCode Generator Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -66,9 +64,6 @@
       to { transform: rotate(360deg); }
     }
     .spin-slow { animation: spinSlow 14s linear infinite; }
-
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 
   <!-- Firebase SDKs -->
@@ -104,27 +99,6 @@
         VERIFY & CONTINUE
       </button>
       <button onclick="closeOTPModal()" class="text-xs text-gray-400 hover:text-gray-600">Cancel Login</button>
-    </div>
-  </div>
-
-  <!-- QR CODE ACCOUNT ID MODAL -->
-  <div id="qrModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white max-w-sm w-full rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 text-center space-y-4">
-      <div class="w-12 h-12 bg-brandCyan/10 text-brandGreen rounded-xl flex items-center justify-center mx-auto text-xl">
-        <i class="fa-solid fa-qrcode text-brandGreen"></i>
-      </div>
-      <div>
-        <h3 class="font-montserrat font-bold text-lg text-brandGreen">Account ID & QR Code</h3>
-        <p class="text-[11px] text-gray-500 mt-0.5">Scan or copy your secure B2B identity reference.</p>
-      </div>
-      <div id="qrcodeContainer" class="p-3 bg-gray-50 border border-gray-200 rounded-2xl flex items-center justify-center"></div>
-      <div>
-        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Full Unique ID</p>
-        <p id="modalFullUID" class="font-mono text-xs text-brandGreen font-bold break-all mt-1 bg-gray-100 p-2 rounded-lg"></p>
-      </div>
-      <button onclick="closeQRModal()" class="w-full py-2.5 bg-slate-900 text-white font-montserrat font-bold text-xs rounded-full shadow transition-all">
-        CLOSE
-      </button>
     </div>
   </div>
 
@@ -190,7 +164,7 @@
             <div class="relative z-10 space-y-4 max-w-xs">
               <h3 class="font-montserrat font-extrabold text-3xl text-white tracking-wide">Hey There!</h3>
               <p class="text-xs text-emerald-100/90 leading-relaxed font-medium">
-                Create your account now and step into an amazing new journey with Sneh Elastic Threads Pvt. Ltd.[cite: 2]
+                Create your account now and step into an amazing new journey with Sneh Elastic Threads Pvt. Ltd.
               </p>
               <button type="button" onclick="flipCard(true)" class="px-10 py-3 border-2 border-white/80 hover:bg-white hover:text-brandGreen rounded-full font-montserrat font-bold text-xs tracking-wider transition-all duration-300 mt-2">
                 Sign Up
@@ -217,7 +191,7 @@
           <div class="p-6 sm:p-10 flex flex-col justify-center space-y-3 sm:space-y-4 bg-white overflow-y-auto">
             <div class="text-center space-y-1">
               <h2 class="font-montserrat font-extrabold text-xl sm:text-2xl text-gray-900">Create Account</h2>
-              <p class="text-xs font-semibold text-gray-400">Join our B2B Procurement Network[cite: 2]</p>
+              <p class="text-xs font-semibold text-gray-400">Join our B2B Procurement Network</p>
             </div>
 
             <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-2.5 sm:space-y-3">
@@ -258,248 +232,8 @@
       </div>
     </div>
 
-    <!-- PROFILE DASHBOARD SECTION -->
-    <div id="profileSection" class="hidden w-full bg-white border border-gray-200 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-500">
-      <div class="bg-gradient-to-r from-brandGreen via-slate-900 to-brandGreen p-5 sm:p-8 text-white relative overflow-hidden">
-        <svg class="absolute right-0 top-0 h-full opacity-10 spin-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor">
-          <circle cx="50" cy="50" r="45" stroke-width="2" stroke-dasharray="4,4"/>
-          <circle cx="50" cy="50" r="30" stroke-width="1.5"/>
-        </svg>
-
-        <div class="flex flex-col sm:flex-row items-center justify-between relative z-10 gap-4 sm:gap-6">
-          <div class="flex items-center space-x-4 sm:space-x-5 w-full sm:w-auto">
-            <div class="relative shrink-0">
-              <div class="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-brandCyan to-brandGreen p-1 shadow-lg">
-                <div class="w-full h-full bg-slate-900 rounded-xl flex items-center justify-center font-montserrat font-extrabold text-2xl sm:text-3xl text-brandCyan" id="profileInitials">
-                  SE
-                </div>
-              </div>
-              <span class="absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
-            </div>
-            <div class="overflow-hidden">
-              <div class="flex items-center space-x-2">
-                <h2 id="dispFullName" class="font-montserrat font-extrabold text-xl sm:text-3xl text-white truncate">---</h2>
-                <i class="fa-solid fa-circle-check text-brandCyan text-base sm:text-lg shrink-0"></i>
-              </div>
-              <p id="dispCompanyName" class="text-brandCyan font-semibold text-xs sm:text-base mt-0.5 truncate">---</p>
-              <p class="text-xs text-gray-300 mt-1 flex items-center"><i class="fa-solid fa-phone mr-1.5"></i><span id="dispPhone">---</span></p>
-            </div>
-          </div>
-
-          <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-700/50 gap-2">
-            <!-- Clickable Account ID Badge -->
-            <div onclick="openQRModal()" class="bg-slate-800/80 hover:bg-slate-800 cursor-pointer backdrop-blur px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl border border-slate-700 text-left sm:text-right transition-all group" title="Click to view QR Code">
-              <p class="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest font-semibold flex items-center justify-between sm:justify-end gap-1">
-                <span>Account ID</span>
-                <i class="fa-solid fa-qrcode text-brandCyan text-xs"></i>
-              </p>
-              <p id="dispUID" class="font-mono text-[11px] sm:text-xs text-brandCyan font-bold tracking-wider truncate max-w-[140px] sm:max-w-none group-hover:underline">--------------------</p>
-            </div>
-            <button onclick="handleLogout()" class="px-4 py-2 bg-red-500/20 hover:bg-red-500 text-red-200 hover:text-white rounded-full text-xs font-bold transition-all flex items-center space-x-2 border border-red-500/30">
-              <i class="fa-solid fa-right-from-bracket"></i>
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-4 min-h-[440px]">
-        <div class="bg-gray-50 border-b md:border-b-0 md:border-r border-gray-200 p-3 sm:p-4 flex md:flex-col overflow-x-auto no-scrollbar space-x-2 md:space-x-0 md:space-y-2 snap-x">
-          <button onclick="switchTab('overviewTab')" id="btn-overviewTab" class="nav-tab-btn active-tab shrink-0 snap-start text-left px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm flex items-center space-x-2.5 transition-all bg-brandGreen text-white">
-            <i class="fa-solid fa-chart-pie w-4 sm:w-5"></i>
-            <span>Overview</span>
-          </button>
-          <button onclick="switchTab('editProfileTab')" id="btn-editProfileTab" class="nav-tab-btn shrink-0 snap-start text-left px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm text-gray-600 hover:bg-white flex items-center space-x-2.5 transition-all">
-            <i class="fa-solid fa-user-pen text-brandGreen w-4 sm:w-5"></i>
-            <span>Edit Profile</span>
-          </button>
-          <button onclick="switchTab('advanceTab')" id="btn-advanceTab" class="nav-tab-btn shrink-0 snap-start text-left px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm text-gray-600 hover:bg-white flex items-center space-x-2.5 transition-all">
-            <i class="fa-solid fa-file-invoice text-brandGreen w-4 sm:w-5"></i>
-            <span>Advance Detail</span>
-          </button>
-          <button onclick="switchTab('catalogTab')" id="btn-catalogTab" class="nav-tab-btn shrink-0 snap-start text-left px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm text-gray-600 hover:bg-white flex items-center space-x-2.5 transition-all">
-            <i class="fa-solid fa-boxes-stacked text-brandGreen w-4 sm:w-5"></i>
-            <span>Specs & Orders</span>
-          </button>
-        </div>
-
-        <div class="md:col-span-3 p-5 sm:p-8">
-          <!-- OVERVIEW -->
-          <div id="overviewTab" class="tab-panel space-y-5 sm:space-y-6">
-            <div class="flex items-center justify-between border-b pb-3 sm:pb-4">
-              <div>
-                <h3 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">B2B Account Summary</h3>
-                <p class="text-[11px] sm:text-xs text-gray-500">Sneh Elastic Threads Manufacturing Network[cite: 2]</p>
-              </div>
-              <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-[10px] sm:text-xs font-bold">Gold Partner</span>
-            </div>
-
-            <div class="p-4 sm:p-5 border border-gray-200 rounded-2xl bg-white space-y-3">
-              <h4 class="font-montserrat font-bold text-xs sm:text-sm text-brandGreen uppercase tracking-wider">Registered Corporate Details</h4>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
-                <div>
-                  <span class="text-[11px] text-gray-400 block font-semibold">Primary Contact Name</span>
-                  <span id="overviewName" class="font-semibold text-gray-800">---</span>
-                </div>
-                <div>
-                  <span class="text-[11px] text-gray-400 block font-semibold">Official Business</span>
-                  <span id="overviewCompany" class="font-semibold text-gray-800">---</span>
-                </div>
-                <div>
-                  <span class="text-[11px] text-gray-400 block font-semibold">Registered Email</span>
-                  <span id="overviewEmail" class="font-semibold text-gray-800">---</span>
-                </div>
-                <div>
-                  <span class="text-[11px] text-gray-400 block font-semibold">Phone Support</span>
-                  <span id="overviewPhone" class="font-semibold text-gray-800">---</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- EDIT PROFILE -->
-          <div id="editProfileTab" class="tab-panel hidden space-y-5 sm:space-y-6">
-            <div class="border-b pb-3 sm:pb-4">
-              <h3 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Edit Profile & Security</h3>
-              <p class="text-xs text-gray-500">Update primary contact details and configure custom 4-digit 2FA security.</p>
-            </div>
-
-            <form id="editProfileForm" class="space-y-4 sm:space-y-5">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">Full Name</label>
-                  <input type="text" id="editFullName" required class="w-full min-h-[44px] px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold">
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">Company Name</label>
-                  <input type="text" id="editCompanyName" required class="w-full min-h-[44px] px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold">
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">Phone Number</label>
-                <input type="tel" id="editPhone" required class="w-full min-h-[44px] px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold">
-              </div>
-
-              <!-- 2-Step Verification Section -->
-              <div class="p-4 border-2 border-brandGreen/20 rounded-2xl bg-gray-50/50 space-y-4">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center space-x-3">
-                    <div class="p-2.5 bg-brandGreen text-brandCyan rounded-xl">
-                      <i class="fa-solid fa-shield-halved text-base sm:text-lg"></i>
-                    </div>
-                    <div>
-                      <h4 class="font-bold text-xs sm:text-sm text-brandGreen">2-Step Verification (4-Digit PIN)</h4>
-                      <p class="text-[11px] text-gray-500">Require 4-digit PIN on every login.</p>
-                    </div>
-                  </div>
-                  <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
-                    <input type="checkbox" id="twoFactorToggle" onchange="toggle2FAState(this.checked)" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brandGreen"></div>
-                  </label>
-                </div>
-
-                <!-- 4-Digit PIN Inputs (Conditional) -->
-                <div id="pinSetupContainer" class="hidden space-y-3 pt-3 border-t border-gray-200">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Create 4-Digit PIN</label>
-                      <input type="password" id="setupPin" maxlength="4" placeholder="••••" class="w-full text-center tracking-[0.5em] font-mono font-bold text-lg py-2.5 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none bg-white">
-                    </div>
-                    <div>
-                      <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Confirm 4-Digit PIN</label>
-                      <input type="password" id="confirmPin" maxlength="4" placeholder="••••" class="w-full text-center tracking-[0.5em] font-mono font-bold text-lg py-2.5 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none bg-white">
-                    </div>
-                  </div>
-                  <button type="button" onclick="saveCustomPin()" class="w-full py-2.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow transition-all">
-                    Save 4-Digit PIN
-                  </button>
-                </div>
-              </div>
-
-              <button type="button" onclick="saveProfileEditsDirect()" id="btnSaveProfile" class="w-full sm:w-auto px-8 py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs sm:text-sm rounded-full shadow-md transition-all flex items-center justify-center space-x-2">
-                <i class="fa-solid fa-user-check text-brandCyan"></i>
-                <span>Save Changes</span>
-              </button>
-            </form>
-          </div>
-
-          <!-- ADVANCE DETAIL -->
-          <div id="advanceTab" class="tab-panel hidden space-y-5 sm:space-y-6">
-            <div class="border-b pb-3 sm:pb-4">
-              <h3 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Advance Business Details</h3>
-              <p class="text-xs text-gray-500">Tax and factory location credentials for B2B invoicing[cite: 2].</p>
-            </div>
-
-            <form id="advanceDetailsForm" onsubmit="saveAdvanceDetails(event)" class="space-y-4 sm:space-y-5">
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">GSTIN <span class="text-gray-400 font-normal">(Opt)</span></label>
-                  <input type="text" id="advGSTIN" placeholder="27AAAAA0000A1Z5" class="w-full min-h-[44px] px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold uppercase">
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">CIN <span class="text-gray-400 font-normal">(Opt)</span></label>
-                  <input type="text" id="advCIN" placeholder="U17100DL2020PTC..." class="w-full min-h-[44px] px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold uppercase">
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">PAN <span class="text-gray-400 font-normal">(Opt)</span></label>
-                  <input type="text" id="advPAN" placeholder="ABCDE1234F" class="w-full min-h-[44px] px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold uppercase">
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">Factory / Office Address</label>
-                <textarea id="advAddress" rows="3" placeholder="Enter complete factory address..." class="w-full p-3.5 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-medium"></textarea>
-                <p class="text-[10px] text-gray-400 mt-1">Default unit: Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India[cite: 2]</p>
-              </div>
-
-              <button type="submit" id="btnSaveAdvance" class="w-full sm:w-auto px-8 py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs sm:text-sm rounded-full shadow-md transition-all flex items-center justify-center space-x-2">
-                <i class="fa-solid fa-floppy-disk text-brandCyan"></i>
-                <span>Save Advance Details</span>
-              </button>
-            </form>
-          </div>
-
-          <!-- SPECS & CATALOG -->
-          <div id="catalogTab" class="tab-panel hidden space-y-5 sm:space-y-6">
-            <div class="border-b pb-3 sm:pb-4">
-              <h3 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Elastic Specifications</h3>
-              <p class="text-xs text-gray-500">Engineered textile solutions for garment & medical industries[cite: 2].</p>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div class="p-4 border border-gray-200 rounded-2xl flex items-start space-x-3">
-                <div class="p-2.5 bg-brandGreen/10 rounded-xl text-brandGreen"><i class="fa-solid fa-dna text-lg sm:text-xl"></i></div>
-                <div>
-                  <h4 class="font-bold text-xs sm:text-sm text-brandGreen">Double-Covered Spandex</h4>
-                  <p class="text-[11px] text-gray-500 mt-0.5">High-tensile stretch stability for medical orthopedic supports[cite: 2].</p>
-                </div>
-              </div>
-              <div class="p-4 border border-gray-200 rounded-2xl flex items-start space-x-3">
-                <div class="p-2.5 bg-brandGreen/10 rounded-xl text-brandGreen"><i class="fa-solid fa-bolt text-lg sm:text-xl"></i></div>
-                <div>
-                  <h4 class="font-bold text-xs sm:text-sm text-brandGreen">Custom Compression Yarn</h4>
-                  <p class="text-[11px] text-gray-500 mt-0.5">High-speed spindle technology engineered for long durability[cite: 2].</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div>
-                <p class="font-bold text-xs sm:text-sm text-brandGreen">Need custom technical parameters?</p>
-                <p class="text-[11px] text-gray-500">Contact our R&D unit at Sector 1 DSIIDC Delhi[cite: 2].</p>
-              </div>
-              <a href="tel:+919953310549" class="w-full sm:w-auto text-center px-4 py-2 bg-brandGreen text-white rounded-full text-xs font-bold hover:bg-slate-900 transition-colors">Call Direct</a>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- Include External Script -->
   <script src="script.js"></script>
 </body>
 </html>
