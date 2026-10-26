@@ -23,7 +23,7 @@ let pending2FAUser = null;
 let activeUid = null;
 
 // ==========================================
-// 2. AUTOMATIC ROUTING & AUTH OBSERVER
+// 2. AUTH OBSERVER & ROUTING
 // ==========================================
 auth.onAuthStateChanged(async (user) => {
   const path = window.location.pathname;
@@ -67,7 +67,7 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 // ==========================================
-// 3. REGISTRATION / SIGNUP HANDLER
+// 3. SIGNUP & LOGIN HANDLERS
 // ==========================================
 async function handleSignup(e) {
   e.preventDefault();
@@ -93,6 +93,8 @@ async function handleSignup(e) {
       companyName: company,
       phone: phone,
       email: email,
+      regionMode: "IN",
+      selectedCountry: "IN",
       is2FAEnabled: false,
       customPin: "",
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -100,6 +102,7 @@ async function handleSignup(e) {
         gstin: "",
         cin: "",
         pan: "",
+        globalTaxID: "",
         address: "Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India"
       }
     };
@@ -118,9 +121,6 @@ async function handleSignup(e) {
   }
 }
 
-// ==========================================
-// 4. LOGIN HANDLER
-// ==========================================
 async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById("loginEmail").value.trim();
@@ -156,7 +156,7 @@ async function handleLogin(e) {
 }
 
 // ==========================================
-// 5. SOCIAL SIGN-IN HANDLERS
+// 4. SOCIAL SIGN-IN
 // ==========================================
 async function handleGoogleSignIn() {
   const provider = new firebase.auth.GoogleAuthProvider();
@@ -171,12 +171,14 @@ async function handleGoogleSignIn() {
       await userRef.set({
         fullName: user.displayName || "B2B Client",
         companyName: "Garment Partner",
-        phone: user.phoneNumber || "+91 99533 10549",
+        phone: user.phoneNumber || "9953310549",
         email: user.email,
+        regionMode: "IN",
+        selectedCountry: "IN",
         is2FAEnabled: false,
         customPin: "",
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        advanceDetails: { gstin: "", cin: "", pan: "", address: "Sector 1 DSIIDC Delhi" }
+        advanceDetails: { gstin: "", cin: "", pan: "", globalTaxID: "", address: "Sector 1 DSIIDC Delhi" }
       });
     }
     window.location.replace("profile.html");
@@ -196,7 +198,7 @@ async function handleAppleSignIn() {
 }
 
 // ==========================================
-// 6. 2FA PIN & SECURITY UTILITIES
+// 5. 2FA & SECURITY
 // ==========================================
 async function verify2FAOTP() {
   const inputPin = document.getElementById("otpInput").value.trim();
@@ -270,15 +272,59 @@ async function saveCustomPin() {
   }
 }
 
-async function handleForgotPassword() {
-  const email = prompt("Enter your registered work email for password reset:");
-  if (email) {
-    try {
-      await auth.sendPasswordResetEmail(email);
-      showToast("Password reset link sent to your email!", "success");
-    } catch (err) {
-      showToast(err.message, "error");
-    }
+// ==========================================
+// 6. REGION SWITCHER (INDIA vs GLOBAL)
+// ==========================================
+async function handleRegionChange(mode) {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    await db.collection("users").doc(user.uid).set({ regionMode: mode }, { merge: true });
+    showToast(mode === "GLOBAL" ? "Switched to Global B2B Mode!" : "Switched to India Mode.", "success");
+    applyRegionUI(mode);
+  } catch (err) {
+    showToast("Error updating region: " + err.message, "error");
+  }
+}
+
+function applyRegionUI(mode) {
+  const countryFieldContainer = document.getElementById("globalCountryFieldContainer");
+  const indiaAdvFields = document.getElementById("indiaAdvanceFields");
+  const globalAdvFields = document.getElementById("globalAdvanceFields");
+  const advHeaderTitle = document.getElementById("advHeaderTitle");
+  const advHeaderSub = document.getElementById("advHeaderSub");
+  const overviewCountryRow = document.getElementById("overviewCountryRow");
+  const regionSelect = document.getElementById("regionSelect");
+
+  if (regionSelect) regionSelect.value = mode;
+
+  if (mode === "GLOBAL") {
+    if (countryFieldContainer) countryFieldContainer.classList.remove("hidden");
+    if (indiaAdvFields) indiaAdvFields.classList.add("hidden");
+    if (globalAdvFields) globalAdvFields.classList.remove("hidden");
+    if (advHeaderTitle) advHeaderTitle.innerText = "Global Corporate Credentials";
+    if (advHeaderSub) advHeaderSub.innerText = "International tax & identification number for global B2B transactions.";
+    if (overviewCountryRow) overviewCountryRow.classList.remove("hidden");
+  } else {
+    if (countryFieldContainer) countryFieldContainer.classList.add("hidden");
+    if (indiaAdvFields) indiaAdvFields.classList.remove("hidden");
+    if (globalAdvFields) globalAdvFields.classList.add("hidden");
+    if (advHeaderTitle) advHeaderTitle.innerText = "Advance Business Details";
+    if (advHeaderSub) advHeaderSub.innerText = "Tax and factory location credentials for B2B invoicing.";
+    if (overviewCountryRow) overviewCountryRow.classList.add("hidden");
+  }
+}
+
+function onCountryChange(countryVal) {
+  const selectElem = document.getElementById("editCountrySelect");
+  const phoneCodeInput = document.getElementById("editPhoneCode");
+  if (!selectElem || !phoneCodeInput) return;
+
+  const selectedOpt = selectElem.options[selectElem.selectedIndex];
+  const dialCode = selectedOpt.getAttribute("data-code");
+  if (dialCode) {
+    phoneCodeInput.value = dialCode;
   }
 }
 
@@ -332,21 +378,24 @@ async function handleDeleteAccount() {
 }
 
 // ==========================================
-// 8. PROFILE DISPLAY & EDIT MANAGEMENT
+// 8. PROFILE LOAD & EDIT
 // ==========================================
 async function loadUserProfile(user) {
   activeUid = user.uid;
   let data = {
     fullName: user.displayName || "Valued Client",
     companyName: "Sneh Elastic B2B Partner",
-    phone: user.phoneNumber || "+91 99533 10549",
+    phone: user.phoneNumber || "9953310549",
     email: user.email,
+    regionMode: "IN",
+    selectedCountry: "IN",
     is2FAEnabled: false,
     customPin: "",
     advanceDetails: {
       gstin: "",
       cin: "",
       pan: "",
+      globalTaxID: "",
       address: "Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India"
     }
   };
@@ -361,6 +410,7 @@ async function loadUserProfile(user) {
   }
 
   currentUserData = data;
+  applyRegionUI(data.regionMode || "IN");
 
   const setElemText = (id, val) => {
     const el = document.getElementById(id);
@@ -369,7 +419,9 @@ async function loadUserProfile(user) {
 
   setElemText("dispFullName", data.fullName || "Valued Client");
   setElemText("dispCompanyName", data.companyName || "Sneh Elastic B2B Partner");
-  setElemText("dispPhone", data.phone || "+91 99533 10549");
+  
+  let fullDisplayPhone = (data.regionMode === "GLOBAL" ? (data.phoneCode || "+91") + " " : "+91 ") + (data.phone || "");
+  setElemText("dispPhone", fullDisplayPhone);
   setElemText("dispUID", user.uid);
 
   const initials = (data.fullName || "SE").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
@@ -378,7 +430,8 @@ async function loadUserProfile(user) {
   setElemText("overviewName", data.fullName || "---");
   setElemText("overviewCompany", data.companyName || "---");
   setElemText("overviewEmail", data.email || "---");
-  setElemText("overviewPhone", data.phone || "---");
+  setElemText("overviewPhone", fullDisplayPhone);
+  setElemText("overviewCountry", data.selectedCountry || "IN");
 
   const editName = document.getElementById("editFullName");
   if (editName) editName.value = data.fullName || "";
@@ -386,7 +439,12 @@ async function loadUserProfile(user) {
   if (editComp) editComp.value = data.companyName || "";
   const editPh = document.getElementById("editPhone");
   if (editPh) editPh.value = data.phone || "";
-  
+  const editCountry = document.getElementById("editCountrySelect");
+  if (editCountry) {
+    editCountry.value = data.selectedCountry || "IN";
+    onCountryChange(editCountry.value);
+  }
+
   const is2fa = data.is2FAEnabled || false;
   const toggle = document.getElementById("twoFactorToggle");
   if (toggle) toggle.checked = is2fa;
@@ -404,6 +462,8 @@ async function loadUserProfile(user) {
   if (cinEl) cinEl.value = adv.cin || "";
   const panEl = document.getElementById("advPAN");
   if (panEl) panEl.value = adv.pan || "";
+  const globalTaxEl = document.getElementById("advGlobalTaxID");
+  if (globalTaxEl) globalTaxEl.value = adv.globalTaxID || "";
   const addrEl = document.getElementById("advAddress");
   if (addrEl) addrEl.value = adv.address || "Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India";
 }
@@ -421,11 +481,6 @@ function openQRModal() {
       qr.addData(activeUid);
       qr.make();
       qrContainer.innerHTML = qr.createSvgTag({ scalable: true, margin: 2 });
-      const svgEl = qrContainer.querySelector("svg");
-      if (svgEl) {
-        svgEl.style.width = "160px";
-        svgEl.style.height = "160px";
-      }
     } catch (e) {
       qrContainer.innerHTML = `<p class="text-xs text-red-500">QR Generation Failed</p>`;
     }
@@ -447,6 +502,8 @@ async function saveProfileEditsDirect() {
   const newFullName = document.getElementById("editFullName").value.trim();
   const newCompanyName = document.getElementById("editCompanyName").value.trim();
   const newPhone = document.getElementById("editPhone").value.trim();
+  const selectedCountry = document.getElementById("editCountrySelect").value;
+  const phoneCode = document.getElementById("editPhoneCode").value;
 
   if (!newFullName || !newCompanyName) {
     showToast("Please fill in Full Name and Company Name.", "error");
@@ -463,28 +520,16 @@ async function saveProfileEditsDirect() {
       await db.collection("users").doc(user.uid).set({
         fullName: newFullName,
         companyName: newCompanyName,
-        phone: newPhone
+        phone: newPhone,
+        selectedCountry: selectedCountry,
+        phoneCode: phoneCode
       }, { merge: true });
 
       await user.updateProfile({ displayName: newFullName });
     }
 
-    const setElemText = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.innerText = val;
-    };
-
-    setElemText("dispFullName", newFullName);
-    setElemText("dispCompanyName", newCompanyName);
-    setElemText("dispPhone", newPhone);
-    setElemText("overviewName", newFullName);
-    setElemText("overviewCompany", newCompanyName);
-    setElemText("overviewPhone", newPhone);
-
-    const initials = newFullName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
-    setElemText("profileInitials", initials || "SE");
-
     showToast("Profile updated successfully!", "success");
+    await loadUserProfile(user);
   } catch (err) {
     showToast("Profile details updated.", "success");
   } finally {
@@ -509,6 +554,7 @@ async function saveAdvanceDetails(e) {
     gstin: document.getElementById("advGSTIN").value.trim(),
     cin: document.getElementById("advCIN").value.trim(),
     pan: document.getElementById("advPAN").value.trim(),
+    globalTaxID: document.getElementById("advGlobalTaxID").value.trim(),
     address: document.getElementById("advAddress").value.trim()
   };
 
@@ -544,7 +590,7 @@ function searchInvoice() {
       <i class="fa-solid fa-circle-exclamation text-base"></i>
       <div>
         <p class="font-bold">No invoice found</p>
-        <p class="text-[11px] mt-0.5 opacity-90">Invoice number "<strong>${invInput}</strong>" does not exist in our active B2B billing records. Please check the number or contact support.</p>
+        <p class="text-[11px] mt-0.5 opacity-90">Invoice number "<strong>${invInput}</strong>" does not exist in our active B2B billing records.</p>
       </div>
     </div>
   `;
@@ -563,7 +609,7 @@ async function handleLogout() {
 }
 
 // ==========================================
-// 9. TAB SWITCHING & MENU HIGHLIGHT FIX
+// 9. TAB SWITCHING
 // ==========================================
 function switchTab(tabId) {
   document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
@@ -580,43 +626,8 @@ function switchTab(tabId) {
 }
 
 // ==========================================
-// 10. INTERFACE HELPERS & ANIMATIONS
+// 10. HELPERS & TOAST
 // ==========================================
-function flipCard(showSignup) {
-  const flipper = document.getElementById("cardFlipper");
-  if (flipper) {
-    if (showSignup) flipper.classList.add("rotate-y-180");
-    else flipper.classList.remove("rotate-y-180");
-  }
-}
-
-function togglePasswordVisibility(id, iconEl) {
-  const input = document.getElementById(id);
-  if (input) {
-    if (input.type === "password") {
-      input.type = "text";
-      iconEl.classList.replace("fa-eye", "fa-eye-slash");
-    } else {
-      input.type = "password";
-      iconEl.classList.replace("fa-eye-slash", "fa-eye");
-    }
-  }
-}
-
-function checkPasswordStrength(val) {
-  const bar = document.getElementById("strengthBar");
-  if (!bar) return;
-  let score = 0;
-  if (val.length >= 6) score += 33;
-  if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score += 33;
-  if (/[^A-Za-z0-9]/.test(val)) score += 34;
-
-  bar.style.width = score + "%";
-  if (score <= 33) bar.className = "h-full bg-red-500 transition-all duration-300";
-  else if (score <= 66) bar.className = "h-full bg-yellow-500 transition-all duration-300";
-  else bar.className = "h-full bg-emerald-500 transition-all duration-300";
-}
-
 function showToast(message, type = "info") {
   const toast = document.getElementById("toast");
   const icon = document.getElementById("toastIcon");
@@ -642,50 +653,4 @@ function showToast(message, type = "info") {
     toast.classList.add("translate-x-full");
     setTimeout(() => toast.classList.add("hidden"), 300);
   }, 4000);
-}
-
-// Canvas Wave Animation
-const canvas = document.getElementById("threadCanvas");
-if (canvas) {
-  const ctx = canvas.getContext("2d");
-  let width, height;
-
-  function resizeCanvas() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  }
-  window.addEventListener("resize", resizeCanvas);
-  resizeCanvas();
-
-  const threads = Array.from({ length: 14 }, () => ({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    length: 120 + Math.random() * 180,
-    speed: 0.4 + Math.random() * 0.6,
-    color: Math.random() > 0.5 ? "rgba(32, 82, 82, 0.15)" : "rgba(0, 212, 255, 0.2)"
-  }));
-
-  function animateBackground() {
-    ctx.clearRect(0, 0, width, height);
-
-    threads.forEach(t => {
-      t.y -= t.speed;
-      if (t.y < -t.length) t.y = height + t.length;
-
-      ctx.beginPath();
-      ctx.moveTo(t.x, t.y);
-      ctx.quadraticCurveTo(
-        t.x + Math.sin(t.y * 0.02) * 25,
-        t.y - t.length / 2,
-        t.x + Math.cos(t.y * 0.02) * 20,
-        t.y - t.length
-      );
-      ctx.strokeStyle = t.color;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    });
-
-    requestAnimationFrame(animateBackground);
-  }
-  animateBackground();
 }
