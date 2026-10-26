@@ -56,26 +56,26 @@
     .spin-slow { animation: spinSlow 18s linear infinite; }
     
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .animate-fade-in { animation: fadeIn 0.35s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
 
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Light Theme Card & Menu Styling */
     .light-card {
       background: #FFFFFF;
       border: 1px solid #E2E8F0;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     }
 
+    /* Smooth Animated Menu Buttons */
     .menu-btn {
       position: relative;
       background: #F8FAFC;
       border: 1px solid #E2E8F0;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s ease-in-out;
       overflow: hidden;
       color: #475569;
     }
@@ -85,10 +85,10 @@
       left: 0;
       top: 0;
       height: 100%;
-      width: 3.5px;
+      width: 4px;
       background: #205252;
       transform: scaleY(0);
-      transition: transform 0.25s ease;
+      transition: transform 0.2s ease-in-out;
     }
     .menu-btn:hover {
       background: #F0FDF4;
@@ -100,14 +100,18 @@
       transform: scaleY(1);
     }
     .menu-btn.active-menu {
-      background: #205252;
-      border-color: #205252;
-      color: #FFFFFF;
-      box-shadow: 0 4px 12px rgba(32, 82, 82, 0.25);
+      background: #205252 !important;
+      border-color: #205252 !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 4px 14px rgba(32, 82, 82, 0.3);
     }
     .menu-btn.active-menu::before {
-      transform: scaleY(1);
-      background: #00D4FF;
+      transform: scaleY(1) !important;
+      background: #00D4FF !important;
+    }
+    .menu-btn.active-menu .menu-icon-box {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: #00D4FF !important;
     }
   </style>
 
@@ -148,19 +152,21 @@
     </div>
   </div>
 
-  <!-- FULL SCREEN CONTAINER (Edge-to-Edge Light Theme) -->
+  <!-- FULL SCREEN CONTAINER -->
   <div class="w-full min-h-screen flex flex-col z-10 relative">
 
-    <!-- TOP PROFILE BANNER (Matching Login Theme Gradient) -->
+    <!-- TOP PROFILE BANNER (Fully Aligned for Mobile & Desktop) -->
     <div class="w-full bg-gradient-to-r from-brandGreen via-slate-900 to-brandGreen px-4 sm:px-12 py-6 sm:py-8 text-white relative overflow-hidden shadow-md">
       <svg class="absolute right-0 top-0 h-full opacity-10 spin-slow pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
         <circle cx="50" cy="50" r="45" stroke-width="2" stroke-dasharray="4,4"/>
         <circle cx="50" cy="50" r="30" stroke-width="1.5"/>
       </svg>
 
-      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between relative z-10 gap-5">
-        <div class="flex items-center space-x-4 sm:space-x-6 w-full sm:w-auto text-center sm:text-left">
-          <div class="relative shrink-0 mx-auto sm:mx-0">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center sm:items-start justify-between relative z-10 gap-5 text-center sm:text-left">
+        
+        <!-- Profile Identity Group (Avatar + Name/Company) -->
+        <div class="flex flex-col sm:flex-row items-center sm:items-center space-y-3 sm:space-y-0 sm:space-x-5 w-full sm:w-auto">
+          <div class="relative shrink-0">
             <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-brandCyan to-brandGreen p-1 shadow-lg">
               <div class="w-full h-full bg-slate-950 rounded-xl flex items-center justify-center font-montserrat font-extrabold text-xl sm:text-2xl text-brandCyan" id="profileInitials">
                 ---
@@ -170,59 +176,60 @@
           </div>
           <div class="overflow-hidden">
             <div class="flex items-center justify-center sm:justify-start space-x-2">
-              <h1 id="dispFullName" class="font-montserrat font-extrabold text-xl sm:text-3xl text-white truncate">---</h1>
-              <i class="fa-solid fa-circle-check text-brandCyan text-base shrink-0"></i>
+              <h1 id="dispFullName" class="font-montserrat font-extrabold text-xl sm:text-2xl text-white truncate max-w-[260px] sm:max-w-none">---</h1>
+              <i class="fa-solid fa-circle-check text-brandCyan text-sm sm:text-base shrink-0"></i>
             </div>
-            <p id="dispCompanyName" class="text-brandCyan font-semibold text-xs sm:text-sm mt-0.5 truncate">---</p>
+            <p id="dispCompanyName" class="text-brandCyan font-semibold text-xs sm:text-sm mt-0.5 truncate max-w-[260px] sm:max-w-none">---</p>
             <p class="text-xs text-gray-200 mt-1 flex items-center justify-center sm:justify-start"><i class="fa-solid fa-phone mr-1.5 text-brandCyan"></i><span id="dispPhone">---</span></p>
           </div>
         </div>
 
-        <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-700/60 gap-3">
-          <!-- Clickable Account ID Badge -->
-          <div onclick="openQRModal()" class="bg-slate-800/80 hover:bg-slate-800 cursor-pointer backdrop-blur px-4 py-2 rounded-xl border border-slate-700 text-left sm:text-right transition-all group shadow" title="Click to view QR Code">
+        <!-- Account ID & Logout Actions -->
+        <div class="flex flex-col sm:flex-row md:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-700/60 gap-3">
+          <div onclick="openQRModal()" class="bg-slate-800/80 hover:bg-slate-800 cursor-pointer backdrop-blur px-4 py-2 rounded-xl border border-slate-700 text-left sm:text-right transition-all group shadow w-full sm:w-auto" title="Click to view QR Code">
             <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold flex items-center justify-between sm:justify-end gap-1.5">
               <span>Account ID</span>
               <i class="fa-solid fa-qrcode text-brandCyan text-xs"></i>
             </p>
-            <p id="dispUID" class="font-mono text-xs text-brandCyan font-bold tracking-wider truncate max-w-[140px] sm:max-w-none group-hover:underline">--------------------</p>
+            <p id="dispUID" class="font-mono text-xs text-brandCyan font-bold tracking-wider truncate max-w-[180px] sm:max-w-none group-hover:underline">--------------------</p>
           </div>
-          <button onclick="handleLogout()" class="px-4 py-2.5 bg-red-500/20 hover:bg-red-500 text-red-100 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-2 border border-red-500/30 shadow">
+          <button onclick="handleLogout()" class="w-full sm:w-auto px-4 py-2.5 bg-red-500/20 hover:bg-red-500 text-red-100 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-2 border border-red-500/30 shadow">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>Logout</span>
           </button>
         </div>
+
       </div>
     </div>
 
-    <!-- DASHBOARD CONTENT & NAVIGATION WRAPPER (Full Screen Grid) -->
+    <!-- MAIN DASHBOARD CONTENT & NAVIGATION -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
       
       <!-- SIDEBAR MENU NAVIGATION (Mobile Horizontal Scroll / Desktop Vertical Stack) -->
       <aside class="md:col-span-3 w-full flex md:flex-col overflow-x-auto no-scrollbar space-x-2 md:space-x-0 md:space-y-3 shrink-0 pb-2 md:pb-0 snap-x">
         <button onclick="switchTab('overviewTab')" id="btn-overviewTab" class="menu-btn active-menu shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
-          <div class="w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen"><i class="fa-solid fa-chart-pie"></i></div>
+          <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-chart-pie"></i></div>
           <span>Overview</span>
         </button>
         <button onclick="switchTab('editProfileTab')" id="btn-editProfileTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
-          <div class="w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen"><i class="fa-solid fa-user-pen"></i></div>
+          <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-user-pen"></i></div>
           <span>Edit Profile</span>
         </button>
         <button onclick="switchTab('advanceTab')" id="btn-advanceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
-          <div class="w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen"><i class="fa-solid fa-file-invoice"></i></div>
+          <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-file-invoice"></i></div>
           <span>Advance Detail</span>
         </button>
         <button onclick="switchTab('invoiceTab')" id="btn-invoiceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
-          <div class="w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen"><i class="fa-solid fa-receipt"></i></div>
+          <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-receipt"></i></div>
           <span>Invoice Lookup</span>
         </button>
         <button onclick="switchTab('appsTab')" id="btn-appsTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
-          <div class="w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen"><i class="fa-solid fa-globe"></i></div>
+          <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-globe"></i></div>
           <span>Apps</span>
         </button>
       </aside>
 
-      <!-- MAIN DYNAMIC CONTENT PANEL (Light Theme Card) -->
+      <!-- MAIN DYNAMIC CONTENT PANEL -->
       <section class="md:col-span-9 light-card rounded-3xl p-5 sm:p-8 relative overflow-hidden min-h-[500px]">
 
         <!-- 1. OVERVIEW TAB -->
