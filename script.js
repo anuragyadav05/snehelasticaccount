@@ -112,9 +112,11 @@ async function handleSignup(e) {
     await user.updateProfile({ displayName: name });
 
     showToast("Account created successfully! Redirecting...", "success");
+    
+    // Explicit redirection to profile.html after successful signup
     setTimeout(() => {
       window.location.href = "profile.html";
-    }, 1000);
+    }, 800);
   } catch (err) {
     showToast(err.message, "error");
     if (btn) {
@@ -139,7 +141,22 @@ async function handleLogin(e) {
   }
 
   try {
-    await auth.signInWithEmailAndPassword(email, password);
+    const res = await auth.signInWithEmailAndPassword(email, password);
+    
+    // Check if 2FA is enabled before redirecting
+    const user = res.user;
+    const doc = await db.collection("users").doc(user.uid).get();
+    let is2FAActive = false;
+    if (doc.exists && doc.data().is2FAEnabled && doc.data().customPin) {
+      is2FAActive = true;
+    }
+
+    if (!is2FAActive || sessionStorage.getItem("2fa_passed_" + user.uid)) {
+      showToast("Sign in successful! Redirecting...", "success");
+      setTimeout(() => {
+        window.location.href = "profile.html";
+      }, 600);
+    }
   } catch (err) {
     showToast(err.message, "error");
     if (btn) {
