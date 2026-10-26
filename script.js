@@ -53,7 +53,7 @@ auth.onAuthStateChanged(async (user) => {
 
     // If logged in and on index/root, redirect to profile.html
     if (isAuthPage && !isProfilePage) {
-      window.location.href = "profile.html";
+      window.location.replace("profile.html");
       return;
     }
 
@@ -64,7 +64,7 @@ auth.onAuthStateChanged(async (user) => {
   } else {
     // If NOT logged in and trying to access profile.html, redirect to index.html
     if (isProfilePage) {
-      window.location.href = "index.html";
+      window.location.replace("index.html");
       return;
     }
   }
@@ -113,10 +113,8 @@ async function handleSignup(e) {
 
     showToast("Account created successfully! Redirecting...", "success");
     
-    // Explicit redirection to profile.html after successful signup
-    setTimeout(() => {
-      window.location.href = "profile.html";
-    }, 800);
+    // Immediate and explicit redirection
+    window.location.replace("profile.html");
   } catch (err) {
     showToast(err.message, "error");
     if (btn) {
@@ -142,9 +140,9 @@ async function handleLogin(e) {
 
   try {
     const res = await auth.signInWithEmailAndPassword(email, password);
-    
-    // Check if 2FA is enabled before redirecting
     const user = res.user;
+
+    // Check if 2FA is active
     const doc = await db.collection("users").doc(user.uid).get();
     let is2FAActive = false;
     if (doc.exists && doc.data().is2FAEnabled && doc.data().customPin) {
@@ -153,9 +151,7 @@ async function handleLogin(e) {
 
     if (!is2FAActive || sessionStorage.getItem("2fa_passed_" + user.uid)) {
       showToast("Sign in successful! Redirecting...", "success");
-      setTimeout(() => {
-        window.location.href = "profile.html";
-      }, 600);
+      window.location.replace("profile.html");
     }
   } catch (err) {
     showToast(err.message, "error");
@@ -190,7 +186,7 @@ async function handleGoogleSignIn() {
         advanceDetails: { gstin: "", cin: "", pan: "", address: "Sector 1 DSIIDC Delhi" }
       });
     }
-    window.location.href = "profile.html";
+    window.location.replace("profile.html");
   } catch (err) {
     showToast("Google Auth: " + err.message, "info");
   }
@@ -200,7 +196,7 @@ async function handleAppleSignIn() {
   const provider = new firebase.auth.OAuthProvider('apple.com');
   try {
     await auth.signInWithPopup(provider);
-    window.location.href = "profile.html";
+    window.location.replace("profile.html");
   } catch (err) {
     showToast("Apple Auth: " + err.message, "info");
   }
@@ -220,7 +216,7 @@ async function verify2FAOTP() {
       document.getElementById("otpModal").classList.add("hidden");
       document.getElementById("otpInput").value = "";
       showToast("2-Step Verification passed!", "success");
-      window.location.href = "profile.html";
+      window.location.replace("profile.html");
     } else {
       showToast("Invalid 4-digit PIN code.", "error");
     }
@@ -495,9 +491,7 @@ async function handleLogout() {
     if (user) sessionStorage.removeItem("2fa_passed_" + user.uid);
     await auth.signOut();
     showToast("Logged out successfully.", "info");
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 600);
+    window.location.replace("index.html");
   } catch (err) {
     showToast(err.message, "error");
   }
