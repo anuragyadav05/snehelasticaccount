@@ -70,44 +70,29 @@
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     }
 
-    /* Smooth Animated Menu Buttons */
+    /* Redesigned Futuristic Menu Style & Animation */
     .menu-btn {
       position: relative;
-      background: #F8FAFC;
+      background: #FFFFFF;
       border: 1px solid #E2E8F0;
-      transition: all 0.25s ease-in-out;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       overflow: hidden;
       color: #475569;
-    }
-    .menu-btn::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      width: 4px;
-      background: #205252;
-      transform: scaleY(0);
-      transition: transform 0.2s ease-in-out;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     }
     .menu-btn:hover {
       background: #F0FDF4;
-      border-color: #CBD5E1;
+      border-color: #205252;
       color: #205252;
-      transform: translateX(3px);
-    }
-    .menu-btn:hover::before {
-      transform: scaleY(1);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(32, 82, 82, 0.1);
     }
     .menu-btn.active-menu {
       background: #205252 !important;
       border-color: #205252 !important;
       color: #FFFFFF !important;
-      box-shadow: 0 4px 14px rgba(32, 82, 82, 0.3);
-    }
-    .menu-btn.active-menu::before {
-      transform: scaleY(1) !important;
-      background: #00D4FF !important;
+      box-shadow: 0 8px 20px rgba(32, 82, 82, 0.3);
+      transform: translateY(-2px);
     }
     .menu-btn.active-menu .menu-icon-box {
       background: rgba(255, 255, 255, 0.2) !important;
@@ -207,23 +192,27 @@
       
       <!-- SIDEBAR MENU NAVIGATION (Mobile Horizontal Scroll / Desktop Vertical Stack) -->
       <aside class="md:col-span-3 w-full flex md:flex-col overflow-x-auto no-scrollbar space-x-2 md:space-x-0 md:space-y-3 shrink-0 pb-2 md:pb-0 snap-x">
-        <button onclick="switchTab('overviewTab')" id="btn-overviewTab" class="menu-btn active-menu shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button onclick="switchTab('overviewTab')" id="btn-overviewTab" class="menu-btn active-menu shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-chart-pie"></i></div>
           <span>Overview</span>
         </button>
-        <button onclick="switchTab('editProfileTab')" id="btn-editProfileTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button onclick="switchTab('editProfileTab')" id="btn-editProfileTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-user-pen"></i></div>
           <span>Edit Profile</span>
         </button>
-        <button onclick="switchTab('advanceTab')" id="btn-advanceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button onclick="switchTab('advanceTab')" id="btn-advanceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-file-invoice"></i></div>
           <span>Advance Detail</span>
         </button>
-        <button onclick="switchTab('invoiceTab')" id="btn-invoiceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button onclick="switchTab('invoiceTab')" id="btn-invoiceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-receipt"></i></div>
           <span>Invoice Lookup</span>
         </button>
-        <button onclick="switchTab('appsTab')" id="btn-appsTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button onclick="switchTab('accountSettingTab')" id="btn-accountSettingTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+          <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-gear"></i></div>
+          <span>Account Setting</span>
+        </button>
+        <button onclick="switchTab('appsTab')" id="btn-appsTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-globe"></i></div>
           <span>Apps</span>
         </button>
@@ -268,8 +257,8 @@
         <!-- 2. EDIT PROFILE TAB -->
         <div id="editProfileTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
           <div class="border-b border-gray-200 pb-4">
-            <h2 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Edit Profile & Security</h2>
-            <p class="text-xs text-gray-500">Update primary contact details and configure custom 4-digit 2FA security.</p>
+            <h2 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Edit Profile</h2>
+            <p class="text-xs text-gray-500">Update your primary contact and business details.</p>
           </div>
 
           <form id="editProfileForm" class="space-y-5">
@@ -287,40 +276,6 @@
             <div>
               <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">Phone Number</label>
               <input type="tel" id="editPhone" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm text-gray-900 font-semibold">
-            </div>
-
-            <div class="p-5 border border-brandGreen/20 rounded-2xl bg-gray-50 space-y-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div class="p-2.5 bg-brandGreen text-white rounded-xl shadow">
-                    <i class="fa-solid fa-shield-halved text-base sm:text-lg"></i>
-                  </div>
-                  <div>
-                    <h3 class="font-bold text-xs sm:text-sm text-brandGreen">2-Step Verification (4-Digit PIN)</h3>
-                    <p class="text-[11px] text-gray-500">Require 4-digit PIN on every login.</p>
-                  </div>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
-                  <input type="checkbox" id="twoFactorToggle" onchange="toggle2FAState(this.checked)" class="sr-only peer">
-                  <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brandGreen"></div>
-                </label>
-              </div>
-
-              <div id="pinSetupContainer" class="hidden space-y-3 pt-3 border-t border-gray-200">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Create 4-Digit PIN</label>
-                    <input type="password" id="setupPin" maxlength="4" placeholder="••••" class="w-full text-center tracking-[0.5em] font-mono font-bold text-lg py-2.5 bg-white border border-gray-200 rounded-xl focus:border-brandGreen outline-none text-gray-900">
-                  </div>
-                  <div>
-                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Confirm 4-Digit PIN</label>
-                    <input type="password" id="confirmPin" maxlength="4" placeholder="••••" class="w-full text-center tracking-[0.5em] font-mono font-bold text-lg py-2.5 bg-white border border-gray-200 rounded-xl focus:border-brandGreen outline-none text-gray-900">
-                  </div>
-                </div>
-                <button type="button" onclick="saveCustomPin()" class="w-full py-2.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow transition-all">
-                  Save 4-Digit PIN
-                </button>
-              </div>
             </div>
 
             <button type="button" onclick="saveProfileEditsDirect()" id="btnSaveProfile" class="w-full sm:w-auto px-8 py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center justify-center space-x-2">
@@ -387,7 +342,102 @@
           <div id="invoiceResultContainer" class="hidden p-4 rounded-2xl border text-xs sm:text-sm font-medium"></div>
         </div>
 
-        <!-- 5. APPS TAB -->
+        <!-- 5. ACCOUNT SETTING TAB -->
+        <div id="accountSettingTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
+          <div class="border-b border-gray-200 pb-4">
+            <h2 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Account Settings & Security</h2>
+            <p class="text-xs text-gray-500">Manage credentials, 2FA security, region, language, and account status.</p>
+          </div>
+
+          <div class="space-y-5">
+            <!-- Credentials Reset & Deletion Actions -->
+            <div class="p-5 border border-gray-200 rounded-2xl bg-gray-50 space-y-4">
+              <h3 class="font-montserrat font-bold text-xs text-brandGreen uppercase tracking-widest">Security & Credentials</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button type="button" onclick="handleResetPassword()" class="py-3 px-4 bg-white hover:bg-brandGreen hover:text-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 transition-all shadow-sm flex items-center justify-center space-x-2">
+                  <i class="fa-solid fa-key"></i>
+                  <span>Reset Password</span>
+                </button>
+                <button type="button" onclick="handleResetEmail()" class="py-3 px-4 bg-white hover:bg-brandGreen hover:text-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 transition-all shadow-sm flex items-center justify-center space-x-2">
+                  <i class="fa-solid fa-envelope"></i>
+                  <span>Reset Email</span>
+                </button>
+                <button type="button" onclick="handleDeleteAccount()" class="py-3 px-4 bg-red-50 hover:bg-red-600 hover:text-white border border-red-200 rounded-xl text-xs font-bold text-red-600 transition-all shadow-sm flex items-center justify-center space-x-2">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Delete Account</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2-Step Verification Section -->
+            <div class="p-5 border-2 border-brandGreen/20 rounded-2xl bg-gray-50 space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="p-2.5 bg-brandGreen text-white rounded-xl shadow">
+                    <i class="fa-solid fa-shield-halved text-base"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-xs sm:text-sm text-brandGreen">2-Step Verification (4-Digit PIN)</h3>
+                    <p class="text-[11px] text-gray-500">Require 4-digit PIN on every login.</p>
+                  </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
+                  <input type="checkbox" id="twoFactorToggle" onchange="toggle2FAState(this.checked)" class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brandGreen"></div>
+                </label>
+              </div>
+
+              <div id="pinSetupContainer" class="hidden space-y-3 pt-3 border-t border-gray-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Create 4-Digit PIN</label>
+                    <input type="password" id="setupPin" maxlength="4" placeholder="••••" class="w-full text-center tracking-[0.5em] font-mono font-bold text-lg py-2.5 bg-white border border-gray-200 rounded-xl focus:border-brandGreen outline-none text-gray-900">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Confirm 4-Digit PIN</label>
+                    <input type="password" id="confirmPin" maxlength="4" placeholder="••••" class="w-full text-center tracking-[0.5em] font-mono font-bold text-lg py-2.5 bg-white border border-gray-200 rounded-xl focus:border-brandGreen outline-none text-gray-900">
+                  </div>
+                </div>
+                <button type="button" onclick="saveCustomPin()" class="w-full py-2.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow transition-all">
+                  Save 4-Digit PIN
+                </button>
+              </div>
+            </div>
+
+            <!-- Region & Language Selectors -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Region -->
+              <div class="p-4 border border-gray-200 rounded-2xl bg-gray-50 space-y-2">
+                <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider">Region</label>
+                <select class="w-full p-3 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 outline-none cursor-pointer">
+                  <option value="IN" selected>India (Active)</option>
+                  <option value="GLOBAL" disabled>Global (Coming Soon)</option>
+                </select>
+                <p class="text-[10px] text-gray-400">Default operational region: India.</p>
+              </div>
+
+              <!-- Language -->
+              <div class="p-4 border border-gray-200 rounded-2xl bg-gray-50 space-y-2">
+                <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider">Language</label>
+                <select class="w-full p-3 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 outline-none cursor-pointer">
+                  <option value="EN" selected>English (Active)</option>
+                  <option value="HI" disabled>हिन्दी - Hindi (Coming Soon)</option>
+                  <option value="BN" disabled>বাংলা - Bengali (Coming Soon)</option>
+                  <option value="MR" disabled>मराठी - Marathi (Coming Soon)</option>
+                  <option value="GU" disabled>ગુજરાતી - Gujarati (Coming Soon)</option>
+                  <option value="TA" disabled>தமிழ் - Tamil (Coming Soon)</option>
+                  <option value="TE" disabled>తెలుగు - Telugu (Coming Soon)</option>
+                  <option value="KN" disabled>ಕನ್ನಡ - Kannada (Coming Soon)</option>
+                  <option value="ML" disabled>മലയാളം - Malayalam (Coming Soon)</option>
+                  <option value="PA" disabled>ਪੰਜਾਬੀ - Punjabi (Coming Soon)</option>
+                </select>
+                <p class="text-[10px] text-gray-400">Regional Indian languages are currently locked.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. APPS TAB -->
         <div id="appsTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
           <div class="border-b border-gray-200 pb-4">
             <h2 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Sneh Elastic Web Apps</h2>
