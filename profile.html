@@ -40,21 +40,80 @@
       -ms-text-size-adjust: 100%;
       user-select: none;
       -webkit-user-select: none;
+      background-color: #07091B;
+      color: #E2E8F0;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
+
     @keyframes spinSlow {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
-    .spin-slow { animation: spinSlow 14s linear infinite; }
-
+    .spin-slow { animation: spinSlow 18s linear infinite; }
+    
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .animate-fade-in { animation: fadeIn 0.35s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Glassmorphism Full Screen Theme */
+    .glass-bg {
+      background: rgba(13, 17, 57, 0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0, 212, 255, 0.15);
+    }
+    
+    .glass-card {
+      background: rgba(13, 17, 57, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 212, 255, 0.15);
+    }
+
+    /* Animated Menu Buttons */
+    .menu-btn {
+      position: relative;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+    .menu-btn::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 3px;
+      background: #00D4FF;
+      transform: scaleY(0);
+      transition: transform 0.3s ease;
+    }
+    .menu-btn:hover {
+      background: rgba(0, 212, 255, 0.08);
+      border-color: rgba(0, 212, 255, 0.3);
+      transform: translateX(4px);
+    }
+    .menu-btn:hover::before {
+      transform: scaleY(1);
+    }
+    .menu-btn.active-menu {
+      background: linear-gradient(135deg, rgba(32, 82, 82, 0.95), rgba(13, 17, 57, 0.95));
+      border-color: #00D4FF;
+      box-shadow: 0 0 25px rgba(0, 212, 255, 0.25);
+    }
+    .menu-btn.active-menu::before {
+      transform: scaleY(1);
+    }
   </style>
 
   <!-- Firebase SDKs -->
@@ -62,344 +121,343 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-slate-100 font-sans text-gray-800 antialiased min-h-screen relative flex items-center justify-center p-2 sm:p-6 overflow-x-hidden">
+<body class="font-sans antialiased flex flex-col min-h-screen selection:bg-brandCyan selection:text-brandNavy">
 
-  <!-- Background Canvas (Same as Login Page) -->
-  <canvas id="threadCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+  <!-- Background Animated Canvas (Matches Login Theme) -->
+  <canvas id="threadCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-35"></canvas>
 
   <!-- Notification Toast -->
-  <div id="toast" class="fixed top-4 right-4 z-50 transform translate-x-full transition-transform duration-300 flex items-center p-3 sm:p-4 rounded-2xl shadow-2xl text-white max-w-sm hidden">
-    <div id="toastIcon" class="mr-3 text-lg"></div>
+  <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 flex items-center p-4 rounded-2xl shadow-2xl text-white max-w-sm hidden border border-cyan-500/30 bg-slate-900/95 backdrop-blur-xl">
+    <div id="toastIcon" class="mr-3 text-lg text-brandCyan"></div>
     <div id="toastMessage" class="text-xs sm:text-sm font-semibold"></div>
   </div>
 
   <!-- QR CODE ACCOUNT ID MODAL -->
-  <div id="qrModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white max-w-sm w-full rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 text-center space-y-4">
-      <div class="w-12 h-12 bg-brandCyan/10 text-brandGreen rounded-xl flex items-center justify-center mx-auto text-xl">
-        <i class="fa-solid fa-qrcode text-brandGreen"></i>
+  <div id="qrModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-lg z-50 hidden flex items-center justify-center p-4 animate-fade-in">
+    <div class="glass-card max-w-sm w-full rounded-3xl p-6 sm:p-8 text-center space-y-5 shadow-2xl border border-brandCyan/30">
+      <div class="w-14 h-14 bg-brandCyan/10 text-brandCyan rounded-2xl flex items-center justify-center mx-auto text-2xl border border-brandCyan/20 shadow-[0_0_15px_rgba(0,212,255,0.2)]">
+        <i class="fa-solid fa-qrcode"></i>
       </div>
       <div>
-        <h3 class="font-montserrat font-bold text-lg text-brandGreen">Account ID & QR Code</h3>
-        <p class="text-[11px] text-gray-500 mt-0.5">Scan or copy your secure B2B identity reference.</p>
+        <h3 class="font-montserrat font-bold text-lg text-white">Account ID & QR Code</h3>
+        <p class="text-[11px] text-gray-400 mt-1">Scan or copy your secure B2B identity reference.</p>
       </div>
-      <div id="qrcodeContainer" class="p-3 bg-gray-50 border border-gray-200 rounded-2xl flex items-center justify-center"></div>
+      <div id="qrcodeContainer" class="p-4 bg-white rounded-2xl flex items-center justify-center shadow-inner mx-auto w-fit"></div>
       <div>
-        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Full Unique ID</p>
-        <p id="modalFullUID" class="font-mono text-xs text-brandGreen font-bold break-all mt-1 bg-gray-100 p-2 rounded-lg"></p>
+        <p class="text-[10px] text-brandCyan uppercase font-bold tracking-widest">Full Unique ID</p>
+        <p id="modalFullUID" class="font-mono text-xs text-gray-300 font-bold break-all mt-1 bg-black/40 p-2.5 rounded-xl border border-white/10"></p>
       </div>
-      <button onclick="closeQRModal()" class="w-full py-2.5 bg-slate-900 text-white font-montserrat font-bold text-xs rounded-full shadow transition-all">
-        CLOSE
+      <button onclick="closeQRModal()" class="w-full py-3 bg-gradient-to-r from-brandGreen to-brandCyan hover:opacity-90 text-white font-montserrat font-bold text-xs rounded-xl shadow-lg transition-all">
+        CLOSE MODAL
       </button>
     </div>
   </div>
 
-  <!-- MAIN APP WRAPPER -->
-  <div class="w-full max-w-5xl z-10 my-auto">
+  <!-- FULL SCREEN CONTAINER (Edge-to-Edge) -->
+  <div class="w-full min-h-screen flex flex-col z-10 relative">
 
-    <!-- PROFILE DASHBOARD SECTION (No Top Header Bar) -->
-    <div id="profileSection" class="w-full bg-white border border-gray-200 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-500">
+    <!-- TOP PROFILE BANNER (No Top Header Bar, Integrated Profile Info & Initials) -->
+    <div class="w-full bg-gradient-to-r from-brandGreen via-slate-950 to-brandGreen px-4 sm:px-12 py-6 sm:py-8 text-white relative overflow-hidden border-b border-white/10 shadow-xl">
+      <svg class="absolute right-0 top-0 h-full opacity-10 spin-slow pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <circle cx="50" cy="50" r="45" stroke-width="2" stroke-dasharray="4,4"/>
+        <circle cx="50" cy="50" r="30" stroke-width="1.5"/>
+      </svg>
+
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between relative z-10 gap-5">
+        <div class="flex items-center space-x-4 sm:space-x-6 w-full sm:w-auto text-center sm:text-left">
+          <div class="relative shrink-0 mx-auto sm:mx-0">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-brandCyan to-brandGreen p-1 shadow-[0_0_20px_rgba(0,212,255,0.3)]">
+              <div class="w-full h-full bg-slate-950 rounded-xl flex items-center justify-center font-montserrat font-extrabold text-xl sm:text-2xl text-brandCyan" id="profileInitials">
+                ---
+              </div>
+            </div>
+            <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-slate-950 rounded-full animate-pulse"></span>
+          </div>
+          <div class="overflow-hidden">
+            <div class="flex items-center justify-center sm:justify-start space-x-2">
+              <h1 id="dispFullName" class="font-montserrat font-extrabold text-xl sm:text-3xl text-white truncate">---</h1>
+              <i class="fa-solid fa-circle-check text-brandCyan text-base shrink-0"></i>
+            </div>
+            <p id="dispCompanyName" class="text-brandCyan font-semibold text-xs sm:text-sm mt-0.5 truncate">---</p>
+            <p class="text-xs text-gray-300 mt-1 flex items-center justify-center sm:justify-start"><i class="fa-solid fa-phone mr-1.5 text-brandCyan"></i><span id="dispPhone">---</span></p>
+          </div>
+        </div>
+
+        <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-white/10 gap-3">
+          <!-- Clickable Account ID Badge -->
+          <div onclick="openQRModal()" class="bg-slate-900/80 hover:bg-slate-900 cursor-pointer backdrop-blur px-4 py-2 rounded-xl border border-brandCyan/30 text-left sm:text-right transition-all group shadow-lg" title="Click to view QR Code">
+            <p class="text-[10px] text-brandCyan uppercase tracking-widest font-semibold flex items-center justify-between sm:justify-end gap-1.5">
+              <span>Account ID</span>
+              <i class="fa-solid fa-qrcode text-xs"></i>
+            </p>
+            <p id="dispUID" class="font-mono text-xs text-gray-300 font-bold tracking-wider truncate max-w-[140px] sm:max-w-none group-hover:underline">--------------------</p>
+          </div>
+          <button onclick="handleLogout()" class="px-4 py-2.5 bg-red-500/20 hover:bg-red-500 text-red-200 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-2 border border-red-500/30 shadow">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD CONTENT & NAVIGATION WRAPPER (Full Screen Grid) -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
       
-      <!-- Top Profile Banner with First & Last Name Initials Badge -->
-      <div class="bg-gradient-to-r from-brandGreen via-slate-900 to-brandGreen p-4 sm:p-8 text-white relative overflow-hidden">
-        <svg class="absolute right-0 top-0 h-full opacity-10 spin-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+      <!-- SIDEBAR MENU NAVIGATION (Mobile Horizontal Scroll / Desktop Vertical Stack) -->
+      <aside class="md:col-span-3 w-full flex md:flex-col overflow-x-auto no-scrollbar space-x-2 md:space-x-0 md:space-y-3 shrink-0 pb-2 md:pb-0 snap-x">
+        <button onclick="switchTab('overviewTab')" id="btn-overviewTab" class="menu-btn active-menu shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3 text-white">
+          <div class="w-8 h-8 rounded-xl bg-brandCyan/10 flex items-center justify-center text-brandCyan"><i class="fa-solid fa-chart-pie"></i></div>
+          <span>Overview</span>
+        </button>
+        <button onclick="switchTab('editProfileTab')" id="btn-editProfileTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3 text-gray-300">
+          <div class="w-8 h-8 rounded-xl bg-brandCyan/10 flex items-center justify-center text-brandCyan"><i class="fa-solid fa-user-pen"></i></div>
+          <span>Edit Profile</span>
+        </button>
+        <button onclick="switchTab('advanceTab')" id="btn-advanceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3 text-gray-300">
+          <div class="w-8 h-8 rounded-xl bg-brandCyan/10 flex items-center justify-center text-brandCyan"><i class="fa-solid fa-file-invoice"></i></div>
+          <span>Advance Detail</span>
+        </button>
+        <button onclick="switchTab('invoiceTab')" id="btn-invoiceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3 text-gray-300">
+          <div class="w-8 h-8 rounded-xl bg-brandCyan/10 flex items-center justify-center text-brandCyan"><i class="fa-solid fa-receipt"></i></div>
+          <span>Invoice Lookup</span>
+        </button>
+        <button onclick="switchTab('appsTab')" id="btn-appsTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3 text-gray-300">
+          <div class="w-8 h-8 rounded-xl bg-brandCyan/10 flex items-center justify-center text-brandCyan"><i class="fa-solid fa-globe"></i></div>
+          <span>Apps</span>
+        </button>
+      </aside>
+
+      <!-- MAIN DYNAMIC CONTENT PANEL -->
+      <section class="md:col-span-9 glass-card rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden min-h-[500px] border border-white/10">
+        <svg class="absolute -right-20 -bottom-20 w-80 h-80 opacity-5 spin-slow pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
           <circle cx="50" cy="50" r="45" stroke-width="2" stroke-dasharray="4,4"/>
           <circle cx="50" cy="50" r="30" stroke-width="1.5"/>
         </svg>
 
-        <div class="flex flex-col sm:flex-row items-center justify-between relative z-10 gap-4 sm:gap-6">
-          <div class="flex items-center space-x-3 sm:space-x-5 w-full sm:w-auto text-center sm:text-left">
-            <div class="relative shrink-0 mx-auto sm:mx-0">
-              <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-brandCyan to-brandGreen p-1 shadow-lg">
-                <div class="w-full h-full bg-slate-900 rounded-xl flex items-center justify-center font-montserrat font-extrabold text-xl sm:text-2xl text-brandCyan" id="profileInitials">
-                  ---
-                </div>
-              </div>
-              <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
+        <!-- 1. OVERVIEW TAB -->
+        <div id="overviewTab" class="tab-panel space-y-6 animate-fade-in relative z-10">
+          <div class="flex items-center justify-between border-b border-white/10 pb-4">
+            <div>
+              <h2 class="font-montserrat font-bold text-lg sm:text-xl text-white">B2B Account Summary</h2>
+              <p class="text-xs text-gray-400">Sneh Elastic Threads Manufacturing Network</p>
             </div>
-            <div class="overflow-hidden">
-              <div class="flex items-center justify-center sm:justify-start space-x-2">
-                <h2 id="dispFullName" class="font-montserrat font-extrabold text-lg sm:text-2xl text-white truncate">---</h2>
-                <i class="fa-solid fa-circle-check text-brandCyan text-sm sm:text-base shrink-0"></i>
-              </div>
-              <p id="dispCompanyName" class="text-brandCyan font-semibold text-xs sm:text-sm mt-0.5 truncate">---</p>
-              <p class="text-xs text-gray-300 mt-1 flex items-center justify-center sm:justify-start"><i class="fa-solid fa-phone mr-1.5"></i><span id="dispPhone">---</span></p>
-            </div>
+            <span class="px-3 py-1 bg-brandCyan/10 text-brandCyan border border-brandCyan/30 rounded-full text-xs font-bold shadow-[0_0_10px_rgba(0,212,255,0.15)]">Gold Partner</span>
           </div>
 
-          <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-700/50 gap-2">
-            <!-- Clickable Account ID Badge -->
-            <div onclick="openQRModal()" class="bg-slate-800/80 hover:bg-slate-800 cursor-pointer backdrop-blur px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl border border-slate-700 text-left sm:text-right transition-all group" title="Click to view QR Code">
-              <p class="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest font-semibold flex items-center justify-between sm:justify-end gap-1">
-                <span>Account ID</span>
-                <i class="fa-solid fa-qrcode text-brandCyan text-xs"></i>
-              </p>
-              <p id="dispUID" class="font-mono text-[11px] sm:text-xs text-brandCyan font-bold tracking-wider truncate max-w-[120px] sm:max-w-none group-hover:underline">--------------------</p>
+          <div class="p-5 sm:p-6 bg-slate-900/60 border border-white/10 rounded-2xl space-y-4 backdrop-blur-md">
+            <h3 class="font-montserrat font-bold text-xs text-brandCyan uppercase tracking-widest">Registered Corporate Details</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+              <div>
+                <span class="text-[11px] text-gray-400 block font-semibold">Primary Contact Name</span>
+                <span id="overviewName" class="font-semibold text-white">---</span>
+              </div>
+              <div>
+                <span class="text-[11px] text-gray-400 block font-semibold">Official Business</span>
+                <span id="overviewCompany" class="font-semibold text-white">---</span>
+              </div>
+              <div>
+                <span class="text-[11px] text-gray-400 block font-semibold">Registered Email</span>
+                <span id="overviewEmail" class="font-semibold text-white">---</span>
+              </div>
+              <div>
+                <span class="text-[11px] text-gray-400 block font-semibold">Phone Support</span>
+                <span id="overviewPhone" class="font-semibold text-white">---</span>
+              </div>
             </div>
-            <button onclick="handleLogout()" class="px-3.5 py-2 bg-red-500/20 hover:bg-red-500 text-red-200 hover:text-white rounded-full text-xs font-bold transition-all flex items-center space-x-1.5 border border-red-500/30">
-              <i class="fa-solid fa-right-from-bracket"></i>
-              <span>Logout</span>
-            </button>
           </div>
         </div>
-      </div>
 
-      <!-- Main Dashboard Grid Layout -->
-      <div class="grid grid-cols-1 md:grid-cols-4 min-h-[420px]">
-        
-        <!-- Sidebar Navigation Menu -->
-        <div class="bg-gray-50 border-b md:border-b-0 md:border-r border-gray-200 p-2 sm:p-4 flex md:flex-col overflow-x-auto no-scrollbar space-x-1.5 md:space-x-0 md:space-y-1.5 snap-x">
-          <button onclick="switchTab('overviewTab')" id="btn-overviewTab" class="nav-tab-btn active-tab shrink-0 snap-start text-left px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center space-x-2 transition-all bg-brandGreen text-white">
-            <i class="fa-solid fa-chart-pie w-4"></i>
-            <span>Overview</span>
-          </button>
-          <button onclick="switchTab('editProfileTab')" id="btn-editProfileTab" class="nav-tab-btn shrink-0 snap-start text-left px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-gray-600 hover:bg-white flex items-center space-x-2 transition-all">
-            <i class="fa-solid fa-user-pen text-brandGreen w-4"></i>
-            <span>Edit Profile</span>
-          </button>
-          <button onclick="switchTab('advanceTab')" id="btn-advanceTab" class="nav-tab-btn shrink-0 snap-start text-left px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-gray-600 hover:bg-white flex items-center space-x-2 transition-all">
-            <i class="fa-solid fa-file-invoice text-brandGreen w-4"></i>
-            <span>Advance Detail</span>
-          </button>
-          <button onclick="switchTab('invoiceTab')" id="btn-invoiceTab" class="nav-tab-btn shrink-0 snap-start text-left px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-gray-600 hover:bg-white flex items-center space-x-2 transition-all">
-            <i class="fa-solid fa-receipt text-brandGreen w-4"></i>
-            <span>Invoice Lookup</span>
-          </button>
-          <button onclick="switchTab('appsTab')" id="btn-appsTab" class="nav-tab-btn shrink-0 snap-start text-left px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-gray-600 hover:bg-white flex items-center space-x-2 transition-all">
-            <i class="fa-solid fa-globe text-brandGreen w-4"></i>
-            <span>Apps</span>
-          </button>
-        </div>
-
-        <!-- Tab Content Container -->
-        <div class="md:col-span-3 p-4 sm:p-8">
-          
-          <!-- OVERVIEW TAB -->
-          <div id="overviewTab" class="tab-panel space-y-4 sm:space-y-5 animate-fade-in">
-            <div class="flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 class="font-montserrat font-bold text-base sm:text-lg text-brandGreen">B2B Account Summary</h3>
-                <p class="text-[11px] text-gray-500">Sneh Elastic Threads Manufacturing Network</p>
-              </div>
-              <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold">Gold Partner</span>
-            </div>
-
-            <div class="p-4 border border-gray-200 rounded-2xl bg-white space-y-3">
-              <h4 class="font-montserrat font-bold text-xs text-brandGreen uppercase tracking-wider">Registered Corporate Details</h4>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
-                <div>
-                  <span class="text-[11px] text-gray-400 block font-semibold">Primary Contact Name</span>
-                  <span id="overviewName" class="font-semibold text-gray-800">---</span>
-                </div>
-                <div>
-                  <span class="text-[11px] text-gray-400 block font-semibold">Official Business</span>
-                  <span id="overviewCompany" class="font-semibold text-gray-800">---</span>
-                </div>
-                <div>
-                  <span class="text-[11px] text-gray-400 block font-semibold">Registered Email</span>
-                  <span id="overviewEmail" class="font-semibold text-gray-800">---</span>
-                </div>
-                <div>
-                  <span class="text-[11px] text-gray-400 block font-semibold">Phone Support</span>
-                  <span id="overviewPhone" class="font-semibold text-gray-800">---</span>
-                </div>
-              </div>
-            </div>
+        <!-- 2. EDIT PROFILE TAB -->
+        <div id="editProfileTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
+          <div class="border-b border-white/10 pb-4">
+            <h2 class="font-montserrat font-bold text-lg sm:text-xl text-white">Edit Profile & Security</h2>
+            <p class="text-xs text-gray-400">Update primary contact details and configure custom 4-digit 2FA security.</p>
           </div>
 
-          <!-- EDIT PROFILE TAB -->
-          <div id="editProfileTab" class="tab-panel hidden space-y-4 sm:space-y-5 animate-fade-in">
-            <div class="border-b pb-3">
-              <h3 class="font-montserrat font-bold text-base sm:text-lg text-brandGreen">Edit Profile & Security</h3>
-              <p class="text-xs text-gray-500">Update primary contact details and configure custom 4-digit 2FA security.</p>
+          <form id="editProfileForm" class="space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[11px] font-bold text-brandCyan uppercase tracking-wider mb-1.5">Full Name</label>
+                <input type="text" id="editFullName" required class="w-full px-4 py-3 bg-slate-900/80 border border-white/10 rounded-xl focus:border-brandCyan outline-none text-xs sm:text-sm text-white font-semibold">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-brandCyan uppercase tracking-wider mb-1.5">Company Name</label>
+                <input type="text" id="editCompanyName" required class="w-full px-4 py-3 bg-slate-900/80 border border-white/10 rounded-xl focus:border-brandCyan outline-none text-xs sm:text-sm text-white font-semibold">
+              </div>
             </div>
 
-            <form id="editProfileForm" class="space-y-4">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name</label>
-                  <input type="text" id="editFullName" required class="w-full min-h-[42px] px-3.5 py-2 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold">
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Company Name</label>
-                  <input type="text" id="editCompanyName" required class="w-full min-h-[42px] px-3.5 py-2 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold">
-                </div>
-              </div>
+            <div>
+              <label class="block text-[11px] font-bold text-brandCyan uppercase tracking-wider mb-1.5">Phone Number</label>
+              <input type="tel" id="editPhone" required class="w-full px-4 py-3 bg-slate-900/80 border border-white/10 rounded-xl focus:border-brandCyan outline-none text-xs sm:text-sm text-white font-semibold">
+            </div>
 
-              <div>
-                <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Phone Number</label>
-                <input type="tel" id="editPhone" required class="w-full min-h-[42px] px-3.5 py-2 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold">
-              </div>
-
-              <div class="p-3.5 border-2 border-brandGreen/20 rounded-2xl bg-gray-50/50 space-y-3">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center space-x-2.5">
-                    <div class="p-2 bg-brandGreen text-brandCyan rounded-xl">
-                      <i class="fa-solid fa-shield-halved text-sm"></i>
-                    </div>
-                    <div>
-                      <h4 class="font-bold text-xs sm:text-sm text-brandGreen">2-Step Verification (4-Digit PIN)</h4>
-                      <p class="text-[10px] text-gray-500">Require 4-digit PIN on every login.</p>
-                    </div>
+            <div class="p-5 border border-brandCyan/20 rounded-2xl bg-slate-900/50 space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="p-2.5 bg-brandCyan/10 text-brandCyan rounded-xl border border-brandCyan/20">
+                    <i class="fa-solid fa-shield-halved text-base sm:text-lg"></i>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
-                    <input type="checkbox" id="twoFactorToggle" onchange="toggle2FAState(this.checked)" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brandGreen"></div>
-                  </label>
-                </div>
-
-                <div id="pinSetupContainer" class="hidden space-y-2.5 pt-2.5 border-t border-gray-200">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div>
-                      <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Create 4-Digit PIN</label>
-                      <input type="password" id="setupPin" maxlength="4" placeholder="••••" class="w-full text-center tracking-[0.5em] font-mono font-bold text-base py-2 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none bg-white">
-                    </div>
-                    <div>
-                      <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Confirm 4-Digit PIN</label>
-                      <input type="password" id="confirmPin" maxlength="4" placeholder="••••" class="w-full text-center tracking-[0.5em] font-mono font-bold text-base py-2 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none bg-white">
-                    </div>
+                  <div>
+                    <h3 class="font-bold text-xs sm:text-sm text-white">2-Step Verification (4-Digit PIN)</h3>
+                    <p class="text-[11px] text-gray-400">Require 4-digit PIN on every login.</p>
                   </div>
-                  <button type="button" onclick="saveCustomPin()" class="w-full py-2 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow transition-all">
-                    Save 4-Digit PIN
-                  </button>
                 </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
+                  <input type="checkbox" id="twoFactorToggle" onchange="toggle2FAState(this.checked)" class="sr-only peer">
+                  <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brandCyan"></div>
+                </label>
               </div>
 
-              <button type="button" onclick="saveProfileEditsDirect()" id="btnSaveProfile" class="w-full sm:w-auto px-7 py-3 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-full shadow-md transition-all flex items-center justify-center space-x-2">
-                <i class="fa-solid fa-user-check text-brandCyan"></i>
-                <span>Save Changes</span>
-              </button>
-            </form>
-          </div>
-
-          <!-- ADVANCE DETAIL TAB -->
-          <div id="advanceTab" class="tab-panel hidden space-y-4 sm:space-y-5 animate-fade-in">
-            <div class="border-b pb-3">
-              <h3 class="font-montserrat font-bold text-base sm:text-lg text-brandGreen">Advance Business Details</h3>
-              <p class="text-xs text-gray-500">Tax and factory location credentials for B2B invoicing.</p>
-            </div>
-
-            <form id="advanceDetailsForm" onsubmit="saveAdvanceDetails(event)" class="space-y-4">
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">GSTIN <span class="text-gray-400 font-normal">(Opt)</span></label>
-                  <input type="text" id="advGSTIN" placeholder="27AAAAA0000A1Z5" class="w-full min-h-[42px] px-3.5 py-2 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold uppercase">
+              <div id="pinSetupContainer" class="hidden space-y-3 pt-3 border-t border-white/10">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Create 4-Digit PIN</label>
+                    <input type="password" id="setupPin" maxlength="4" placeholder="••••" class="w-full text-center tracking-[0.5em] font-mono font-bold text-lg py-2.5 bg-slate-950 border border-white/10 rounded-xl focus:border-brandCyan outline-none text-white">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Confirm 4-Digit PIN</label>
+                    <input type="password" id="confirmPin" maxlength="4" placeholder="••••" class="w-full text-center tracking-[0.5em] font-mono font-bold text-lg py-2.5 bg-slate-950 border border-white/10 rounded-xl focus:border-brandCyan outline-none text-white">
+                  </div>
                 </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">CIN <span class="text-gray-400 font-normal">(Opt)</span></label>
-                  <input type="text" id="advCIN" placeholder="U17100DL2020PTC..." class="w-full min-h-[42px] px-3.5 py-2 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold uppercase">
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">PAN <span class="text-gray-400 font-normal">(Opt)</span></label>
-                  <input type="text" id="advPAN" placeholder="ABCDE1234F" class="w-full min-h-[42px] px-3.5 py-2 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold uppercase">
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Factory / Office Address</label>
-                <textarea id="advAddress" rows="3" placeholder="Enter complete factory address..." class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-medium"></textarea>
-                <p class="text-[10px] text-gray-400 mt-1">Default unit: Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India</p>
-              </div>
-
-              <button type="submit" id="btnSaveAdvance" class="w-full sm:w-auto px-7 py-3 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-full shadow-md transition-all flex items-center justify-center space-x-2">
-                <i class="fa-solid fa-floppy-disk text-brandCyan"></i>
-                <span>Save Advance Details</span>
-              </button>
-            </form>
-          </div>
-
-          <!-- INVOICE LOOKUP TAB -->
-          <div id="invoiceTab" class="tab-panel hidden space-y-4 sm:space-y-5 animate-fade-in">
-            <div class="border-b pb-3">
-              <h3 class="font-montserrat font-bold text-base sm:text-lg text-brandGreen">Invoice Lookup & Verification</h3>
-              <p class="text-xs text-gray-500">Search and verify your B2B tax invoices instantly.</p>
-            </div>
-
-            <div class="p-4 border border-gray-200 rounded-2xl bg-gray-50 space-y-3">
-              <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Enter Invoice Number</label>
-              <div class="flex flex-col sm:flex-row gap-2.5">
-                <input type="text" id="invoiceNumberInput" placeholder="e.g. SET/2026/00125" class="flex-1 min-h-[44px] px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm font-semibold uppercase bg-white">
-                <button type="button" onclick="searchInvoice()" class="px-6 py-3 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow transition-all flex items-center justify-center space-x-2">
-                  <i class="fa-solid fa-magnifying-glass"></i>
-                  <span>Search Invoice</span>
+                <button type="button" onclick="saveCustomPin()" class="w-full py-2.5 bg-brandCyan hover:opacity-90 text-slate-950 font-montserrat font-bold text-xs rounded-xl shadow transition-all">
+                  Save 4-Digit PIN
                 </button>
               </div>
             </div>
 
-            <!-- Invoice Result / Error Container -->
-            <div id="invoiceResultContainer" class="hidden p-4 rounded-2xl border text-xs sm:text-sm font-medium"></div>
-          </div>
-
-          <!-- APPS TAB -->
-          <div id="appsTab" class="tab-panel hidden space-y-4 sm:space-y-5 animate-fade-in">
-            <div class="border-b pb-3">
-              <h3 class="font-montserrat font-bold text-base sm:text-lg text-brandGreen">Sneh Elastic Web Apps</h3>
-              <p class="text-xs text-gray-500">Quick portal access across our ecosystem.</p>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <!-- Active App 1 -->
-              <a href="https://snehelastic.com" target="_blank" class="p-4 border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 rounded-2xl flex items-center justify-between transition-all group">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow">
-                    <i class="fa-solid fa-globe text-sm"></i>
-                  </div>
-                  <div>
-                    <h4 class="font-bold text-xs sm:text-sm text-gray-900 group-hover:text-emerald-700">snehelastic.com</h4>
-                    <p class="text-[10px] text-emerald-700 font-semibold mt-0.5">Active Main Website</p>
-                  </div>
-                </div>
-                <i class="fa-solid fa-arrow-up-right-from-square text-emerald-600 text-xs"></i>
-              </a>
-
-              <!-- Active App 2 -->
-              <a href="https://account.snehelastic.com" target="_blank" class="p-4 border border-brandGreen/20 bg-brandGreen/5 hover:bg-brandGreen/10 rounded-2xl flex items-center justify-between transition-all group">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 rounded-xl bg-brandGreen text-brandCyan flex items-center justify-center font-bold shadow">
-                    <i class="fa-solid fa-id-card text-sm"></i>
-                  </div>
-                  <div>
-                    <h4 class="font-bold text-xs sm:text-sm text-gray-900 group-hover:text-brandGreen">account.snehelastic.com</h4>
-                    <p class="text-[10px] text-brandGreen font-semibold mt-0.5">Active Auth Portal</p>
-                  </div>
-                </div>
-                <i class="fa-solid fa-arrow-up-right-from-square text-brandGreen text-xs"></i>
-              </a>
-
-              <!-- Coming Soon App 1 -->
-              <div class="p-4 border border-gray-200 bg-gray-100 rounded-2xl flex items-center justify-between opacity-75 cursor-not-allowed">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 rounded-xl bg-gray-400 text-white flex items-center justify-center font-bold">
-                    <i class="fa-solid fa-blog text-sm"></i>
-                  </div>
-                  <div>
-                    <h4 class="font-bold text-xs sm:text-sm text-gray-700">blog.snehelastic.com</h4>
-                    <span class="inline-block mt-0.5 px-2 py-0.5 bg-amber-100 text-amber-800 text-[9px] font-bold rounded">Coming Soon</span>
-                  </div>
-                </div>
-                <i class="fa-solid fa-lock text-gray-400 text-xs"></i>
-              </div>
-
-              <!-- Coming Soon App 2 -->
-              <div class="p-4 border border-gray-200 bg-gray-100 rounded-2xl flex items-center justify-between opacity-75 cursor-not-allowed">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 rounded-xl bg-gray-400 text-white flex items-center justify-center font-bold">
-                    <i class="fa-solid fa-mobile-screen text-sm"></i>
-                  </div>
-                  <div>
-                    <h4 class="font-bold text-xs sm:text-sm text-gray-700">app.snehelastic.com</h4>
-                    <span class="inline-block mt-0.5 px-2 py-0.5 bg-amber-100 text-amber-800 text-[9px] font-bold rounded">Coming Soon</span>
-                  </div>
-                </div>
-                <i class="fa-solid fa-lock text-gray-400 text-xs"></i>
-              </div>
-            </div>
-          </div>
-
+            <button type="button" onclick="saveProfileEditsDirect()" id="btnSaveProfile" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-brandGreen to-brandCyan hover:opacity-90 text-white font-montserrat font-bold text-xs sm:text-sm rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-user-check text-slate-950"></i>
+              <span>Save Changes</span>
+            </button>
+          </form>
         </div>
 
-      </div>
-    </div>
+        <!-- 3. ADVANCE DETAIL TAB -->
+        <div id="advanceTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
+          <div class="border-b border-white/10 pb-4">
+            <h2 class="font-montserrat font-bold text-lg sm:text-xl text-white">Advance Business Details</h2>
+            <p class="text-xs text-gray-400">Tax and factory location credentials for B2B invoicing.</p>
+          </div>
+
+          <form id="advanceDetailsForm" onsubmit="saveAdvanceDetails(event)" class="space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-[11px] font-bold text-brandCyan uppercase tracking-wider mb-1.5">GSTIN <span class="text-gray-500 font-normal">(Opt)</span></label>
+                <input type="text" id="advGSTIN" placeholder="27AAAAA0000A1Z5" class="w-full px-4 py-3 bg-slate-900/80 border border-white/10 rounded-xl focus:border-brandCyan outline-none text-xs sm:text-sm text-white font-semibold uppercase">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-brandCyan uppercase tracking-wider mb-1.5">CIN <span class="text-gray-500 font-normal">(Opt)</span></label>
+                <input type="text" id="advCIN" placeholder="U17100DL2020PTC..." class="w-full px-4 py-3 bg-slate-900/80 border border-white/10 rounded-xl focus:border-brandCyan outline-none text-xs sm:text-sm text-white font-semibold uppercase">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-brandCyan uppercase tracking-wider mb-1.5">PAN <span class="text-gray-500 font-normal">(Opt)</span></label>
+                <input type="text" id="advPAN" placeholder="ABCDE1234F" class="w-full px-4 py-3 bg-slate-900/80 border border-white/10 rounded-xl focus:border-brandCyan outline-none text-xs sm:text-sm text-white font-semibold uppercase">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-brandCyan uppercase tracking-wider mb-1.5">Factory / Office Address</label>
+              <textarea id="advAddress" rows="3" placeholder="Enter complete factory address..." class="w-full p-4 bg-slate-900/80 border border-white/10 rounded-xl focus:border-brandCyan outline-none text-xs sm:text-sm text-white font-medium"></textarea>
+              <p class="text-[10px] text-gray-500 mt-1">Default unit: Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India</p>
+            </div>
+
+            <button type="submit" id="btnSaveAdvance" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-brandGreen to-brandCyan hover:opacity-90 text-white font-montserrat font-bold text-xs sm:text-sm rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-floppy-disk text-slate-950"></i>
+              <span>Save Advance Details</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- 4. INVOICE LOOKUP TAB -->
+        <div id="invoiceTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
+          <div class="border-b border-white/10 pb-4">
+            <h2 class="font-montserrat font-bold text-lg sm:text-xl text-white">Invoice Lookup & Verification</h2>
+            <p class="text-xs text-gray-400">Search and verify your B2B tax invoices instantly.</p>
+          </div>
+
+          <div class="p-5 border border-white/10 rounded-2xl bg-slate-900/60 space-y-3">
+            <label class="block text-xs font-bold text-brandCyan uppercase tracking-wider">Enter Invoice Number</label>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <input type="text" id="invoiceNumberInput" placeholder="e.g. SET/2026/00125" class="flex-1 min-h-[44px] px-4 py-3 bg-slate-950 border border-white/10 rounded-xl focus:border-brandCyan outline-none text-xs sm:text-sm font-semibold uppercase text-white">
+              <button type="button" onclick="searchInvoice()" class="px-6 py-3.5 bg-gradient-to-r from-brandGreen to-brandCyan hover:opacity-90 text-white font-montserrat font-bold text-xs rounded-xl shadow transition-all flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search Invoice</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="invoiceResultContainer" class="hidden p-4 rounded-2xl border text-xs sm:text-sm font-medium"></div>
+        </div>
+
+        <!-- 5. APPS TAB -->
+        <div id="appsTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
+          <div class="border-b border-white/10 pb-4">
+            <h2 class="font-montserrat font-bold text-lg sm:text-xl text-white">Sneh Elastic Web Apps</h2>
+            <p class="text-xs text-gray-400">Quick portal access across our ecosystem.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Active App 1 -->
+            <a href="https://snehelastic.com" target="_blank" class="p-4 sm:p-5 border border-cyan-500/30 bg-slate-900/60 hover:bg-slate-900 rounded-2xl flex items-center justify-between transition-all group shadow-md">
+              <div class="flex items-center space-x-3.5">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-brandCyan/10 text-brandCyan border border-brandCyan/30 flex items-center justify-center font-bold shadow">
+                  <i class="fa-solid fa-globe text-base"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs sm:text-sm text-white group-hover:text-brandCyan transition-colors">snehelastic.com</h3>
+                  <p class="text-[10px] text-emerald-400 font-semibold mt-0.5">Active Main Website</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-arrow-up-right-from-square text-brandCyan text-xs"></i>
+            </a>
+
+            <!-- Active App 2 -->
+            <a href="https://account.snehelastic.com" target="_blank" class="p-4 sm:p-5 border border-cyan-500/30 bg-slate-900/60 hover:bg-slate-900 rounded-2xl flex items-center justify-between transition-all group shadow-md">
+              <div class="flex items-center space-x-3.5">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-brandGreen/20 text-brandCyan border border-brandGreen/40 flex items-center justify-center font-bold shadow">
+                  <i class="fa-solid fa-id-card text-base"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs sm:text-sm text-white group-hover:text-brandCyan transition-colors">account.snehelastic.com</h3>
+                  <p class="text-[10px] text-emerald-400 font-semibold mt-0.5">Active Auth Portal</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-arrow-up-right-from-square text-brandCyan text-xs"></i>
+            </a>
+
+            <!-- Coming Soon App 1 -->
+            <div class="p-4 sm:p-5 border border-white/5 bg-slate-950/40 rounded-2xl flex items-center justify-between opacity-60 cursor-not-allowed">
+              <div class="flex items-center space-x-3.5">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 text-gray-400 flex items-center justify-center font-bold">
+                  <i class="fa-solid fa-blog text-base"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs sm:text-sm text-gray-300">blog.snehelastic.com</h3>
+                  <span class="inline-block mt-1 px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-bold rounded-full">Coming Soon</span>
+                </div>
+              </div>
+              <i class="fa-solid fa-lock text-gray-500 text-xs"></i>
+            </div>
+
+            <!-- Coming Soon App 2 -->
+            <div class="p-4 sm:p-5 border border-white/5 bg-slate-950/40 rounded-2xl flex items-center justify-between opacity-60 cursor-not-allowed">
+              <div class="flex items-center space-x-3.5">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 text-gray-400 flex items-center justify-center font-bold">
+                  <i class="fa-solid fa-mobile-screen text-base"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs sm:text-sm text-gray-300">app.snehelastic.com</h3>
+                  <span class="inline-block mt-1 px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-bold rounded-full">Coming Soon</span>
+                </div>
+              </div>
+              <i class="fa-solid fa-lock text-gray-500 text-xs"></i>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
 
   </div>
 
