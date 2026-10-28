@@ -36,8 +36,6 @@
       touch-action: manipulation;
       -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
-      user-select: none;
-      -webkit-user-select: none;
     }
     .perspective-1000 { perspective: 1000px; }
     .transform-style-3d { transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -48,22 +46,17 @@
       background-color: #F3F7F7;
       border: 1px solid #E2E8F0;
       border-radius: 9999px;
-      padding: 0.85rem 1.5rem;
-      font-size: 0.9rem;
+      padding: 0.8rem 1.25rem;
+      font-size: 0.85rem;
       outline: none;
       transition: all 0.3s ease;
+      width: 100%;
     }
     .pill-input:focus {
       border-color: #205252;
       background-color: #FFFFFF;
       box-shadow: 0 0 0 3px rgba(32, 82, 82, 0.1);
     }
-
-    @keyframes spinSlow {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .spin-slow { animation: spinSlow 14s linear infinite; }
   </style>
 
   <!-- Firebase SDKs -->
@@ -82,7 +75,7 @@
     <div id="toastMessage" class="text-sm font-semibold"></div>
   </div>
 
-  <!-- 2-STEP VERIFICATION 4-DIGIT PIN MODAL -->
+  <!-- 2-STEP VERIFICATION PIN MODAL -->
   <div id="otpModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white max-w-md w-full rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 text-center space-y-5">
       <div class="w-16 h-16 bg-brandGreen/10 text-brandGreen rounded-2xl flex items-center justify-center mx-auto text-2xl">
@@ -103,125 +96,146 @@
   </div>
 
   <!-- MAIN APP WRAPPER -->
-  <div class="w-full max-w-5xl z-10 my-auto" id="mainAppWrapper">
+  <div class="w-full max-w-5xl z-10 my-auto">
 
     <!-- SPLIT-SCREEN AUTH CARD -->
     <div id="authSection" class="perspective-1000 w-full max-w-4xl mx-auto">
-      <div id="cardFlipper" class="transform-style-3d relative w-full min-h-[580px] sm:min-h-[620px]">
+      <div id="cardFlipper" class="transform-style-3d relative w-full min-h-[620px]">
 
         <!-- FRONT: LOGIN SPLIT SCREEN -->
         <div class="backface-hidden absolute inset-0 w-full bg-white shadow-2xl rounded-[28px] sm:rounded-[35px] overflow-hidden grid grid-cols-1 md:grid-cols-2">
-          <div class="p-6 sm:p-12 flex flex-col justify-center space-y-5 sm:space-y-6 bg-white">
-            <div class="text-center space-y-2">
-              <img src="https://i.ibb.co/JFz4L3ZL/SNEH-ELASTIC-LOGO.png" alt="Sneh Logo" class="h-10 sm:h-12 mx-auto object-contain mb-1 sm:mb-2">
-              <h2 class="font-montserrat font-extrabold text-2xl sm:text-3xl text-gray-900">Sign In</h2>
+          <div class="p-6 sm:p-10 flex flex-col justify-center space-y-4 bg-white">
+            <div class="text-center space-y-1">
+              <img src="https://i.ibb.co/JFz4L3ZL/SNEH-ELASTIC-LOGO.png" alt="Sneh Logo" class="h-10 mx-auto object-contain mb-1">
+              <h2 class="font-montserrat font-extrabold text-2xl text-gray-900">Sign In</h2>
             </div>
 
+            <!-- Google Sign In with official Google SVG Logo -->
             <div class="flex items-center justify-center gap-3">
-              <button onclick="handleGoogleSignIn()" class="flex-1 max-w-[140px] py-2.5 border border-gray-200 rounded-full flex items-center justify-center space-x-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
-                <i class="fa-brands fa-google text-red-500 text-sm"></i>
-                <span>Google</span>
-              </button>
-              <button onclick="handleAppleSignIn()" class="flex-1 max-w-[140px] py-2.5 border border-gray-200 rounded-full flex items-center justify-center space-x-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
-                <i class="fa-brands fa-apple text-black text-sm"></i>
-                <span>Apple ID</span>
+              <button type="button" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-4 border border-gray-200 rounded-full flex items-center justify-center space-x-3 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                <svg class="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.19v3.15C3.21 21.32 7.32 24 12 24z"/>
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.19C.43 8.1 0 9.8 0 12s.43 3.9 1.19 5.42l4.09-3.15z"/>
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.21 2.68 1.19 6.58l4.09 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                </svg>
+                <span>Sign in with Google</span>
               </button>
             </div>
 
-            <p class="text-center text-xs font-semibold text-gray-400">Or use your work account</p>
+            <p class="text-center text-xs font-semibold text-gray-400">Or use your work email</p>
 
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3 sm:space-y-4">
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3">
               <div>
-                <input type="email" id="loginEmail" placeholder="Email Address" required class="pill-input w-full">
+                <input type="email" id="loginEmail" placeholder="Email Address" required class="pill-input">
               </div>
               <div class="relative">
-                <input type="password" id="loginPassword" placeholder="Password" required class="pill-input w-full pr-12">
-                <i class="fa-solid fa-eye absolute right-5 top-4 text-gray-400 cursor-pointer hover:text-brandGreen" onclick="togglePasswordVisibility('loginPassword', this)"></i>
+                <input type="password" id="loginPassword" placeholder="Password" required class="pill-input pr-10">
+                <i class="fa-solid fa-eye absolute right-4 top-3.5 text-gray-400 cursor-pointer hover:text-brandGreen" onclick="togglePasswordVisibility('loginPassword', this)"></i>
               </div>
 
               <div class="text-center">
                 <button type="button" onclick="handleForgotPassword()" class="text-xs font-semibold text-gray-500 hover:text-brandGreen transition-colors">Forget your password?</button>
               </div>
 
-              <button type="submit" id="btnLogin" class="w-full py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold rounded-full shadow-md hover:shadow-xl transition-all duration-300">
+              <button type="submit" id="btnLogin" class="w-full py-3 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold rounded-full shadow-md transition-all">
                 Sign In
               </button>
             </form>
 
-            <div class="block md:hidden text-center pt-2">
+            <div class="block md:hidden text-center pt-1">
               <p class="text-xs text-gray-500 font-medium">
                 New here? <button type="button" onclick="flipCard(true)" class="font-bold text-brandGreen underline ml-1">Create Account</button>
               </p>
             </div>
           </div>
 
-          <div class="hidden md:flex relative bg-brandGreen text-white p-8 sm:p-12 flex-col items-center justify-center text-center space-y-6 overflow-hidden">
+          <div class="hidden md:flex relative bg-brandGreen text-white p-8 flex-col items-center justify-center text-center space-y-6 overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-br from-brandGreen via-emerald-900 to-slate-900 opacity-90 pointer-events-none"></div>
-            <svg class="absolute -right-12 -bottom-12 w-64 h-64 opacity-10 spin-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor">
-              <circle cx="50" cy="50" r="45" stroke-width="2" stroke-dasharray="4,4"/>
-              <circle cx="50" cy="50" r="25" stroke-width="1.5"/>
-            </svg>
             <div class="relative z-10 space-y-4 max-w-xs">
-              <h3 class="font-montserrat font-extrabold text-3xl text-white tracking-wide">Hey There!</h3>
+              <h3 class="font-montserrat font-extrabold text-3xl text-white">Hey There!</h3>
               <p class="text-xs text-emerald-100/90 leading-relaxed font-medium">
                 Create your account now and step into an amazing new journey with Sneh Elastic Threads Pvt. Ltd.
               </p>
-              <button type="button" onclick="flipCard(true)" class="px-10 py-3 border-2 border-white/80 hover:bg-white hover:text-brandGreen rounded-full font-montserrat font-bold text-xs tracking-wider transition-all duration-300 mt-2">
+              <button type="button" onclick="flipCard(true)" class="px-10 py-3 border-2 border-white/80 hover:bg-white hover:text-brandGreen rounded-full font-montserrat font-bold text-xs tracking-wider transition-all">
                 Sign Up
               </button>
             </div>
           </div>
         </div>
 
-        <!-- BACK: SIGN UP SPLIT SCREEN -->
+        <!-- BACK: SIGN UP SPLIT SCREEN (With Country Selection & Country Code) -->
         <div class="backface-hidden rotate-y-180 absolute inset-0 w-full bg-white shadow-2xl rounded-[28px] sm:rounded-[35px] overflow-hidden grid grid-cols-1 md:grid-cols-2">
-          <div class="hidden md:flex relative bg-brandGreen text-white p-8 sm:p-12 flex-col items-center justify-center text-center space-y-6 overflow-hidden">
+          <div class="hidden md:flex relative bg-brandGreen text-white p-8 flex-col items-center justify-center text-center space-y-6 overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-brandGreen to-emerald-900 opacity-90 pointer-events-none"></div>
             <div class="relative z-10 space-y-4 max-w-xs">
-              <h3 class="font-montserrat font-extrabold text-3xl text-white tracking-wide">Welcome Back!</h3>
+              <h3 class="font-montserrat font-extrabold text-3xl text-white">Welcome Back!</h3>
               <p class="text-xs text-emerald-100/90 leading-relaxed font-medium">
                 To keep connected with us please login with your existing account credentials.
               </p>
-              <button type="button" onclick="flipCard(false)" class="px-10 py-3 border-2 border-white/80 hover:bg-white hover:text-brandGreen rounded-full font-montserrat font-bold text-xs tracking-wider transition-all duration-300 mt-2">
+              <button type="button" onclick="flipCard(false)" class="px-10 py-3 border-2 border-white/80 hover:bg-white hover:text-brandGreen rounded-full font-montserrat font-bold text-xs tracking-wider transition-all">
                 Sign In
               </button>
             </div>
           </div>
 
-          <div class="p-6 sm:p-10 flex flex-col justify-center space-y-3 sm:space-y-4 bg-white overflow-y-auto">
+          <div class="p-6 sm:p-8 flex flex-col justify-center space-y-3 bg-white overflow-y-auto">
             <div class="text-center space-y-1">
-              <h2 class="font-montserrat font-extrabold text-xl sm:text-2xl text-gray-900">Create Account</h2>
+              <h2 class="font-montserrat font-extrabold text-xl text-gray-900">Create Account</h2>
               <p class="text-xs font-semibold text-gray-400">Join our B2B Procurement Network</p>
             </div>
 
-            <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-2.5 sm:space-y-3">
+            <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-2.5">
               <div>
-                <input type="text" id="signupName" placeholder="Full Name" required class="pill-input w-full">
+                <input type="text" id="signupName" placeholder="Full Name" required class="pill-input">
               </div>
               <div>
-                <input type="text" id="signupCompany" placeholder="Company / Business Name" required class="pill-input w-full">
+                <input type="text" id="signupCompany" placeholder="Company / Business Name" required class="pill-input">
               </div>
+
+              <!-- Country Selection for Signup -->
               <div>
-                <input type="tel" id="signupPhone" placeholder="Phone Number (+91...)" required class="pill-input w-full">
+                <select id="signupCountry" onchange="onSignupCountryChange(this.value)" required class="pill-input cursor-pointer">
+                  <option value="IN" data-code="+91" selected>India (+91)</option>
+                  <option value="US" data-code="+1">United States (+1)</option>
+                  <option value="GB" data-code="+44">United Kingdom (+44)</option>
+                  <option value="CA" data-code="+1">Canada (+1)</option>
+                  <option value="AU" data-code="+61">Australia (+61)</option>
+                  <option value="DE" data-code="+49">Germany (+49)</option>
+                  <option value="FR" data-code="+33">France (+33)</option>
+                  <option value="JP" data-code="+81">Japan (+81)</option>
+                  <option value="AE" data-code="+971">United Arab Emirates (+971)</option>
+                  <option value="SG" data-code="+65">Singapore (+65)</option>
+                  <option value="CN" data-code="+86">China (+86)</option>
+                  <option value="BR" data-code="+55">Brazil (+55)</option>
+                  <option value="ZA" data-code="+27">South Africa (+27)</option>
+                </select>
               </div>
+
+              <!-- Phone with Country Code -->
+              <div class="flex gap-2">
+                <input type="text" id="signupPhoneCode" value="+91" class="w-20 px-3 py-2 bg-gray-100 border border-gray-200 rounded-full text-center text-xs font-mono font-bold text-gray-800" readonly>
+                <input type="tel" id="signupPhone" placeholder="Phone Number" required class="flex-1 pill-input">
+              </div>
+
               <div>
-                <input type="email" id="signupEmail" placeholder="Work Email Address" required class="pill-input w-full">
+                <input type="email" id="signupEmail" placeholder="Work Email Address" required class="pill-input">
               </div>
               <div class="relative">
-                <input type="password" id="signupPassword" oninput="checkPasswordStrength(this.value)" placeholder="Password" required class="pill-input w-full pr-12">
-                <i class="fa-solid fa-eye absolute right-5 top-4 text-gray-400 cursor-pointer hover:text-brandGreen" onclick="togglePasswordVisibility('signupPassword', this)"></i>
+                <input type="password" id="signupPassword" oninput="checkPasswordStrength(this.value)" placeholder="Password" required class="pill-input pr-10">
+                <i class="fa-solid fa-eye absolute right-4 top-3.5 text-gray-400 cursor-pointer hover:text-brandGreen" onclick="togglePasswordVisibility('signupPassword', this)"></i>
               </div>
 
               <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
                 <div id="strengthBar" class="h-full w-0 bg-red-500 transition-all duration-300"></div>
               </div>
 
-              <button type="submit" id="btnSignup" class="w-full py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold rounded-full shadow-md hover:shadow-xl transition-all duration-300">
+              <button type="submit" id="btnSignup" class="w-full py-3 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold rounded-full shadow-md transition-all">
                 Sign Up
               </button>
             </form>
 
-            <div class="block md:hidden text-center pt-2">
+            <div class="block md:hidden text-center pt-1">
               <p class="text-xs text-gray-500 font-medium">
                 Already registered? <button type="button" onclick="flipCard(false)" class="font-bold text-brandGreen underline ml-1">Sign In</button>
               </p>
