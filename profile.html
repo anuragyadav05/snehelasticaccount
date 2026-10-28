@@ -106,16 +106,14 @@
 </head>
 <body class="font-sans antialiased flex flex-col min-h-screen selection:bg-brandGreen selection:text-white">
 
-  <!-- Background Animated Canvas -->
   <canvas id="threadCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-20"></canvas>
 
-  <!-- Notification Toast -->
   <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 flex items-center p-4 rounded-2xl shadow-2xl text-white max-w-sm hidden border border-gray-100 bg-slate-900">
     <div id="toastIcon" class="mr-3 text-lg text-brandCyan"></div>
     <div id="toastMessage" class="text-xs sm:text-sm font-semibold"></div>
   </div>
 
-  <!-- QR CODE ACCOUNT ID MODAL -->
+  <!-- QR CODE MODAL -->
   <div id="qrModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 animate-fade-in">
     <div class="light-card max-w-sm w-full rounded-3xl p-6 sm:p-8 text-center space-y-5">
       <div class="w-14 h-14 bg-brandGreen/10 text-brandGreen rounded-2xl flex items-center justify-center mx-auto text-2xl border border-brandGreen/20">
@@ -136,16 +134,10 @@
     </div>
   </div>
 
-  <!-- FULL SCREEN CONTAINER -->
   <div class="w-full min-h-screen flex flex-col z-10 relative">
 
-    <!-- TOP PROFILE BANNER -->
+    <!-- TOP BANNER -->
     <div class="w-full bg-gradient-to-r from-brandGreen via-slate-900 to-brandGreen px-4 sm:px-12 py-6 sm:py-8 text-white relative overflow-hidden shadow-md">
-      <svg class="absolute right-0 top-0 h-full opacity-10 spin-slow pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
-        <circle cx="50" cy="50" r="45" stroke-width="2" stroke-dasharray="4,4"/>
-        <circle cx="50" cy="50" r="30" stroke-width="1.5"/>
-      </svg>
-
       <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center sm:items-start justify-between relative z-10 gap-5 text-center sm:text-left">
         <div class="flex flex-col sm:flex-row items-center sm:items-center space-y-3 sm:space-y-0 sm:space-x-5 w-full sm:w-auto">
           <div class="relative shrink-0">
@@ -182,10 +174,10 @@
       </div>
     </div>
 
-    <!-- MAIN DASHBOARD CONTENT & NAVIGATION -->
+    <!-- MAIN DASHBOARD CONTENT -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
       
-      <!-- SIDEBAR MENU NAVIGATION -->
+      <!-- SIDEBAR -->
       <aside class="md:col-span-3 w-full flex md:flex-col overflow-x-auto no-scrollbar space-x-2 md:space-x-0 md:space-y-3 shrink-0 pb-2 md:pb-0 snap-x">
         <button onclick="switchTab('overviewTab')" id="btn-overviewTab" class="menu-btn active-menu shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-chart-pie"></i></div>
@@ -213,7 +205,7 @@
         </button>
       </aside>
 
-      <!-- MAIN DYNAMIC CONTENT PANEL -->
+      <!-- CONTENT PANELS -->
       <section class="md:col-span-9 light-card rounded-3xl p-5 sm:p-8 relative overflow-hidden min-h-[500px]">
 
         <!-- 1. OVERVIEW -->
@@ -253,7 +245,7 @@
           </div>
         </div>
 
-        <!-- 2. EDIT PROFILE (Dynamic Country & Phone Code support for Global) -->
+        <!-- 2. EDIT PROFILE -->
         <div id="editProfileTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
           <div class="border-b border-gray-200 pb-4">
             <h2 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Edit Profile</h2>
@@ -272,11 +264,10 @@
               </div>
             </div>
 
-            <!-- Global Country Selection (Appears when Global mode is active) -->
+            <!-- Global Country Selection -->
             <div id="globalCountryFieldContainer" class="hidden space-y-1.5">
               <label class="block text-[11px] font-bold text-brandGreen uppercase tracking-wider">Select Country</label>
               <select id="editCountrySelect" onchange="onCountryChange(this.value)" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm text-gray-900 font-semibold cursor-pointer">
-                <option value="">-- Choose Country --</option>
                 <option value="US" data-code="+1">United States (+1)</option>
                 <option value="GB" data-code="+44">United Kingdom (+44)</option>
                 <option value="CA" data-code="+1">Canada (+1)</option>
@@ -286,20 +277,19 @@
                 <option value="JP" data-code="+81">Japan (+81)</option>
                 <option value="AE" data-code="+971">United Arab Emirates (+971)</option>
                 <option value="SG" data-code="+65">Singapore (+65)</option>
-                <option value="IN" data-code="+91">India (+91)</option>
                 <option value="CN" data-code="+86">China (+86)</option>
                 <option value="BR" data-code="+55">Brazil (+55)</option>
                 <option value="ZA" data-code="+27">South Africa (+27)</option>
+                <option value="IN" data-code="+91">India (+91)</option>
               </select>
             </div>
 
             <div>
               <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">Phone Number</label>
               <div class="flex gap-2">
-                <input type="text" id="editPhoneCode" placeholder="+91" class="w-20 px-3 py-3 bg-gray-100 border border-gray-200 rounded-xl text-center text-xs font-mono font-bold text-gray-800" readonly>
-                <input type="tel" id="editPhone" required placeholder="9953310549" class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm text-gray-900 font-semibold">
+                <input type="text" id="editPhoneCode" value="+91" class="w-20 px-3 py-3 bg-gray-100 border border-gray-200 rounded-xl text-center text-xs font-mono font-bold text-gray-800" readonly>
+                <input type="tel" id="editPhone" required class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm text-gray-900 font-semibold">
               </div>
-              <p class="text-[10px] text-gray-400 mt-1">Country code adjusts automatically or can be modified manually.</p>
             </div>
 
             <button type="button" onclick="saveProfileEditsDirect()" id="btnSaveProfile" class="w-full sm:w-auto px-8 py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center justify-center space-x-2">
@@ -309,7 +299,7 @@
           </form>
         </div>
 
-        <!-- 3. ADVANCE DETAIL (Dynamic for India vs Global) -->
+        <!-- 3. ADVANCE DETAIL -->
         <div id="advanceTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
           <div class="border-b border-gray-200 pb-4">
             <h2 id="advHeaderTitle" class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Advance Business Details</h2>
@@ -317,7 +307,6 @@
           </div>
 
           <form id="advanceDetailsForm" onsubmit="saveAdvanceDetails(event)" class="space-y-5">
-            <!-- India Mode Inputs -->
             <div id="indiaAdvanceFields" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">GSTIN <span class="text-gray-400 font-normal">(Opt)</span></label>
@@ -333,7 +322,6 @@
               </div>
             </div>
 
-            <!-- Global Mode Input (Single Company Identification Number / Tax ID) -->
             <div id="globalAdvanceFields" class="hidden space-y-2">
               <label class="block text-[11px] font-bold text-brandGreen uppercase tracking-wider mb-1.5">Company Identification Number / Tax ID</label>
               <input type="text" id="advGlobalTaxID" placeholder="Enter international corporate tax or registration ID..." class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm text-gray-900 font-semibold uppercase">
@@ -372,7 +360,7 @@
           <div id="invoiceResultContainer" class="hidden p-4 rounded-2xl border text-xs sm:text-sm font-medium"></div>
         </div>
 
-        <!-- 5. ACCOUNT SETTING (With Enabled Region Switcher) -->
+        <!-- 5. ACCOUNT SETTING -->
         <div id="accountSettingTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
           <div class="border-b border-gray-200 pb-4">
             <h2 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Account Settings & Security</h2>
@@ -432,7 +420,7 @@
               </div>
             </div>
 
-            <!-- Region & Language Selectors (Region Global NOW ENABLED) -->
+            <!-- Region & Language Selectors -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="p-4 border border-gray-200 rounded-2xl bg-gray-50 space-y-2">
                 <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider">Region</label>
