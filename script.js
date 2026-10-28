@@ -1,5 +1,78 @@
 // ==========================================
-// 1. FIREBASE CONFIGURATION & INITIALIZATION
+// 1. WORLD COUNTRIES DATABASE (ALL COUNTRIES)
+// ==========================================
+const WORLD_COUNTRIES = [
+  { name: "India", code: "IN", dial: "+91" },
+  { name: "Afghanistan", code: "AF", dial: "+93" },
+  { name: "Albania", code: "AL", dial: "+355" },
+  { name: "Algeria", code: "DZ", dial: "+213" },
+  { name: "Andorra", code: "AD", dial: "+376" },
+  { name: "Angola", code: "AO", dial: "+244" },
+  { name: "Argentina", code: "AR", dial: "+54" },
+  { name: "Armenia", code: "AM", dial: "+374" },
+  { name: "Australia", code: "AU", dial: "+61" },
+  { name: "Austria", code: "AT", dial: "+43" },
+  { name: "Azerbaijan", code: "AZ", dial: "+994" },
+  { name: "Bahrain", code: "BH", dial: "+973" },
+  { name: "Bangladesh", code: "BD", dial: "+880" },
+  { name: "Belarus", code: "BY", dial: "+375" },
+  { name: "Belgium", code: "BE", dial: "+32" },
+  { name: "Brazil", code: "BR", dial: "+55" },
+  { name: "Canada", code: "CA", dial: "+1" },
+  { name: "China", code: "CN", dial: "+86" },
+  { name: "Colombia", code: "CO", dial: "+57" },
+  { name: "Denmark", code: "DK", dial: "+45" },
+  { name: "Egypt", code: "EG", dial: "+20" },
+  { name: "France", code: "FR", dial: "+33" },
+  { name: "Germany", code: "DE", dial: "+49" },
+  { name: "Greece", code: "GR", dial: "+30" },
+  { name: "Hong Kong", code: "HK", dial: "+852" },
+  { name: "Indonesia", code: "ID", dial: "+62" },
+  { name: "Iran", code: "IR", dial: "+98" },
+  { name: "Iraq", code: "IQ", dial: "+964" },
+  { name: "Ireland", code: "IE", dial: "+353" },
+  { name: "Israel", code: "IL", dial: "+972" },
+  { name: "Italy", code: "IT", dial: "+39" },
+  { name: "Japan", code: "JP", dial: "+81" },
+  { name: "Jordan", code: "JO", dial: "+962" },
+  { name: "Kenya", code: "KE", dial: "+254" },
+  { name: "Kuwait", code: "KW", dial: "+965" },
+  { name: "Malaysia", code: "MY", dial: "+60" },
+  { name: "Mexico", code: "MX", dial: "+52" },
+  { name: "Morocco", code: "MA", dial: "+212" },
+  { name: "Nepal", code: "NP", dial: "+977" },
+  { name: "Netherlands", code: "NL", dial: "+31" },
+  { name: "New Zealand", code: "NZ", dial: "+64" },
+  { name: "Nigeria", code: "NG", dial: "+234" },
+  { name: "Norway", code: "NO", dial: "+47" },
+  { name: "Oman", code: "OM", dial: "+968" },
+  { name: "Pakistan", code: "PK", dial: "+92" },
+  { name: "Philippines", code: "PH", dial: "+63" },
+  { name: "Poland", code: "PL", dial: "+48" },
+  { name: "Portugal", code: "PT", dial: "+351" },
+  { name: "Qatar", code: "QA", dial: "+974" },
+  { name: "Romania", code: "RO", dial: "+40" },
+  { name: "Russia", code: "RU", dial: "+7" },
+  { name: "Saudi Arabia", code: "SA", dial: "+966" },
+  { name: "Singapore", code: "SG", dial: "+65" },
+  { name: "South Africa", code: "ZA", dial: "+27" },
+  { name: "South Korea", code: "KR", dial: "+82" },
+  { name: "Spain", code: "ES", dial: "+34" },
+  { name: "Sri Lanka", code: "LK", dial: "+94" },
+  { name: "Sweden", code: "SE", dial: "+46" },
+  { name: "Switzerland", code: "CH", dial: "+41" },
+  { name: "Taiwan", code: "TW", dial: "+886" },
+  { name: "Thailand", code: "TH", dial: "+66" },
+  { name: "Turkey", code: "TR", dial: "+90" },
+  { name: "Ukraine", code: "UA", dial: "+380" },
+  { name: "United Arab Emirates", code: "AE", dial: "+971" },
+  { name: "United Kingdom", code: "GB", dial: "+44" },
+  { name: "United States", code: "US", dial: "+1" },
+  { name: "Vietnam", code: "VN", dial: "+84" }
+];
+
+// ==========================================
+// 2. FIREBASE CONFIGURATION & INITIALIZATION
 // ==========================================
 const firebaseConfig = {
   apiKey: "AIzaSyDOyKI3LamM2jvpzE2DaS-set_JxBvfYPA",
@@ -22,8 +95,33 @@ let currentUserData = null;
 let pending2FAUser = null;
 let activeUid = null;
 
+// Initialize Country Dropdowns on Page Load
+window.addEventListener("DOMContentLoaded", () => {
+  populateCountryDropdowns();
+});
+
+function populateCountryDropdowns(filter = "") {
+  const signupSelect = document.getElementById("signupCountrySelect");
+  const editSelect = document.getElementById("editCountrySelect");
+
+  const filtered = WORLD_COUNTRIES.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()));
+  const optionsHTML = filtered.map(c => `<option value="${c.code}" data-code="${c.dial}">${c.name} (${c.dial})</option>`).join("");
+
+  if (signupSelect) {
+    signupSelect.innerHTML = optionsHTML;
+    signupSelect.value = "IN";
+  }
+  if (editSelect) {
+    editSelect.innerHTML = optionsHTML;
+  }
+}
+
+function filterCountries(query) {
+  populateCountryDropdowns(query);
+}
+
 // ==========================================
-// 2. AUTH OBSERVER & ROUTING
+// 3. AUTH OBSERVER & ROUTING
 // ==========================================
 auth.onAuthStateChanged(async (user) => {
   const path = window.location.pathname;
@@ -67,7 +165,7 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 // ==========================================
-// 3. SIGNUP & COUNTRY CODE DETECTION HANDLER
+// 4. SIGNUP & COUNTRY CODE DETECTION HANDLER
 // ==========================================
 function onSignupCountryChange(countryVal) {
   const selectElem = document.getElementById("signupCountrySelect");
@@ -75,9 +173,11 @@ function onSignupCountryChange(countryVal) {
   if (!selectElem || !phoneCodeInput) return;
 
   const selectedOpt = selectElem.options[selectElem.selectedIndex];
-  const dialCode = selectedOpt.getAttribute("data-code");
-  if (dialCode) {
-    phoneCodeInput.value = dialCode;
+  if (selectedOpt) {
+    const dialCode = selectedOpt.getAttribute("data-code");
+    if (dialCode) {
+      phoneCodeInput.value = dialCode;
+    }
   }
 }
 
@@ -99,7 +199,7 @@ async function handleSignup(e) {
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sign Up...`;
   }
 
-  // Automatic Region Mode Determination
+  // Automatic Region Mode Determination (India = IN, Others = GLOBAL)
   let regionMode = "IN";
   if (selectedCountry !== "IN" && phoneCode !== "+91") {
     regionMode = "GLOBAL";
@@ -144,7 +244,7 @@ async function handleSignup(e) {
 }
 
 // ==========================================
-// 4. LOGIN HANDLER
+// 5. LOGIN, SOCIAL SIGN-IN & FORGOT PASSWORD
 // ==========================================
 async function handleLogin(e) {
   e.preventDefault();
@@ -180,9 +280,6 @@ async function handleLogin(e) {
   }
 }
 
-// ==========================================
-// 5. SOCIAL SIGN-IN & FORGOT PASSWORD
-// ==========================================
 async function handleGoogleSignIn() {
   const provider = new firebase.auth.GoogleAuthProvider();
   try {
@@ -210,6 +307,36 @@ async function handleGoogleSignIn() {
     window.location.replace("profile.html");
   } catch (err) {
     showToast("Google Auth: " + err.message, "info");
+  }
+}
+
+async function handleAppleSignIn() {
+  const provider = new firebase.auth.OAuthProvider('apple.com');
+  try {
+    const res = await auth.signInWithPopup(provider);
+    const user = res.user;
+
+    const userRef = db.collection("users").doc(user.uid);
+    const doc = await userRef.get();
+
+    if (!doc.exists) {
+      await userRef.set({
+        fullName: user.displayName || "Apple B2B User",
+        companyName: "Global Apparel Partner",
+        selectedCountry: "US",
+        phoneCode: "+1",
+        phone: "5550199",
+        email: user.email,
+        regionMode: "GLOBAL",
+        is2FAEnabled: false,
+        customPin: "",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        advanceDetails: { gstin: "", cin: "", pan: "", globalTaxID: "US-TAX-88291", address: "New York Corporate Hub" }
+      });
+    }
+    window.location.replace("profile.html");
+  } catch (err) {
+    showToast("Apple Auth: " + err.message, "info");
   }
 }
 
@@ -304,7 +431,7 @@ async function saveCustomPin() {
 }
 
 // ==========================================
-// 7. REGION SWITCHER & MINIMAL GREEN-TO-BLUE THEME ADAPTATION
+// 7. REGION SWITCHER & THEME + MENU COLOR ADAPTATION
 // ==========================================
 async function handleRegionChange(mode) {
   const user = auth.currentUser;
@@ -329,23 +456,40 @@ function applyRegionUI(mode) {
   const regionSelect = document.getElementById("regionSelect");
   const topBanner = document.getElementById("topBanner");
   const overviewHeading = document.getElementById("overviewHeading");
+  const summaryTitle = document.getElementById("summaryTitle");
   const qrIconBox = document.getElementById("qrIconBox");
   const qrTitle = document.getElementById("qrTitle");
   const qrCloseBtn = document.getElementById("qrCloseBtn");
 
   if (regionSelect) regionSelect.value = mode;
 
-  // Minimal Theme Switch (Green to Blue)
+  // Update active menu colors dynamically according to mode (Green vs Blue)
+  document.querySelectorAll(".menu-btn").forEach(btn => {
+    if (mode === "GLOBAL") {
+      btn.style.setProperty("--active-color", "#0284C7");
+    } else {
+      btn.style.setProperty("--active-color", "#205252");
+    }
+  });
+
+  const activeMenu = document.querySelector(".menu-btn.active-menu");
+  if (activeMenu) {
+    activeMenu.style.backgroundColor = mode === "GLOBAL" ? "#0284C7" : "#205252";
+    activeMenu.style.borderColor = mode === "GLOBAL" ? "#0284C7" : "#205252";
+  }
+
   if (topBanner) {
     if (mode === "GLOBAL") {
       topBanner.className = "w-full bg-gradient-to-r from-brandBlue via-slate-900 to-brandBlue px-4 sm:px-12 py-6 sm:py-8 text-white relative overflow-hidden shadow-md transition-colors duration-500";
       if (overviewHeading) overviewHeading.className = "font-montserrat font-bold text-lg sm:text-xl text-brandBlue transition-colors";
+      if (summaryTitle) summaryTitle.className = "font-montserrat font-bold text-xs text-brandBlue uppercase tracking-widest";
       if (qrIconBox) qrIconBox.className = "w-14 h-14 bg-brandBlue/10 text-brandBlue rounded-2xl flex items-center justify-center mx-auto text-2xl border border-brandBlue/20";
       if (qrTitle) qrTitle.className = "font-montserrat font-bold text-lg text-brandBlue";
       if (qrCloseBtn) qrCloseBtn.className = "w-full py-3 bg-brandBlue hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow-lg transition-all";
     } else {
       topBanner.className = "w-full bg-gradient-to-r from-brandGreen via-slate-900 to-brandGreen px-4 sm:px-12 py-6 sm:py-8 text-white relative overflow-hidden shadow-md transition-colors duration-500";
       if (overviewHeading) overviewHeading.className = "font-montserrat font-bold text-lg sm:text-xl text-brandGreen transition-colors";
+      if (summaryTitle) summaryTitle.className = "font-montserrat font-bold text-xs text-brandGreen uppercase tracking-widest";
       if (qrIconBox) qrIconBox.className = "w-14 h-14 bg-brandGreen/10 text-brandGreen rounded-2xl flex items-center justify-center mx-auto text-2xl border border-brandGreen/20";
       if (qrTitle) qrTitle.className = "font-montserrat font-bold text-lg text-brandGreen";
       if (qrCloseBtn) qrCloseBtn.className = "w-full py-3 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow-lg transition-all";
@@ -375,9 +519,11 @@ function onCountryChange(countryVal) {
   if (!selectElem || !phoneCodeInput) return;
 
   const selectedOpt = selectElem.options[selectElem.selectedIndex];
-  const dialCode = selectedOpt.getAttribute("data-code");
-  if (dialCode) {
-    phoneCodeInput.value = dialCode;
+  if (selectedOpt) {
+    const dialCode = selectedOpt.getAttribute("data-code");
+    if (dialCode) {
+      phoneCodeInput.value = dialCode;
+    }
   }
 }
 
@@ -474,7 +620,6 @@ async function loadUserProfile(user) {
   setElemText("dispFullName", data.fullName || "Valued Client");
   setElemText("dispCompanyName", data.companyName || "Sneh Elastic B2B Partner");
   
-  // Replace contact number display with Country / Global
   let countryText = data.regionMode === "GLOBAL" ? "Global B2B (" + (data.selectedCountry || "INT") + ")" : "India (IN)";
   setElemText("dispCountryDisplay", countryText);
   setElemText("dispUID", user.uid);
@@ -534,10 +679,14 @@ function openQRModal() {
   if (qrContainer) {
     qrContainer.innerHTML = "";
     try {
-      const qr = qrcode(0, 'M');
-      qr.addData(activeUid);
-      qr.make();
-      qrContainer.innerHTML = qr.createSvgTag({ scalable: true, margin: 2 });
+      if (typeof qrcode === "function") {
+        const qr = qrcode(0, 'M');
+        qr.addData(activeUid);
+        qr.make();
+        qrContainer.innerHTML = qr.createSvgTag({ scalable: true, margin: 2 });
+      } else {
+        qrContainer.innerHTML = `<p class="text-xs text-red-500">QR Library Not Loaded</p>`;
+      }
     } catch (e) {
       qrContainer.innerHTML = `<p class="text-xs text-red-500">QR Generation Failed</p>`;
     }
@@ -666,7 +815,7 @@ async function handleLogout() {
 }
 
 // ==========================================
-// 10. TAB SWITCHING
+// 10. TAB SWITCHING (With Dynamic Menu Color Application)
 // ==========================================
 function switchTab(tabId) {
   document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
@@ -675,10 +824,16 @@ function switchTab(tabId) {
 
   document.querySelectorAll(".menu-btn").forEach(b => {
     b.classList.remove("active-menu");
+    b.style.backgroundColor = "";
+    b.style.borderColor = "";
   });
+
   const activeBtn = document.getElementById("btn-" + tabId);
   if (activeBtn) {
     activeBtn.classList.add("active-menu");
+    const activeColor = (currentUserData && currentUserData.regionMode === "GLOBAL") ? "#0284C7" : "#205252";
+    activeBtn.style.backgroundColor = activeColor;
+    activeBtn.style.borderColor = activeColor;
   }
 }
 
