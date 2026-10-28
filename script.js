@@ -213,16 +213,6 @@ async function handleGoogleSignIn() {
   }
 }
 
-async function handleAppleSignIn() {
-  const provider = new firebase.auth.OAuthProvider('apple.com');
-  try {
-    await auth.signInWithPopup(provider);
-    window.location.replace("profile.html");
-  } catch (err) {
-    showToast("Apple Auth: " + err.message, "info");
-  }
-}
-
 async function handleForgotPassword() {
   const emailInput = document.getElementById("loginEmail");
   const email = emailInput ? emailInput.value.trim() : prompt("Enter your registered work email for password reset:");
@@ -314,7 +304,7 @@ async function saveCustomPin() {
 }
 
 // ==========================================
-// 7. REGION SWITCHER (INDIA vs GLOBAL)
+// 7. REGION SWITCHER & MINIMAL GREEN-TO-BLUE THEME ADAPTATION
 // ==========================================
 async function handleRegionChange(mode) {
   const user = auth.currentUser;
@@ -337,8 +327,30 @@ function applyRegionUI(mode) {
   const advHeaderSub = document.getElementById("advHeaderSub");
   const overviewCountryRow = document.getElementById("overviewCountryRow");
   const regionSelect = document.getElementById("regionSelect");
+  const topBanner = document.getElementById("topBanner");
+  const overviewHeading = document.getElementById("overviewHeading");
+  const qrIconBox = document.getElementById("qrIconBox");
+  const qrTitle = document.getElementById("qrTitle");
+  const qrCloseBtn = document.getElementById("qrCloseBtn");
 
   if (regionSelect) regionSelect.value = mode;
+
+  // Minimal Theme Switch (Green to Blue)
+  if (topBanner) {
+    if (mode === "GLOBAL") {
+      topBanner.className = "w-full bg-gradient-to-r from-brandBlue via-slate-900 to-brandBlue px-4 sm:px-12 py-6 sm:py-8 text-white relative overflow-hidden shadow-md transition-colors duration-500";
+      if (overviewHeading) overviewHeading.className = "font-montserrat font-bold text-lg sm:text-xl text-brandBlue transition-colors";
+      if (qrIconBox) qrIconBox.className = "w-14 h-14 bg-brandBlue/10 text-brandBlue rounded-2xl flex items-center justify-center mx-auto text-2xl border border-brandBlue/20";
+      if (qrTitle) qrTitle.className = "font-montserrat font-bold text-lg text-brandBlue";
+      if (qrCloseBtn) qrCloseBtn.className = "w-full py-3 bg-brandBlue hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow-lg transition-all";
+    } else {
+      topBanner.className = "w-full bg-gradient-to-r from-brandGreen via-slate-900 to-brandGreen px-4 sm:px-12 py-6 sm:py-8 text-white relative overflow-hidden shadow-md transition-colors duration-500";
+      if (overviewHeading) overviewHeading.className = "font-montserrat font-bold text-lg sm:text-xl text-brandGreen transition-colors";
+      if (qrIconBox) qrIconBox.className = "w-14 h-14 bg-brandGreen/10 text-brandGreen rounded-2xl flex items-center justify-center mx-auto text-2xl border border-brandGreen/20";
+      if (qrTitle) qrTitle.className = "font-montserrat font-bold text-lg text-brandGreen";
+      if (qrCloseBtn) qrCloseBtn.className = "w-full py-3 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow-lg transition-all";
+    }
+  }
 
   if (mode === "GLOBAL") {
     if (countryFieldContainer) countryFieldContainer.classList.remove("hidden");
@@ -462,8 +474,9 @@ async function loadUserProfile(user) {
   setElemText("dispFullName", data.fullName || "Valued Client");
   setElemText("dispCompanyName", data.companyName || "Sneh Elastic B2B Partner");
   
-  let fullDisplayPhone = (data.phoneCode || "+91") + " " + (data.phone || "");
-  setElemText("dispPhone", fullDisplayPhone);
+  // Replace contact number display with Country / Global
+  let countryText = data.regionMode === "GLOBAL" ? "Global B2B (" + (data.selectedCountry || "INT") + ")" : "India (IN)";
+  setElemText("dispCountryDisplay", countryText);
   setElemText("dispUID", user.uid);
 
   const initials = (data.fullName || "SE").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
@@ -472,7 +485,7 @@ async function loadUserProfile(user) {
   setElemText("overviewName", data.fullName || "---");
   setElemText("overviewCompany", data.companyName || "---");
   setElemText("overviewEmail", data.email || "---");
-  setElemText("overviewPhone", fullDisplayPhone);
+  setElemText("overviewPhone", (data.phoneCode || "+91") + " " + (data.phone || ""));
   setElemText("overviewCountry", data.selectedCountry || "IN");
 
   const editName = document.getElementById("editFullName");
