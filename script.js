@@ -28,7 +28,7 @@ let activeUid = null;
 auth.onAuthStateChanged(async (user) => {
   const path = window.location.pathname;
   const isProfilePage = path.includes("profile.html");
-  const isAuthPage = path.includes("index.html") || path === "/" || path.endsWith("/");
+  const isAuthPage = path.includes("index.html") || path === "" || path.endsWith("/");
 
   if (user) {
     let userData = {};
@@ -67,13 +67,28 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 // ==========================================
-// 3. SIGNUP & LOGIN HANDLERS
+// 3. SIGNUP & COUNTRY CODE DETECTION HANDLER
 // ==========================================
+function onSignupCountryChange(countryVal) {
+  const selectElem = document.getElementById("signupCountrySelect");
+  const phoneCodeInput = document.getElementById("signupPhoneCode");
+  if (!selectElem || !phoneCodeInput) return;
+
+  const selectedOpt = selectElem.options[selectElem.selectedIndex];
+  const dialCode = selectedOpt.getAttribute("data-code");
+  if (dialCode) {
+    phoneCodeInput.value = dialCode;
+  }
+}
+
 async function handleSignup(e) {
   e.preventDefault();
   
   const name = document.getElementById("signupName").value.trim();
   const company = document.getElementById("signupCompany").value.trim();
+  const countrySelect = document.getElementById("signupCountrySelect");
+  const selectedCountry = countrySelect ? countrySelect.value : "IN";
+  const phoneCode = document.getElementById("signupPhoneCode").value.trim() || "+91";
   const phone = document.getElementById("signupPhone").value.trim();
   const email = document.getElementById("signupEmail").value.trim();
   const password = document.getElementById("signupPassword").value;
@@ -84,6 +99,12 @@ async function handleSignup(e) {
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sign Up...`;
   }
 
+  // Automatic Region Mode Determination
+  let regionMode = "IN";
+  if (selectedCountry !== "IN" && phoneCode !== "+91") {
+    regionMode = "GLOBAL";
+  }
+
   try {
     const res = await auth.createUserWithEmailAndPassword(email, password);
     const user = res.user;
@@ -91,10 +112,11 @@ async function handleSignup(e) {
     const userProfileData = {
       fullName: name,
       companyName: company,
+      selectedCountry: selectedCountry,
+      phoneCode: phoneCode,
       phone: phone,
       email: email,
-      regionMode: "IN",
-      selectedCountry: "IN",
+      regionMode: regionMode,
       is2FAEnabled: false,
       customPin: "",
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -103,7 +125,7 @@ async function handleSignup(e) {
         cin: "",
         pan: "",
         globalTaxID: "",
-        address: "Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India"
+        address: regionMode === "GLOBAL" ? "International Corporate HQ" : "Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India"
       }
     };
 
@@ -121,6 +143,9 @@ async function handleSignup(e) {
   }
 }
 
+// ==========================================
+// 4. LOGIN HANDLER
+// ==========================================
 async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById("loginEmail").value.trim();
@@ -156,7 +181,7 @@ async function handleLogin(e) {
 }
 
 // ==========================================
-// 4. SOCIAL SIGN-IN
+// 5. SOCIAL SIGN-IN & FORGOT PASSWORD
 // ==========================================
 async function handleGoogleSignIn() {
   const provider = new firebase.auth.GoogleAuthProvider();
@@ -171,10 +196,11 @@ async function handleGoogleSignIn() {
       await userRef.set({
         fullName: user.displayName || "B2B Client",
         companyName: "Garment Partner",
+        selectedCountry: "IN",
+        phoneCode: "+91",
         phone: user.phoneNumber || "9953310549",
         email: user.email,
         regionMode: "IN",
-        selectedCountry: "IN",
         is2FAEnabled: false,
         customPin: "",
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -197,8 +223,23 @@ async function handleAppleSignIn() {
   }
 }
 
+async function handleForgotPassword() {
+  const emailInput = document.getElementById("loginEmail");
+  const email = emailInput ? emailInput.value.trim() : prompt("Enter your registered work email for password reset:");
+  if (email) {
+    try {
+      await auth.sendPasswordResetEmail(email);
+      showToast("Password reset link sent to your email!", "success");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  } else {
+    showToast("Please enter your email address first.", "error");
+  }
+}
+
 // ==========================================
-// 5. 2FA & SECURITY
+// 6. 2FA & SECURITY UTILITIES
 // ==========================================
 async function verify2FAOTP() {
   const inputPin = document.getElementById("otpInput").value.trim();
@@ -273,7 +314,7 @@ async function saveCustomPin() {
 }
 
 // ==========================================
-// 6. REGION SWITCHER (INDIA vs GLOBAL)
+// 7. REGION SWITCHER (INDIA vs GLOBAL)
 // ==========================================
 async function handleRegionChange(mode) {
   const user = auth.currentUser;
@@ -329,7 +370,7 @@ function onCountryChange(countryVal) {
 }
 
 // ==========================================
-// 7. ACCOUNT SETTING ACTIONS
+// 8. ACCOUNT SETTING ACTIONS
 // ==========================================
 async function handleResetPassword() {
   const user = auth.currentUser;
@@ -378,7 +419,7 @@ async function handleDeleteAccount() {
 }
 
 // ==========================================
-// 8. PROFILE LOAD & EDIT
+// 9. PROFILE LOAD & EDIT MANAGEMENT
 // ==========================================
 async function loadUserProfile(user) {
   activeUid = user.uid;
@@ -386,6 +427,7 @@ async function loadUserProfile(user) {
     fullName: user.displayName || "Valued Client",
     companyName: "Sneh Elastic B2B Partner",
     phone: user.phoneNumber || "9953310549",
+    phoneCode: "+91",
     email: user.email,
     regionMode: "IN",
     selectedCountry: "IN",
@@ -420,7 +462,7 @@ async function loadUserProfile(user) {
   setElemText("dispFullName", data.fullName || "Valued Client");
   setElemText("dispCompanyName", data.companyName || "Sneh Elastic B2B Partner");
   
-  let fullDisplayPhone = (data.regionMode === "GLOBAL" ? (data.phoneCode || "+91") + " " : "+91 ") + (data.phone || "");
+  let fullDisplayPhone = (data.phoneCode || "+91") + " " + (data.phone || "");
   setElemText("dispPhone", fullDisplayPhone);
   setElemText("dispUID", user.uid);
 
@@ -439,10 +481,12 @@ async function loadUserProfile(user) {
   if (editComp) editComp.value = data.companyName || "";
   const editPh = document.getElementById("editPhone");
   if (editPh) editPh.value = data.phone || "";
+  const editPhoneCode = document.getElementById("editPhoneCode");
+  if (editPhoneCode) editPhoneCode.value = data.phoneCode || "+91";
+  
   const editCountry = document.getElementById("editCountrySelect");
   if (editCountry) {
     editCountry.value = data.selectedCountry || "IN";
-    onCountryChange(editCountry.value);
   }
 
   const is2fa = data.is2FAEnabled || false;
@@ -465,7 +509,7 @@ async function loadUserProfile(user) {
   const globalTaxEl = document.getElementById("advGlobalTaxID");
   if (globalTaxEl) globalTaxEl.value = adv.globalTaxID || "";
   const addrEl = document.getElementById("advAddress");
-  if (addrEl) addrEl.value = adv.address || "Block C, C-206, DSIIDC Industrial Area, Sector 1, Delhi, 110039, India";
+  if (addrEl) addrEl.value = adv.address || "";
 }
 
 function openQRModal() {
@@ -609,7 +653,7 @@ async function handleLogout() {
 }
 
 // ==========================================
-// 9. TAB SWITCHING
+// 10. TAB SWITCHING
 // ==========================================
 function switchTab(tabId) {
   document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
@@ -626,8 +670,43 @@ function switchTab(tabId) {
 }
 
 // ==========================================
-// 10. HELPERS & TOAST
+// 11. HELPERS & ANIMATIONS
 // ==========================================
+function flipCard(showSignup) {
+  const flipper = document.getElementById("cardFlipper");
+  if (flipper) {
+    if (showSignup) flipper.classList.add("rotate-y-180");
+    else flipper.classList.remove("rotate-y-180");
+  }
+}
+
+function togglePasswordVisibility(id, iconEl) {
+  const input = document.getElementById(id);
+  if (input) {
+    if (input.type === "password") {
+      input.type = "text";
+      iconEl.classList.replace("fa-eye", "fa-eye-slash");
+    } else {
+      input.type = "password";
+      iconEl.classList.replace("fa-eye-slash", "fa-eye");
+    }
+  }
+}
+
+function checkPasswordStrength(val) {
+  const bar = document.getElementById("strengthBar");
+  if (!bar) return;
+  let score = 0;
+  if (val.length >= 6) score += 33;
+  if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score += 33;
+  if (/[^A-Za-z0-9]/.test(val)) score += 34;
+
+  bar.style.width = score + "%";
+  if (score <= 33) bar.className = "h-full bg-red-500 transition-all duration-300";
+  else if (score <= 66) bar.className = "h-full bg-yellow-500 transition-all duration-300";
+  else bar.className = "h-full bg-emerald-500 transition-all duration-300";
+}
+
 function showToast(message, type = "info") {
   const toast = document.getElementById("toast");
   const icon = document.getElementById("toastIcon");
@@ -653,4 +732,50 @@ function showToast(message, type = "info") {
     toast.classList.add("translate-x-full");
     setTimeout(() => toast.classList.add("hidden"), 300);
   }, 4000);
+}
+
+// Canvas Wave Animation
+const canvas = document.getElementById("threadCanvas");
+if (canvas) {
+  const ctx = canvas.getContext("2d");
+  let width, height;
+
+  function resizeCanvas() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  const threads = Array.from({ length: 14 }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    length: 120 + Math.random() * 180,
+    speed: 0.4 + Math.random() * 0.6,
+    color: Math.random() > 0.5 ? "rgba(32, 82, 82, 0.15)" : "rgba(0, 212, 255, 0.2)"
+  }));
+
+  function animateBackground() {
+    ctx.clearRect(0, 0, width, height);
+
+    threads.forEach(t => {
+      t.y -= t.speed;
+      if (t.y < -t.length) t.y = height + t.length;
+
+      ctx.beginPath();
+      ctx.moveTo(t.x, t.y);
+      ctx.quadraticCurveTo(
+        t.x + Math.sin(t.y * 0.02) * 25,
+        t.y - t.length / 2,
+        t.x + Math.cos(t.y * 0.02) * 20,
+        t.y - t.length
+      );
+      ctx.strokeStyle = t.color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+
+    requestAnimationFrame(animateBackground);
+  }
+  animateBackground();
 }
