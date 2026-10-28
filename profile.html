@@ -22,6 +22,7 @@
             brandNavy: '#0D1139',
             brandCyan: '#00D4FF',
             brandGreen: '#205252',
+            brandBlue: '#0284C7',
             brandCharcoal: '#212121'
           },
           fontFamily: {
@@ -81,16 +82,13 @@
     }
     .menu-btn:hover {
       background: #F0FDF4;
-      border-color: #205252;
-      color: #205252;
+      border-color: currentColor;
       transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(32, 82, 82, 0.1);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
     }
     .menu-btn.active-menu {
-      background: #205252 !important;
-      border-color: #205252 !important;
       color: #FFFFFF !important;
-      box-shadow: 0 8px 20px rgba(32, 82, 82, 0.3);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
       transform: translateY(-2px);
     }
     .menu-btn.active-menu .menu-icon-box {
@@ -104,23 +102,25 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="font-sans antialiased flex flex-col min-h-screen selection:bg-brandGreen selection:text-white">
+<body id="appBody" class="font-sans antialiased flex flex-col min-h-screen selection:bg-brandGreen selection:text-white">
 
+  <!-- Background Animated Canvas -->
   <canvas id="threadCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-20"></canvas>
 
+  <!-- Notification Toast -->
   <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 flex items-center p-4 rounded-2xl shadow-2xl text-white max-w-sm hidden border border-gray-100 bg-slate-900">
     <div id="toastIcon" class="mr-3 text-lg text-brandCyan"></div>
     <div id="toastMessage" class="text-xs sm:text-sm font-semibold"></div>
   </div>
 
-  <!-- QR CODE MODAL -->
+  <!-- QR CODE ACCOUNT ID MODAL -->
   <div id="qrModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 animate-fade-in">
     <div class="light-card max-w-sm w-full rounded-3xl p-6 sm:p-8 text-center space-y-5">
-      <div class="w-14 h-14 bg-brandGreen/10 text-brandGreen rounded-2xl flex items-center justify-center mx-auto text-2xl border border-brandGreen/20">
+      <div id="qrIconBox" class="w-14 h-14 bg-brandGreen/10 text-brandGreen rounded-2xl flex items-center justify-center mx-auto text-2xl border border-brandGreen/20">
         <i class="fa-solid fa-qrcode"></i>
       </div>
       <div>
-        <h3 class="font-montserrat font-bold text-lg text-brandGreen">Account ID & QR Code</h3>
+        <h3 id="qrTitle" class="font-montserrat font-bold text-lg text-brandGreen">Account ID & QR Code</h3>
         <p class="text-[11px] text-gray-500 mt-1">Scan or copy your secure B2B identity reference.</p>
       </div>
       <div id="qrcodeContainer" class="p-4 bg-gray-50 rounded-2xl flex items-center justify-center border border-gray-200 mx-auto w-fit"></div>
@@ -128,20 +128,26 @@
         <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Full Unique ID</p>
         <p id="modalFullUID" class="font-mono text-xs text-brandGreen font-bold break-all mt-1 bg-gray-100 p-2.5 rounded-xl border border-gray-200"></p>
       </div>
-      <button onclick="closeQRModal()" class="w-full py-3 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow-lg transition-all">
+      <button type="button" onclick="closeQRModal()" id="qrCloseBtn" class="w-full py-3 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold text-xs rounded-xl shadow-lg transition-all">
         CLOSE MODAL
       </button>
     </div>
   </div>
 
+  <!-- FULL SCREEN CONTAINER -->
   <div class="w-full min-h-screen flex flex-col z-10 relative">
 
-    <!-- TOP BANNER -->
-    <div class="w-full bg-gradient-to-r from-brandGreen via-slate-900 to-brandGreen px-4 sm:px-12 py-6 sm:py-8 text-white relative overflow-hidden shadow-md">
+    <!-- TOP PROFILE BANNER (Dynamic Green/Blue Gradient) -->
+    <div id="topBanner" class="w-full bg-gradient-to-r from-brandGreen via-slate-900 to-brandGreen px-4 sm:px-12 py-6 sm:py-8 text-white relative overflow-hidden shadow-md transition-colors duration-500">
+      <svg class="absolute right-0 top-0 h-full opacity-10 spin-slow pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <circle cx="50" cy="50" r="45" stroke-width="2" stroke-dasharray="4,4"/>
+        <circle cx="50" cy="50" r="30" stroke-width="1.5"/>
+      </svg>
+
       <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center sm:items-start justify-between relative z-10 gap-5 text-center sm:text-left">
         <div class="flex flex-col sm:flex-row items-center sm:items-center space-y-3 sm:space-y-0 sm:space-x-5 w-full sm:w-auto">
           <div class="relative shrink-0">
-            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-brandCyan to-brandGreen p-1 shadow-lg">
+            <div id="avatarBorder" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-brandCyan to-brandGreen p-1 shadow-lg transition-all">
               <div class="w-full h-full bg-slate-950 rounded-xl flex items-center justify-center font-montserrat font-extrabold text-xl sm:text-2xl text-brandCyan" id="profileInitials">
                 ---
               </div>
@@ -154,7 +160,8 @@
               <i class="fa-solid fa-circle-check text-brandCyan text-sm sm:text-base shrink-0"></i>
             </div>
             <p id="dispCompanyName" class="text-brandCyan font-semibold text-xs sm:text-sm mt-0.5 truncate max-w-[260px] sm:max-w-none">---</p>
-            <p class="text-xs text-gray-200 mt-1 flex items-center justify-center sm:justify-start"><i class="fa-solid fa-phone mr-1.5 text-brandCyan"></i><span id="dispPhone">---</span></p>
+            <!-- Replaced contact number place with Country Name / Global -->
+            <p class="text-xs text-gray-200 mt-1 flex items-center justify-center sm:justify-start"><i class="fa-solid fa-earth-americas mr-1.5 text-brandCyan"></i><span id="dispCountryDisplay">India (IN)</span></p>
           </div>
         </div>
 
@@ -166,7 +173,7 @@
             </p>
             <p id="dispUID" class="font-mono text-xs text-brandCyan font-bold tracking-wider truncate max-w-[180px] sm:max-w-none group-hover:underline">--------------------</p>
           </div>
-          <button onclick="handleLogout()" class="w-full sm:w-auto px-4 py-2.5 bg-red-500/20 hover:bg-red-500 text-red-100 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-2 border border-red-500/30 shadow">
+          <button type="button" onclick="handleLogout()" class="w-full sm:w-auto px-4 py-2.5 bg-red-500/20 hover:bg-red-500 text-red-100 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-2 border border-red-500/30 shadow">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>Logout</span>
           </button>
@@ -174,45 +181,45 @@
       </div>
     </div>
 
-    <!-- MAIN DASHBOARD CONTENT -->
+    <!-- MAIN DASHBOARD CONTENT & NAVIGATION -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
       
-      <!-- SIDEBAR -->
+      <!-- SIDEBAR MENU NAVIGATION -->
       <aside class="md:col-span-3 w-full flex md:flex-col overflow-x-auto no-scrollbar space-x-2 md:space-x-0 md:space-y-3 shrink-0 pb-2 md:pb-0 snap-x">
-        <button onclick="switchTab('overviewTab')" id="btn-overviewTab" class="menu-btn active-menu shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button type="button" onclick="switchTab('overviewTab')" id="btn-overviewTab" class="menu-btn active-menu shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-chart-pie"></i></div>
           <span>Overview</span>
         </button>
-        <button onclick="switchTab('editProfileTab')" id="btn-editProfileTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button type="button" onclick="switchTab('editProfileTab')" id="btn-editProfileTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-user-pen"></i></div>
           <span>Edit Profile</span>
         </button>
-        <button onclick="switchTab('advanceTab')" id="btn-advanceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button type="button" onclick="switchTab('advanceTab')" id="btn-advanceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-file-invoice"></i></div>
           <span>Advance Detail</span>
         </button>
-        <button onclick="switchTab('invoiceTab')" id="btn-invoiceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button type="button" onclick="switchTab('invoiceTab')" id="btn-invoiceTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-receipt"></i></div>
           <span>Invoice Lookup</span>
         </button>
-        <button onclick="switchTab('accountSettingTab')" id="btn-accountSettingTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button type="button" onclick="switchTab('accountSettingTab')" id="btn-accountSettingTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-gear"></i></div>
           <span>Account Setting</span>
         </button>
-        <button onclick="switchTab('appsTab')" id="btn-appsTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
+        <button type="button" onclick="switchTab('appsTab')" id="btn-appsTab" class="menu-btn shrink-0 snap-start text-left px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm flex items-center space-x-3">
           <div class="menu-icon-box w-8 h-8 rounded-xl bg-brandGreen/10 flex items-center justify-center text-brandGreen transition-colors"><i class="fa-solid fa-globe"></i></div>
           <span>Apps</span>
         </button>
       </aside>
 
-      <!-- CONTENT PANELS -->
+      <!-- MAIN DYNAMIC CONTENT PANEL -->
       <section class="md:col-span-9 light-card rounded-3xl p-5 sm:p-8 relative overflow-hidden min-h-[500px]">
 
         <!-- 1. OVERVIEW -->
         <div id="overviewTab" class="tab-panel space-y-6 animate-fade-in relative z-10">
           <div class="flex items-center justify-between border-b border-gray-200 pb-4">
             <div>
-              <h2 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">B2B Account Summary</h2>
+              <h2 id="overviewHeading" class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen transition-colors">B2B Account Summary</h2>
               <p class="text-xs text-gray-500">Sneh Elastic Threads Manufacturing Network</p>
             </div>
             <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold shadow-sm">Gold Partner</span>
@@ -238,7 +245,7 @@
                 <span id="overviewPhone" class="font-semibold text-gray-900">---</span>
               </div>
               <div id="overviewCountryRow" class="hidden">
-                <span class="text-[11px] text-gray-400 block font-semibold">Selected Country</span>
+                <span class="text-[11px] text-gray-400 block font-semibold">Selected Country / Region</span>
                 <span id="overviewCountry" class="font-semibold text-gray-900">---</span>
               </div>
             </div>
@@ -264,23 +271,19 @@
               </div>
             </div>
 
-            <!-- Global Country Selection -->
             <div id="globalCountryFieldContainer" class="hidden space-y-1.5">
               <label class="block text-[11px] font-bold text-brandGreen uppercase tracking-wider">Select Country</label>
               <select id="editCountrySelect" onchange="onCountryChange(this.value)" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandGreen outline-none text-xs sm:text-sm text-gray-900 font-semibold cursor-pointer">
-                <option value="US" data-code="+1">United States (+1)</option>
-                <option value="GB" data-code="+44">United Kingdom (+44)</option>
-                <option value="CA" data-code="+1">Canada (+1)</option>
-                <option value="AU" data-code="+61">Australia (+61)</option>
-                <option value="DE" data-code="+49">Germany (+49)</option>
-                <option value="FR" data-code="+33">France (+33)</option>
-                <option value="JP" data-code="+81">Japan (+81)</option>
-                <option value="AE" data-code="+971">United Arab Emirates (+971)</option>
-                <option value="SG" data-code="+65">Singapore (+65)</option>
-                <option value="CN" data-code="+86">China (+86)</option>
-                <option value="BR" data-code="+55">Brazil (+55)</option>
-                <option value="ZA" data-code="+27">South Africa (+27)</option>
-                <option value="IN" data-code="+91">India (+91)</option>
+                <option value="IN" data-code="+91">🇮🇳 India (+91)</option>
+                <option value="US" data-code="+1">🇺🇸 United States (+1)</option>
+                <option value="GB" data-code="+44">🇬🇧 United Kingdom (+44)</option>
+                <option value="CA" data-code="+1">🇨🇦 Canada (+1)</option>
+                <option value="AU" data-code="+61">🇦🇺 Australia (+61)</option>
+                <option value="DE" data-code="+49">🇩🇪 Germany (+49)</option>
+                <option value="FR" data-code="+33">🇫🇷 France (+33)</option>
+                <option value="JP" data-code="+81">🇯🇵 Japan (+81)</option>
+                <option value="AE" data-code="+971">🇦🇪 United Arab Emirates (+971)</option>
+                <option value="SG" data-code="+65">🇸🇬 Singapore (+65)</option>
               </select>
             </div>
 
@@ -420,7 +423,6 @@
               </div>
             </div>
 
-            <!-- Region & Language Selectors -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="p-4 border border-gray-200 rounded-2xl bg-gray-50 space-y-2">
                 <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider">Region</label>
@@ -428,24 +430,20 @@
                   <option value="IN">India (Default)</option>
                   <option value="GLOBAL">Global (International B2B Mode)</option>
                 </select>
-                <p id="regionSubText" class="text-[10px] text-gray-400">Switching to Global enables international profile settings.</p>
+                <p class="text-[10px] text-gray-400">Switching modes adapts your profile tax & theme.</p>
               </div>
 
               <div class="p-4 border border-gray-200 rounded-2xl bg-gray-50 space-y-2">
                 <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider">Language</label>
-                <select class="w-full p-3 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 outline-none cursor-pointer">
+                <select id="languageSelect" class="w-full p-3 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 outline-none cursor-pointer">
                   <option value="EN" selected>English (Active)</option>
-                  <option value="HI" disabled>हिन्दी - Hindi (Coming Soon)</option>
-                  <option value="BN" disabled>বাংলা - Bengali (Coming Soon)</option>
-                  <option value="MR" disabled>मराठी - Marathi (Coming Soon)</option>
-                  <option value="GU" disabled>ગુજરાતી - Gujarati (Coming Soon)</option>
-                  <option value="TA" disabled>தமிழ் - Tamil (Coming Soon)</option>
-                  <option value="TE" disabled>తెలుగు - Telugu (Coming Soon)</option>
-                  <option value="KN" disabled>ಕನ್ನಡ - Kannada (Coming Soon)</option>
-                  <option value="ML" disabled>മലയാളം - Malayalam (Coming Soon)</option>
-                  <option value="PA" disabled>ਪੰਜਾਬੀ - Punjabi (Coming Soon)</option>
+                  <option value="FR" disabled>Français - French (Global Only)</option>
+                  <option value="ES" disabled>Español - Spanish (Global Only)</option>
+                  <option value="DE" disabled>Deutsch - German (Global Only)</option>
+                  <option value="JA" disabled>日本語 - Japanese (Global Only)</option>
+                  <option value="AR" disabled>العربية - Arabic (Global Only)</option>
                 </select>
-                <p class="text-[10px] text-gray-400">Regional Indian languages are currently locked.</p>
+                <p id="languageSubText" class="text-[10px] text-gray-400">English is active. Other international languages are locked.</p>
               </div>
             </div>
           </div>
