@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Google Fonts: Montserrat & Open Sans -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- QRCode Generator Library (Reliable CDNs) -->
+  <!-- QRCode Generator Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
@@ -161,7 +161,6 @@
               <i class="fa-solid fa-circle-check text-brandCyan text-sm sm:text-base shrink-0"></i>
             </div>
             <p id="dispCompanyName" class="text-brandCyan font-semibold text-xs sm:text-sm mt-0.5 truncate max-w-[260px] sm:max-w-none">---</p>
-            <!-- Country Name / Global Display -->
             <p class="text-xs text-gray-200 mt-1 flex items-center justify-center sm:justify-start"><i class="fa-solid fa-earth-americas mr-1.5 text-brandCyan"></i><span id="dispCountryDisplay">India (IN)</span></p>
           </div>
         </div>
@@ -441,7 +440,7 @@
           </div>
         </div>
 
-        <!-- 6. APPS -->
+        <!-- 6. APPS (Updated with blog, jobs & help subdomains) -->
         <div id="appsTab" class="tab-panel hidden space-y-6 animate-fade-in relative z-10">
           <div class="border-b border-gray-200 pb-4">
             <h2 class="font-montserrat font-bold text-lg sm:text-xl text-brandGreen">Sneh Elastic Web Apps</h2>
@@ -449,6 +448,7 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Main Website -->
             <a href="https://snehelastic.com" target="_blank" class="p-4 sm:p-5 border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-50 rounded-2xl flex items-center justify-between transition-all group shadow-sm">
               <div class="flex items-center space-x-3.5">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow">
@@ -462,6 +462,7 @@
               <i class="fa-solid fa-arrow-up-right-from-square text-emerald-600 text-xs"></i>
             </a>
 
+            <!-- Auth Portal -->
             <a href="https://account.snehelastic.com" target="_blank" class="p-4 sm:p-5 border border-brandGreen/20 bg-brandGreen/5 hover:bg-brandGreen/10 rounded-2xl flex items-center justify-between transition-all group shadow-sm">
               <div class="flex items-center space-x-3.5">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-brandGreen text-brandCyan flex items-center justify-center font-bold shadow">
@@ -475,19 +476,49 @@
               <i class="fa-solid fa-arrow-up-right-from-square text-brandGreen text-xs"></i>
             </a>
 
-            <div class="p-4 sm:p-5 border border-gray-200 bg-gray-100 rounded-2xl flex items-center justify-between opacity-75 cursor-not-allowed">
+            <!-- Blog (Enabled) -->
+            <a href="https://blog.snehelastic.com" target="_blank" class="p-4 sm:p-5 border border-cyan-200 bg-cyan-50/60 hover:bg-cyan-50 rounded-2xl flex items-center justify-between transition-all group shadow-sm">
               <div class="flex items-center space-x-3.5">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-400 text-white flex items-center justify-center font-bold">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-cyan-600 text-white flex items-center justify-center font-bold shadow">
                   <i class="fa-solid fa-blog text-base"></i>
                 </div>
                 <div>
-                  <h3 class="font-bold text-xs sm:text-sm text-gray-700">blog.snehelastic.com</h3>
-                  <span class="inline-block mt-1 px-2 py-0.5 bg-amber-100 text-amber-800 text-[9px] font-bold rounded-full">Coming Soon</span>
+                  <h3 class="font-bold text-xs sm:text-sm text-gray-900 group-hover:text-cyan-700 transition-colors">blog.snehelastic.com</h3>
+                  <p class="text-[10px] text-cyan-700 font-semibold mt-0.5">Active Company Blog</p>
                 </div>
               </div>
-              <i class="fa-solid fa-lock text-gray-400 text-xs"></i>
-            </div>
+              <i class="fa-solid fa-arrow-up-right-from-square text-cyan-600 text-xs"></i>
+            </a>
 
+            <!-- Jobs (Enabled Apple Jobs) -->
+            <a href="https://jobs.snehelastic.com" target="_blank" class="p-4 sm:p-5 border border-purple-200 bg-purple-50/60 hover:bg-purple-50 rounded-2xl flex items-center justify-between transition-all group shadow-sm">
+              <div class="flex items-center space-x-3.5">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow">
+                  <i class="fa-solid fa-briefcase text-base"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs sm:text-sm text-gray-900 group-hover:text-purple-700 transition-colors">jobs.snehelastic.com</h3>
+                  <p class="text-[10px] text-purple-700 font-semibold mt-0.5">Apple Careers & Jobs</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-arrow-up-right-from-square text-purple-600 text-xs"></i>
+            </a>
+
+            <!-- Help (Enabled Apple Help Portal) -->
+            <a href="https://help.snehelastic.com" target="_blank" class="p-4 sm:p-5 border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-50 rounded-2xl flex items-center justify-between transition-all group shadow-sm">
+              <div class="flex items-center space-x-3.5">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow">
+                  <i class="fa-solid fa-circle-question text-base"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs sm:text-sm text-gray-900 group-hover:text-indigo-700 transition-colors">help.snehelastic.com</h3>
+                  <p class="text-[10px] text-indigo-700 font-semibold mt-0.5">Apple Support & Help Desk</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-arrow-up-right-from-square text-indigo-600 text-xs"></i>
+            </a>
+
+            <!-- App Portal (Coming Soon) -->
             <div class="p-4 sm:p-5 border border-gray-200 bg-gray-100 rounded-2xl flex items-center justify-between opacity-75 cursor-not-allowed">
               <div class="flex items-center space-x-3.5">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-400 text-white flex items-center justify-center font-bold">
