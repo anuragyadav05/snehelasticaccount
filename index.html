@@ -1,255 +1,1212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Sneh Elastic Threads Pvt. Ltd. - B2B Auth Portal</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts: Montserrat & Open Sans -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b2e2e">
+<meta name="color-scheme" content="only light">
+<meta name="robots" content="noindex, nofollow">
+<title>Sign In | Sneh Elastic Account</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  FIRESTORE SECURITY RULES (Firebase Console > Firestore > Rules)
+  पुराने rules हों तो पहले उनका backup लें और ध्यान से merge करें।
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brandNavy: '#0D1139',
-            brandCyan: '#00D4FF',
-            brandGreen: '#205252',
-            brandBlue: '#0284C7',
-            brandCharcoal: '#212121'
-          },
-          fontFamily: {
-            montserrat: ['Montserrat', 'sans-serif'],
-            sans: ['Open Sans', 'sans-serif']
-          }
-        }
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /users/{uid} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+      match /invoices/{id} {
+        allow read: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+        allow write: if false;
       }
     }
-  </script>
+  }
 
-  <style>
-    html, body {
-      touch-action: manipulation;
-      -webkit-text-size-adjust: 100%;
-      -ms-text-size-adjust: 100%;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-    .perspective-1000 { perspective: 1000px; }
-    .transform-style-3d { transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-    .rotate-y-180 { transform: rotateY(180deg); }
-    .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  Invoice document ID: invoice number में "/" की जगह "-"   (SET/2026/00125 -> SET-2026-00125)
+  Fields: ownerUid, number, date (text), amount (number, INR), status (text)
+-->
+<style>
+:root{
+  color-scheme:only light;
+  --brand:#205252; --brand-deep:#0b2e2e; --accent:#00d4ff;
+  --bg:#eef3f3; --card:#ffffff; --soft:#f4f8f8; --line:#dde7e7;
+  --text:#132326; --muted:#5d7175; --danger:#c62828; --ok:#13795b;
+  --link:#205252;
+}
+body.global{--brand:#1e2a6b; --brand-deep:#0d1139}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Open Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.btn{font-family:Montserrat,system-ui,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted);font-size:.82rem}
 
-    .pill-input {
-      background-color: #F3F7F7;
-      border: 1px solid #E2E8F0;
-      border-radius: 9999px;
-      padding: 0.8rem 1.25rem;
-      font-size: 0.85rem;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-    .pill-input:focus {
-      border-color: #205252;
-      background-color: #FFFFFF;
-      box-shadow: 0 0 0 3px rgba(32, 82, 82, 0.1);
-    }
-    .pill-select {
-      background-color: #F3F7F7;
-      border: 1px solid #E2E8F0;
-      border-radius: 9999px;
-      padding: 0.8rem 1.25rem;
-      font-size: 0.85rem;
-      outline: none;
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-  </style>
+#strings{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.5}
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+/* buttons and fields */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;border:1px solid transparent;border-radius:12px;padding:.8rem 1.3rem;font-weight:700;font-size:.84rem;transition:transform .2s cubic-bezier(.3,2,.5,1),box-shadow .2s,background .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.6;cursor:wait;transform:none}
+.btn-primary{background:var(--brand);color:#fff;box-shadow:0 10px 22px -10px var(--brand)}
+.btn-primary:hover{background:var(--brand-deep)}
+.btn-ghost{background:var(--card);border-color:var(--line)}
+.btn-danger{background:transparent;border-color:var(--danger);color:var(--danger)}
+.btn-outline{border-color:rgba(255,255,255,.7);color:#fff;background:transparent}
+.btn-outline:hover{background:#fff;color:#0b2e2e}
+.btn-black{background:#000;color:#fff}
+.btn.block{width:100%}
+.link{background:none;border:0;color:var(--link);font-weight:700;font-size:.82rem}
+
+.field{display:block;position:relative}
+.field>span{display:block;font-size:.72rem;font-weight:700;color:var(--muted);margin:0 0 .3rem .15rem}
+.input{width:100%;background:var(--soft);border:1.5px solid var(--line);border-radius:12px;padding:.75rem .95rem;font-size:16px;transition:border .2s,box-shadow .2s}
+.input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(0,212,255,.18);outline:none}
+.input[readonly]{opacity:.75}
+.upper{text-transform:uppercase}
+.input.upper::placeholder{text-transform:none}
+.pw{position:relative}
+.pw .input{padding-right:3rem}
+.eye{position:absolute;right:.3rem;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--muted);padding:.6rem}
+.row{display:flex;gap:.6rem}
+.row .code{width:6rem;text-align:center;font-weight:700;flex:none}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.stack{display:flex;flex-direction:column;gap:.85rem}
+
+/* country combobox */
+.combo-list{position:absolute;left:0;right:0;top:100%;z-index:30;max-height:220px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 40px -12px rgba(0,0,0,.35);margin-top:.3rem;list-style:none}
+.combo-list li{padding:.6rem .9rem;font-size:.85rem;display:flex;justify-content:space-between;gap:1rem;cursor:pointer}
+.combo-list li:hover,.combo-list li.on{background:var(--soft)}
+
+/* auth */
+#authView{position:relative;z-index:1;min-height:100vh;display:grid;place-items:center;padding:1rem}
+.auth{position:relative;width:100%;max-width:980px;min-height:730px;background:var(--card);border-radius:30px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(5,40,40,.45)}
+.pane{position:absolute;top:0;bottom:0;width:50%;padding:2rem 2.6rem;display:flex;flex-direction:column;overflow:auto;transition:transform .7s cubic-bezier(.65,0,.25,1),opacity .4s,visibility .7s}
+.pane>.inner{margin:auto 0;width:100%}
+.pane-login{left:0}
+.pane-signup{left:50%;opacity:0;visibility:hidden;transform:translateX(-40px)}
+.auth.signup .pane-signup{opacity:1;visibility:visible;transform:none}
+.auth.signup .pane-login{opacity:0;visibility:hidden;transform:translateX(40px)}
+.hero{position:absolute;top:0;bottom:0;left:50%;width:50%;z-index:5;color:#fff;background:radial-gradient(circle at 20% 15%,rgba(0,212,255,.35),transparent 45%),linear-gradient(145deg,var(--brand),var(--brand-deep) 70%,#050d1c);transition:transform .8s cubic-bezier(.7,-.15,.2,1.15),border-radius .8s;border-radius:90px 0 0 90px;display:flex;align-items:center;justify-content:center;padding:2.5rem;text-align:center}
+.auth.signup .hero{transform:translateX(-100%);border-radius:0 90px 90px 0}
+.hero h2{font-size:2rem;line-height:1.2;margin-bottom:.8rem}
+.hero p{font-size:.88rem;opacity:.88;margin-bottom:1.4rem}
+.hero ul{list-style:none;text-align:left;font-size:.82rem;margin:0 auto 1.6rem;width:fit-content}
+.hero li{margin:.5rem 0}
+.hero li i{color:var(--accent);margin-right:.6rem}
+.logo{height:46px;max-width:200px;object-fit:contain;display:block;margin:0 auto .5rem}
+.title{text-align:center;margin-bottom:1rem}
+.title h1{font-size:1.5rem;font-weight:800}
+.divider{display:flex;align-items:center;gap:.8rem;color:var(--muted);font-size:.74rem;margin:.9rem 0}
+.divider::before,.divider::after{content:"";height:1px;background:var(--line);flex:1}
+.meter{height:6px;background:var(--line);border-radius:9px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--danger);transition:width .5s cubic-bezier(.3,1.8,.5,1),background .3s}
+.hint{font-size:.72rem;color:var(--muted);min-height:1em}
+.switch-mobile{display:none;text-align:center;margin-top:1rem;font-size:.82rem}
+
+/* dashboard */
+#appView{position:relative;z-index:1}
+.top{background:linear-gradient(110deg,var(--brand),#0c1d2b 60%,var(--brand-deep));color:#fff;padding:1.6rem 1rem}
+.wrap{max-width:1180px;margin:0 auto}
+.top .wrap{display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap}
+.avatar{width:72px;height:72px;border-radius:22px;background:#031014;border:3px solid var(--accent);display:grid;place-items:center;font:800 1.4rem Montserrat,sans-serif;color:var(--accent)}
+.who{flex:1;min-width:180px;overflow-wrap:anywhere}
+.who h1{font-size:1.35rem}
+.chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#fff}
+.chip{border-radius:12px;padding:.55rem .9rem;font-size:.76rem;display:inline-flex;gap:.5rem;align-items:center;height:42px}
+.layout{max-width:1180px;margin:0 auto;padding:1.2rem 1rem 4rem;display:grid;grid-template-columns:230px minmax(0,1fr);gap:1.2rem;align-items:start}
+nav{display:flex;flex-direction:column;gap:.45rem;position:sticky;top:1rem}
+nav a{display:flex;align-items:center;gap:.75rem;padding:.75rem .9rem;background:var(--card);border:1px solid var(--line);border-radius:14px;font-weight:600;font-size:.86rem;white-space:nowrap;transition:transform .25s cubic-bezier(.3,2,.5,1)}
+nav a:hover{transform:translateX(4px)}
+nav a i{width:20px;text-align:center;color:var(--link)}
+nav a[aria-current="page"]{background:var(--brand);border-color:var(--brand);color:#fff}
+nav a[aria-current="page"] i{color:var(--accent)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:1.6rem;min-height:520px}
+.tab{animation:in .45s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes in{from{opacity:0;transform:translateY(14px)}}
+.head{border-bottom:1px solid var(--line);padding-bottom:.9rem;margin-bottom:1.2rem}
+.head h2{font-size:1.2rem;color:var(--link)}
+.box{background:var(--soft);border:1px solid var(--line);border-radius:18px;padding:1.2rem}
+.box h3{font-size:.86rem;margin-bottom:.8rem}
+.box+.box,.box+.grid3,.grid3+.box{margin-top:1rem}
+.grid3>.box{margin-top:0}
+.pane-signup{padding-top:1.2rem;padding-bottom:1.2rem}
+.pane-signup .stack{gap:.5rem}
+.pane-signup .input{padding-top:.5rem;padding-bottom:.5rem}
+.pane-signup .title{margin-bottom:.6rem}
+.pane-signup .hint:empty{display:none}
+dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+dt{font-size:.7rem;color:var(--muted);font-weight:700}
+dd{font-weight:600;font-size:.9rem;overflow-wrap:anywhere}
+.stat strong{display:block;font:800 1.35rem Montserrat,sans-serif;color:var(--link);overflow-wrap:anywhere}
+.actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.9rem}
+.badge{display:inline-block;border-radius:99px;padding:.15rem .65rem;font-size:.7rem;font-weight:700;border:1px solid currentColor}
+.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem}
+.app{display:flex;gap:.9rem;align-items:center;padding:1rem;border:1px solid var(--line);border-radius:18px;background:var(--soft);transition:transform .3s cubic-bezier(.3,2,.5,1),border .2s}
+a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
+.app b{display:block;font-size:.86rem;overflow-wrap:anywhere}
+.app .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;flex:none}
+.app.off{opacity:.6}
+
+/* overlays */
+.overlay{position:fixed;inset:0;z-index:40;background:rgba(3,16,20,.7);backdrop-filter:blur(8px);display:grid;place-items:center;padding:1rem}
+.modal{background:var(--card);border-radius:24px;padding:1.6rem;width:100%;max-width:400px;max-height:90vh;overflow:auto;text-align:center;animation:in .35s}
+.modal .stack{text-align:left;margin-top:1rem}
+.pin{text-align:center;letter-spacing:.8em;font-size:1.6rem;font-weight:700}
+#qrBox{background:#fff;border-radius:16px;padding:14px;width:fit-content;margin:1rem auto}
+#qrBox img{display:block;width:180px;height:180px}
+.uid{font:600 .78rem ui-monospace,monospace;overflow-wrap:anywhere}
+#cmdList{list-style:none;margin-top:.7rem;text-align:left}
+#cmdList button{width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:.7rem}
+#cmdList button:hover,#cmdList button:focus{background:var(--soft)}
+#toasts{position:fixed;right:1rem;bottom:1rem;z-index:60;display:flex;flex-direction:column;gap:.5rem;max-width:min(360px,calc(100vw - 2rem))}
+.toast{background:#0c1d22;color:#fff;border-left:5px solid var(--accent);border-radius:12px;padding:.8rem 1rem;font-size:.84rem;box-shadow:0 14px 30px -10px rgba(0,0,0,.5);animation:in .3s}
+.toast.error{border-color:#ff6b60}.toast.success{border-color:#34d399}
+#loader{position:fixed;inset:0;z-index:70;background:var(--bg);display:grid;place-items:center}
+.spin{width:48px;height:48px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--brand);animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+#demoBar{position:relative;z-index:2;background:#ffcc33;color:#231a00;text-align:center;font-size:.78rem;font-weight:700;padding:.4rem 1rem}
+
+
+/* ---------- extra animations ---------- */
+.aurora{position:fixed;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.aurora i{position:absolute;width:55vmax;height:55vmax;border-radius:50%;opacity:.5;animation:drift 18s ease-in-out infinite alternate}
+.aurora i:nth-child(1){left:-20vmax;top:-18vmax;background:radial-gradient(circle,rgba(0,212,255,.45),transparent 68%)}
+.aurora i:nth-child(2){right:-22vmax;top:15vh;background:radial-gradient(circle,rgba(32,150,120,.42),transparent 68%);animation-duration:23s;animation-delay:-7s}
+.aurora i:nth-child(3){left:15vw;bottom:-30vmax;background:radial-gradient(circle,rgba(99,102,241,.3),transparent 68%);animation-duration:27s;animation-delay:-12s}
+@keyframes drift{50%{transform:translate(9vmax,7vmax) scale(1.18)}100%{transform:translate(-5vmax,12vmax) scale(.9)}}
+.btn{position:relative;overflow:hidden}
+.btn-primary::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:shine 3.6s ease-in-out infinite}
+@keyframes shine{0%,55%{left:-60%}90%,100%{left:130%}}
+.ripple{position:absolute;width:20px;height:20px;margin:-10px;border-radius:50%;background:currentColor;opacity:.3;pointer-events:none;animation:ripple .6s ease-out forwards}
+@keyframes ripple{to{transform:scale(18);opacity:0}}
+.spark{position:fixed;width:6px;height:6px;margin:-3px;border-radius:50%;z-index:55;pointer-events:none;animation:spark .65s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--x),var(--y)) scale(0)}}
+.pane .stack>*,.pane .title,.pane .divider{animation:rise .55s cubic-bezier(.2,.9,.3,1.25) backwards}
+.pane .stack>:nth-child(2){animation-delay:.06s}.pane .stack>:nth-child(3){animation-delay:.12s}.pane .stack>:nth-child(4){animation-delay:.18s}.pane .stack>:nth-child(5){animation-delay:.24s}.pane .stack>:nth-child(n+6){animation-delay:.3s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}}
+.hero{overflow:hidden}
+.hero::before,.hero::after{content:"";position:absolute;border:2px dashed rgba(255,255,255,.18);border-radius:50%;width:360px;height:360px;right:-150px;top:-130px;animation:rot 30s linear infinite}
+.hero::after{width:260px;height:260px;left:-110px;right:auto;top:auto;bottom:-90px;animation-direction:reverse}
+.hero li{animation:floaty 4s ease-in-out infinite}.hero li:nth-child(2){animation-delay:-1.3s}.hero li:nth-child(3){animation-delay:-2.6s}
+@keyframes floaty{50%{transform:translateX(7px)}}
+.ring{position:relative;flex:none;padding:3px;border-radius:25px;overflow:hidden}
+.ring::before{content:"";position:absolute;inset:-45%;background:conic-gradient(var(--accent),transparent 30%,#34d399 55%,transparent 80%,var(--accent));animation:rot 4s linear infinite}
+.ring .avatar{position:relative;border:0}
+.top{position:relative;overflow:hidden}
+.top::after{content:"";position:absolute;left:0;bottom:0;width:200%;height:3px;background:repeating-linear-gradient(90deg,transparent 0,var(--accent) 12.5%,transparent 25%);animation:flow 7s linear infinite}
+@keyframes flow{to{transform:translateX(-50%)}}
+.stat,.apps .app{animation:rise .55s cubic-bezier(.2,.9,.3,1.25) backwards}
+.grid3>:nth-child(2),.apps>:nth-child(2){animation-delay:.08s}.grid3>:nth-child(3),.apps>:nth-child(3){animation-delay:.16s}.apps>:nth-child(4){animation-delay:.24s}.apps>:nth-child(5){animation-delay:.32s}.apps>:nth-child(6){animation-delay:.4s}
+
+.tools{display:flex;gap:.6rem}
+.chip{justify-content:center}
+.narrow{display:none}
+.mhero,.seg{display:none}
+
+@media(max-width:820px){
+  #authView{padding:.75rem;align-content:center}
+  .auth{min-height:0;max-width:480px;border-radius:28px;background:rgba(255,255,255,.93);border:1px solid #fff}
+  .hero{display:none}
+  .pane,.pane-signup,.auth.signup .pane-signup{position:static;width:100%;transform:none;padding:1.1rem 1.15rem 1.4rem;transition:none}
+  .pane-signup,.auth.signup .pane-login{display:none}
+  .auth.signup .pane-signup{display:flex}
+  .pane .logo,.pane .title,.switch-mobile{display:none}
+  .caps:empty{display:none}
+  .mhero{height:168px}
+  .mhero{display:block;position:relative;overflow:hidden;text-align:center;color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-deep),#11606b,var(--brand));background-size:300% 300%;animation:shift 12s ease infinite}
+  .mlogo{position:relative;z-index:2;display:inline-block;margin-top:30px;background:#fff;border-radius:18px;padding:10px 18px;box-shadow:0 14px 30px -10px rgba(0,0,0,.5);animation:bob 4.5s ease-in-out infinite}
+  .mlogo img{display:block;height:36px;max-width:190px;object-fit:contain;font-size:.9rem;font-weight:700;color:#205252}
+  .rotator{position:relative;z-index:2;height:1.6rem;margin-top:.8rem;font-size:.8rem;font-weight:600}
+  .rotator span{position:absolute;left:0;right:0;opacity:0;animation:rotate-text 9s infinite}
+  .rotator span:nth-child(2){animation-delay:3s}.rotator span:nth-child(3){animation-delay:6s}
+  .orbit i{position:absolute;border-radius:50%;border:2px dashed rgba(255,255,255,.28);animation:rot 16s linear infinite}
+  .orbit i:nth-child(1){width:130px;height:130px;left:-45px;top:-35px}
+  .orbit i:nth-child(2){width:90px;height:90px;right:-20px;top:20px;animation-direction:reverse}
+  .orbit i:nth-child(3){width:44px;height:44px;right:70px;top:-14px;border-color:rgba(0,212,255,.7);animation-duration:7s}
+  .waves{position:absolute;left:0;bottom:-1px;width:300%;height:42px}
+  .waves path{fill:#fff}
+  .waves .w1{opacity:.35;animation:wave 7s linear infinite}
+  .waves .w2{animation:wave 11s linear infinite}
+  .seg{display:grid;grid-template-columns:1fr 1fr;position:relative;margin:.8rem 1.15rem 0;padding:4px;background:var(--soft);border:1px solid var(--line);border-radius:16px}
+  .seg a{position:relative;z-index:1;text-align:center;padding:.6rem;font:700 .85rem Montserrat,sans-serif;color:var(--muted);transition:color .3s}
+  .seg b{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:var(--brand);border-radius:12px;box-shadow:0 8px 18px -8px var(--brand);transition:transform .45s cubic-bezier(.3,1.6,.5,1)}
+  .seg a[data-go="login"],.auth.signup .seg a[data-go="signup"]{color:#fff}
+  .auth.signup .seg a[data-go="login"]{color:var(--muted)}
+  .auth.signup .seg b{transform:translateX(100%)}
+
+  .wide{display:none}
+  .narrow{display:inline}
+  .top{padding:1rem .75rem}
+  .top .wrap{gap:.7rem}
+  .ring{border-radius:19px}
+  .avatar{width:52px;height:52px;border-radius:16px;font-size:1.05rem}
+  .who{min-width:0}
+  .who h1{font-size:1.05rem}
+  .who div{font-size:.85rem}
+  .tools{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem}
+  .chip{height:34px;padding:0 .3rem;gap:.35rem;font-size:.72rem;border-radius:10px;white-space:nowrap}
+
+  .layout{grid-template-columns:minmax(0,1fr);padding:.75rem .65rem calc(92px + env(safe-area-inset-bottom))}
+  nav{position:fixed;z-index:20;left:.5rem;right:.5rem;top:auto;bottom:calc(.5rem + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;padding:5px;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 14px 36px -10px rgba(5,40,40,.4)}
+  nav a{flex-direction:column;justify-content:center;gap:.2rem;padding:.45rem 0;border:0;border-radius:15px;font-size:.6rem}
+  nav a:hover{transform:none}
+  nav a i{font-size:1rem}
+  nav a[aria-current="page"] i{animation:hop .5s cubic-bezier(.3,2,.5,1)}
+  #toasts{bottom:calc(88px + env(safe-area-inset-bottom))}
+  .grid3{grid-template-columns:minmax(0,1fr)}
+}
+@keyframes shift{50%{background-position:100% 50%}}
+@keyframes bob{50%{transform:translateY(-6px) rotate(-1deg)}}
+@keyframes rotate-text{0%{opacity:0;transform:translateY(12px)}5%,30%{opacity:1;transform:none}35%,100%{opacity:0;transform:translateY(-12px)}}
+@keyframes wave{to{transform:translateX(-33.333%)}}
+@keyframes hop{40%{transform:translateY(-6px) scale(1.15)}}
+@media(max-width:560px){.grid2,.apps,dl{grid-template-columns:minmax(0,1fr)}.panel{padding:1.1rem}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}#strings{display:none}.rotator span:first-child{opacity:1}}
+@media print{.aurora,#strings,nav,.top,#toasts,#demoBar{display:none!important}}
+</style>
 </head>
-<body class="bg-slate-100 font-sans text-gray-800 antialiased min-h-screen relative flex items-center justify-center p-3 sm:p-6 overflow-x-hidden">
+<body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<canvas id="strings" aria-hidden="true"></canvas>
+<div id="loader"><div class="spin" role="status" aria-label="Loading"></div></div>
+<div id="demoBar" hidden>DEMO MODE: असली डेटाबेस से कनेक्शन नहीं है। असली password न डालें।</div>
 
-  <!-- Background Canvas -->
-  <canvas id="threadCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
-
-  <!-- Notification Toast -->
-  <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 flex items-center p-4 rounded-2xl shadow-2xl text-white max-w-md hidden">
-    <div id="toastIcon" class="mr-3 text-xl"></div>
-    <div id="toastMessage" class="text-sm font-semibold"></div>
-  </div>
-
-  <!-- 2-STEP VERIFICATION PIN MODAL -->
-  <div id="otpModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white max-w-md w-full rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 text-center space-y-5">
-      <div class="w-16 h-16 bg-brandGreen/10 text-brandGreen rounded-2xl flex items-center justify-center mx-auto text-2xl">
-        <i class="fa-solid fa-shield-halved text-brandCyan"></i>
-      </div>
-      <div>
-        <h3 class="font-montserrat font-bold text-xl text-brandGreen">2-Step Verification</h3>
-        <p class="text-xs text-gray-500 mt-1">Enter your custom 4-digit verification code to login.</p>
-      </div>
-      <div>
-        <input type="password" id="otpInput" maxlength="4" placeholder="••••" class="w-48 text-center tracking-[0.75em] font-mono font-bold text-3xl py-3 border-2 border-gray-200 rounded-xl focus:border-brandGreen outline-none bg-gray-50 mx-auto block">
-      </div>
-      <button type="button" onclick="verify2FAOTP()" class="w-full py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold rounded-full shadow-lg transition-all">
-        VERIFY & CONTINUE
-      </button>
-      <button type="button" onclick="closeOTPModal()" class="text-xs text-gray-400 hover:text-gray-600">Cancel Login</button>
+<!-- ================= AUTH: /login and /signup ================= -->
+<main id="authView" hidden>
+  <div class="auth" id="authCard">
+    <div class="mhero">
+      <div class="orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="mlogo"><img src="https://i.ibb.co/JFz4L3ZL/SNEH-ELASTIC-LOGO.png" alt="Sneh Elastic"></div>
+      <p class="rotator" aria-hidden="true"><span>One login for your business account</span><span>Look up your invoices</span><span>QR code for your Account ID</span></p>
+      <svg class="waves" viewBox="0 0 1200 80" preserveAspectRatio="none" aria-hidden="true">
+        <path class="w1" d="M0 45 Q150 5 300 45 T600 45 T900 45 T1200 45 T1500 45 T1800 45 V80 H0Z"/>
+        <path class="w2" d="M0 55 Q150 25 300 55 T600 55 T900 55 T1200 55 T1500 55 T1800 55 V80 H0Z"/>
+      </svg>
     </div>
+    <div class="seg">
+      <b aria-hidden="true"></b>
+      <a data-go="login" href="#/login">Sign In</a>
+      <a data-go="signup" href="#/signup">Sign Up</a>
+    </div>
+    <section class="pane pane-login"><div class="inner">
+      <img class="logo" src="https://i.ibb.co/JFz4L3ZL/SNEH-ELASTIC-LOGO.png" alt="Sneh Elastic">
+      <div class="title"><h1>Sign In</h1><p class="muted">One account for all Sneh Elastic services</p></div>
+      <div class="stack">
+        <button class="btn btn-ghost block" data-action="google"><i class="fa-brands fa-google"></i>Sign in with Google</button>
+        <button class="btn btn-black block" data-action="apple"><i class="fa-brands fa-apple"></i>Sign in with Apple</button>
+      </div>
+      <div class="divider">or use your work email</div>
+      <form id="loginForm" class="stack">
+        <label class="field"><span>Email address</span><input class="input" name="email" type="email" autocomplete="email" required></label>
+        <label class="field"><span>Password</span>
+          <div class="pw"><input class="input" name="password" type="password" autocomplete="current-password" required><button type="button" class="eye" data-action="eye" aria-label="Show password"><i class="fa-solid fa-eye"></i></button></div>
+        </label>
+        <p class="hint caps" aria-live="polite"></p>
+        <button type="button" class="link" data-action="forgot">Forgot your password?</button>
+        <button class="btn btn-primary block">Sign In <i class="fa-solid fa-arrow-right"></i></button>
+      </form>
+      <p class="switch-mobile">New here? <a class="link" data-go="signup" href="#/signup">Create account</a></p>
+    </div></section>
+
+    <section class="pane pane-signup"><div class="inner">
+      <div class="title"><h1>Create Account</h1><p class="muted">Join our B2B Procurement Network</p></div>
+      <form id="signupForm" class="stack">
+        <label class="field"><span>Full name</span><input class="input" name="fullName" autocomplete="name" required></label>
+        <label class="field"><span>Company / business name</span><input class="input" name="company" autocomplete="organization" required></label>
+        <div class="field"><span>Country</span><div data-country="signup"></div></div>
+        <div class="field"><span>Phone number</span><div class="row"><input class="input code" name="phoneCode" readonly aria-label="Dial code"><input class="input" name="phone" type="tel" autocomplete="tel-national" pattern="[0-9 \-]{5,15}" title="5 से 15 अंक" required aria-label="Phone number"></div></div>
+        <label class="field"><span>Work email</span><input class="input" name="email" type="email" autocomplete="email" required></label>
+        <label class="field"><span>Password (कम से कम 8 अक्षर)</span>
+          <div class="pw"><input class="input" name="password" type="password" autocomplete="new-password" minlength="8" required><button type="button" class="eye" data-action="eye" aria-label="Show password"><i class="fa-solid fa-eye"></i></button></div>
+        </label>
+        <div class="meter"><i id="strength"></i></div>
+        <p class="hint" id="strengthText" aria-live="polite"></p>
+        <button class="btn btn-primary block">Create Account</button>
+      </form>
+      <p class="switch-mobile">Already registered? <a class="link" data-go="login" href="#/login">Sign in</a></p>
+    </div></section>
+
+    <aside class="hero">
+      <div>
+        <h2 id="heroTitle">Hey There!</h2>
+        <p id="heroText"></p>
+        <ul>
+          <li><i class="fa-solid fa-link"></i>One login for your business account</li>
+          <li><i class="fa-solid fa-receipt"></i>Invoice lookup</li>
+          <li><i class="fa-solid fa-qrcode"></i>QR code for your Account ID</li>
+        </ul>
+        <a class="btn btn-outline" id="heroBtn" data-go="signup" href="#/signup">Sign Up</a>
+      </div>
+    </aside>
   </div>
+</main>
 
-  <!-- MAIN APP WRAPPER -->
-  <div class="w-full max-w-5xl z-10 my-auto">
+<!-- ================= DASHBOARD: /dashboard/* ================= -->
+<div id="appView" hidden>
+  <header class="top"><div class="wrap">
+    <div class="ring"><div class="avatar" id="initials">--</div></div>
+    <div class="who">
+      <h1 data-bind="fullName">---</h1>
+      <div style="color:var(--accent);font-weight:600" data-bind="company">---</div>
+      <small><i class="fa-solid fa-earth-americas"></i> <span data-bind="countryName">---</span></small>
+    </div>
+    <div class="tools">
+      <button class="chip" data-action="qr" aria-label="Account ID QR code"><i class="fa-solid fa-qrcode"></i><span id="shortUid" class="wide">Account ID</span><span class="narrow">My QR</span></button>
+      <button class="chip" data-action="cmd" title="Ctrl / Cmd + K"><i class="fa-solid fa-bolt"></i><span class="wide">Quick actions</span><span class="narrow">Actions</span></button>
+      <button class="chip" data-action="logout"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
+    </div>
+  </div></header>
 
-    <!-- SPLIT-SCREEN AUTH CARD -->
-    <div id="authSection" class="perspective-1000 w-full max-w-4xl mx-auto">
-      <div id="cardFlipper" class="transform-style-3d relative w-full min-h-[640px]">
+  <div class="layout">
+    <nav id="nav" aria-label="Dashboard">
+      <a data-go="dashboard"><i class="fa-solid fa-chart-pie"></i><span class="wide">Overview</span><span class="narrow">Home</span></a>
+      <a data-go="dashboard/profile"><i class="fa-solid fa-user-pen"></i><span class="wide">Edit Profile</span><span class="narrow">Profile</span></a>
+      <a data-go="dashboard/business"><i class="fa-solid fa-file-invoice"></i><span class="wide">Business Details</span><span class="narrow">Business</span></a>
+      <a data-go="dashboard/invoices"><i class="fa-solid fa-receipt"></i><span class="wide">Invoice Lookup</span><span class="narrow">Invoices</span></a>
+      <a data-go="dashboard/settings"><i class="fa-solid fa-gear"></i><span class="wide">Account Settings</span><span class="narrow">Settings</span></a>
+      <a data-go="dashboard/apps"><i class="fa-solid fa-globe"></i><span class="wide">Apps</span><span class="narrow">Apps</span></a>
+    </nav>
 
-        <!-- FRONT: LOGIN SPLIT SCREEN -->
-        <div class="backface-hidden absolute inset-0 w-full bg-white shadow-2xl rounded-[28px] sm:rounded-[35px] overflow-hidden grid grid-cols-1 md:grid-cols-2">
-          <div class="p-6 sm:p-10 flex flex-col justify-center space-y-3.5 bg-white">
-            <div class="text-center space-y-1">
-              <img src="https://i.ibb.co/JFz4L3ZL/SNEH-ELASTIC-LOGO.png" alt="Sneh Logo" class="h-10 sm:h-12 mx-auto object-contain mb-1">
-              <h2 class="font-montserrat font-extrabold text-2xl text-gray-900">Sign In</h2>
-            </div>
+    <main class="panel">
+      <section class="tab" data-tab="dashboard">
+        <div class="head"><h2 id="greeting">Welcome</h2><p class="muted">Sneh Elastic Threads Manufacturing Network</p></div>
+        <div class="grid3">
+          <div class="box stat"><span class="muted">Profile complete</span><strong id="pct">0%</strong><div class="meter"><i id="pctBar"></i></div></div>
+          <div class="box stat"><span class="muted">Email status</span><strong id="emailState">---</strong><button class="link" data-action="verify" id="verifyBtn">Send verification link</button></div>
+          <div class="box stat"><span class="muted">Screen lock PIN</span><strong id="pinState">Off</strong><a class="link" data-go="dashboard/settings">Manage</a></div>
+        </div>
+        <div class="box"><h3>Registered corporate details</h3>
+          <dl>
+            <div><dt>Primary contact</dt><dd data-bind="fullName"></dd></div>
+            <div><dt>Business</dt><dd data-bind="company"></dd></div>
+            <div><dt>Email</dt><dd data-bind="email"></dd></div>
+            <div><dt>Phone</dt><dd data-bind="fullPhone"></dd></div>
+            <div><dt>Country</dt><dd data-bind="countryName"></dd></div>
+            <div><dt>Mode</dt><dd data-bind="regionName"></dd></div>
+          </dl>
+          <div class="actions"><button class="btn btn-ghost" data-action="vcard"><i class="fa-solid fa-address-card"></i>Download contact card</button><button class="btn btn-ghost" data-action="qr"><i class="fa-solid fa-qrcode"></i>Show QR</button></div>
+        </div>
+      </section>
 
-            <!-- Social Login Buttons (Google & Apple) -->
-            <div class="space-y-2">
-              <button type="button" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-4 border border-gray-300 rounded-full flex items-center justify-center space-x-3 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
-                <svg class="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
-                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.14v3.15C3.15 21.32 7.21 24 12 24z"/>
-                  <path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.5-.38-2.25s.13-1.53.38-2.25V6.6H1.14C.41 8.08 0 9.75 0 12s.41 3.92 1.14 5.4l4.14-3.15z"/>
-                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.21 0 3.15 2.68 1.14 6.6l4.14 3.15c.95-2.84 3.6-4.95 6.72-4.95z"/>
-                </svg>
-                <span>Sign in with Google</span>
-              </button>
-
-              <button type="button" onclick="handleAppleSignIn()" class="w-full py-2.5 px-4 bg-black text-white rounded-full flex items-center justify-center space-x-3 text-xs font-bold hover:bg-slate-800 transition-all shadow-sm">
-                <i class="fa-brands fa-apple text-base"></i>
-                <span>Sign in with Apple</span>
-              </button>
-            </div>
-
-            <p class="text-center text-[11px] font-semibold text-gray-400">Or use your work account</p>
-
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3">
-              <div>
-                <input type="email" id="loginEmail" placeholder="Email Address" required class="pill-input w-full">
-              </div>
-              <div class="relative">
-                <input type="password" id="loginPassword" placeholder="Password" required class="pill-input w-full pr-12">
-                <i class="fa-solid fa-eye absolute right-5 top-3.5 text-gray-400 cursor-pointer hover:text-brandGreen" onclick="togglePasswordVisibility('loginPassword', this)"></i>
-              </div>
-
-              <div class="text-center">
-                <button type="button" onclick="handleForgotPassword()" class="text-xs font-semibold text-gray-500 hover:text-brandGreen transition-colors">Forget your password?</button>
-              </div>
-
-              <button type="submit" id="btnLogin" class="w-full py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold rounded-full shadow-md transition-all">
-                Sign In
-              </button>
-            </form>
-
-            <div class="block md:hidden text-center pt-1">
-              <p class="text-xs text-gray-500 font-medium">
-                New here? <button type="button" onclick="flipCard(true)" class="font-bold text-brandGreen underline ml-1">Create Account</button>
-              </p>
-            </div>
+      <section class="tab" data-tab="dashboard/profile">
+        <div class="head"><h2>Edit Profile</h2><p class="muted">Update your contact and business details.</p></div>
+        <form id="profileForm" class="stack">
+          <div class="grid2">
+            <label class="field"><span>Full name</span><input class="input" name="fullName" required></label>
+            <label class="field"><span>Company name</span><input class="input" name="company" required></label>
           </div>
+          <div class="field"><span>Country</span><div data-country="profile"></div></div>
+          <div class="field"><span>Phone number</span><div class="row"><input class="input code" name="phoneCode" readonly aria-label="Dial code"><input class="input" name="phone" type="tel" pattern="[0-9 \-]{5,15}" required aria-label="Phone number"></div></div>
+          <div><button class="btn btn-primary"><i class="fa-solid fa-user-check"></i>Save changes</button></div>
+        </form>
+      </section>
 
-          <div class="hidden md:flex relative bg-brandGreen text-white p-8 flex-col items-center justify-center text-center space-y-6 overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-br from-brandGreen via-emerald-900 to-slate-900 opacity-90 pointer-events-none"></div>
-            <div class="relative z-10 space-y-4 max-w-xs">
-              <h3 class="font-montserrat font-extrabold text-3xl text-white">Hey There!</h3>
-              <p class="text-xs text-emerald-100/90 leading-relaxed font-medium">
-                Create your account now and step into an amazing new journey with Sneh Elastic Threads Pvt. Ltd.
-              </p>
-              <button type="button" onclick="flipCard(true)" class="px-10 py-3 border-2 border-white/80 hover:bg-white hover:text-brandGreen rounded-full font-montserrat font-bold text-xs tracking-wider transition-all">
-                Sign Up
-              </button>
-            </div>
+      <section class="tab" data-tab="dashboard/business">
+        <div class="head"><h2>Business Details</h2><p class="muted">Tax and address details for B2B invoicing. सिर्फ़ format जाँचा जाता है, सरकारी verification नहीं।</p></div>
+        <form id="businessForm" class="stack">
+          <div class="grid3" id="indiaFields">
+            <label class="field"><span>GSTIN (optional)</span><input class="input upper" name="gstin" maxlength="15" placeholder="15 characters"></label>
+            <label class="field"><span>CIN (optional)</span><input class="input upper" name="cin" maxlength="21" placeholder="21 characters"></label>
+            <label class="field"><span>PAN (optional)</span><input class="input upper" name="pan" maxlength="10" placeholder="10 characters"></label>
+          </div>
+          <label class="field" id="globalFields"><span>Company registration / Tax ID</span><input class="input upper" name="globalTaxID" maxlength="40"></label>
+          <label class="field"><span>Factory / office address</span><textarea class="input" name="address" rows="3" maxlength="500"></textarea></label>
+          <div><button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i>Save details</button></div>
+        </form>
+      </section>
+
+      <section class="tab" data-tab="dashboard/invoices">
+        <div class="head"><h2>Invoice Lookup</h2><p class="muted">आपके अकाउंट से जुड़े invoices खोजें।</p></div>
+        <form id="invoiceForm" class="box row">
+          <input class="input upper" name="number" placeholder="e.g. SET/2026/00125" required aria-label="Invoice number">
+          <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
+        </form>
+        <div id="invoiceResult" class="box" hidden aria-live="polite"></div>
+      </section>
+
+      <section class="tab" data-tab="dashboard/settings">
+        <div class="head"><h2>Account Settings</h2><p class="muted">Password, email, screen lock and region.</p></div>
+        <div class="box"><h3>Sign-in credentials</h3>
+          <div class="actions">
+            <button class="btn btn-ghost" data-action="resetPassword"><i class="fa-solid fa-key"></i>Reset password</button>
+            <button class="btn btn-ghost" data-action="changeEmail"><i class="fa-solid fa-envelope"></i>Change email</button>
           </div>
         </div>
-
-        <!-- BACK: SIGN UP SPLIT SCREEN (With Complete World Countries & Search) -->
-        <div class="backface-hidden rotate-y-180 absolute inset-0 w-full bg-white shadow-2xl rounded-[28px] sm:rounded-[35px] overflow-hidden grid grid-cols-1 md:grid-cols-2">
-          <div class="hidden md:flex relative bg-brandGreen text-white p-8 flex-col items-center justify-center text-center space-y-6 overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-brandGreen to-emerald-900 opacity-90 pointer-events-none"></div>
-            <div class="relative z-10 space-y-4 max-w-xs">
-              <h3 class="font-montserrat font-extrabold text-3xl text-white">Welcome Back!</h3>
-              <p class="text-xs text-emerald-100/90 leading-relaxed font-medium">
-                To keep connected with us please login with your existing account credentials.
-              </p>
-              <button type="button" onclick="flipCard(false)" class="px-10 py-3 border-2 border-white/80 hover:bg-white hover:text-brandGreen rounded-full font-montserrat font-bold text-xs tracking-wider transition-all">
-                Sign In
-              </button>
+        <div class="box"><h3><i class="fa-solid fa-lock"></i> 4-digit screen lock PIN</h3>
+          <p class="muted">नए browser session में और 10 मिनट निष्क्रिय रहने पर PIN माँगा जाएगा। यह सिर्फ़ स्क्रीन लॉक है, असली 2-Step Verification नहीं।</p>
+          <form id="pinForm" class="stack" style="margin-top:.8rem">
+            <div class="grid2">
+              <label class="field"><span>New PIN</span><input class="input pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required></label>
+              <label class="field"><span>Confirm PIN</span><input class="input pin" name="confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required></label>
             </div>
-          </div>
-
-          <div class="p-6 sm:p-8 flex flex-col justify-center space-y-3 bg-white overflow-y-auto max-h-[640px]">
-            <div class="text-center space-y-1">
-              <h2 class="font-montserrat font-extrabold text-xl text-gray-900">Create Account</h2>
-              <p class="text-xs font-semibold text-gray-400">Join our B2B Procurement Network</p>
-            </div>
-
-            <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-2.5">
-              <div>
-                <input type="text" id="signupName" placeholder="Full Name" required class="pill-input w-full">
-              </div>
-              <div>
-                <input type="text" id="signupCompany" placeholder="Company / Business Name" required class="pill-input w-full">
-              </div>
-              <div>
-                <!-- Complete World Country Dropdown with Search Input -->
-                <input type="text" id="countrySearchInput" placeholder="🔍 Type to search country..." oninput="filterCountries(this.value)" class="pill-input w-full mb-1">
-                <select id="signupCountrySelect" size="1" onchange="onSignupCountryChange(this.value)" class="pill-select w-full" required>
-                  <!-- Populated dynamically via JS with all world countries -->
-                </select>
-              </div>
-              <div class="flex gap-2">
-                <input type="text" id="signupPhoneCode" value="+91" class="w-20 px-3 py-3 bg-gray-100 border border-gray-200 rounded-full text-center text-xs font-mono font-bold text-gray-800" readonly>
-                <input type="tel" id="signupPhone" placeholder="Phone Number" required class="flex-1 pill-input">
-              </div>
-              <div>
-                <input type="email" id="signupEmail" placeholder="Work Email Address" required class="pill-input w-full">
-              </div>
-              <div class="relative">
-                <input type="password" id="signupPassword" oninput="checkPasswordStrength(this.value)" placeholder="Password" required class="pill-input w-full pr-12">
-                <i class="fa-solid fa-eye absolute right-5 top-3.5 text-gray-400 cursor-pointer hover:text-brandGreen" onclick="togglePasswordVisibility('signupPassword', this)"></i>
-              </div>
-
-              <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                <div id="strengthBar" class="h-full w-0 bg-red-500 transition-all duration-300"></div>
-              </div>
-
-              <button type="submit" id="btnSignup" class="w-full py-3.5 bg-brandGreen hover:bg-slate-900 text-white font-montserrat font-bold rounded-full shadow-md transition-all">
-                Sign Up
-              </button>
-            </form>
-
-            <div class="block md:hidden text-center pt-1">
-              <p class="text-xs text-gray-500 font-medium">
-                Already registered? <button type="button" onclick="flipCard(false)" class="font-bold text-brandGreen underline ml-1">Sign In</button>
-              </p>
-            </div>
-          </div>
+            <div class="actions" style="margin:0"><button class="btn btn-primary">Save PIN</button><button type="button" class="btn btn-ghost" data-action="removePin" id="removePin">Turn off</button><button type="button" class="btn btn-ghost" data-action="lockNow" id="lockNow">Lock now</button></div>
+          </form>
         </div>
+        <div class="box"><h3>Region</h3>
+          <select class="input" id="region" aria-label="Region"><option value="IN">India</option><option value="GLOBAL">Global (International B2B)</option></select>
+        </div>
+        <div class="box"><h3 style="color:var(--danger)">Danger zone</h3>
+          <p class="muted">अकाउंट और profile data हमेशा के लिए हट जाएँगे।</p>
+          <div class="actions"><button class="btn btn-danger" data-action="deleteAccount"><i class="fa-solid fa-trash"></i>Delete account</button></div>
+        </div>
+      </section>
 
-      </div>
-    </div>
-
+      <section class="tab" data-tab="dashboard/apps">
+        <div class="head"><h2>Sneh Elastic Web Apps</h2><p class="muted">Quick access across our websites.</p></div>
+        <div class="apps" id="apps"></div>
+      </section>
+    </main>
   </div>
+</div>
 
-  <script src="script.js"></script>
+<!-- ================= OVERLAYS ================= -->
+<div class="overlay" id="lock" hidden role="dialog" aria-modal="true" aria-label="Screen locked">
+  <form class="modal" id="unlockForm">
+    <h3><i class="fa-solid fa-lock"></i> Enter your PIN</h3>
+    <div class="stack"><input class="input pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required aria-label="4 digit PIN">
+    <button class="btn btn-primary block">Unlock</button>
+    <button type="button" class="link" data-action="logout">Logout / PIN भूल गए</button></div>
+  </form>
+</div>
+
+<div class="overlay" id="qrModal" hidden role="dialog" aria-modal="true" aria-label="Account QR code">
+  <div class="modal"><h3>Account ID</h3><div id="qrBox"></div><p class="uid" id="fullUid"></p>
+    <div class="actions" style="justify-content:center"><button class="btn btn-primary" data-action="copyUid"><i class="fa-solid fa-copy"></i>Copy</button><button class="btn btn-ghost" data-action="close">Close</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="cmdModal" hidden role="dialog" aria-modal="true" aria-label="Quick actions">
+  <div class="modal"><input class="input" id="cmdInput" placeholder="Type to search actions..." autocomplete="off" aria-label="Search actions"><ul id="cmdList"></ul><button class="link" data-action="close">Close (Esc)</button></div>
+</div>
+
+<div class="overlay" id="ask" hidden role="dialog" aria-modal="true" style="z-index:50">
+  <form class="modal" id="askForm"><h3 id="askTitle"></h3><p class="muted" id="askText"></p>
+    <div class="stack"><input class="input" id="askInput" required aria-label="Value">
+      <button class="btn btn-primary block">Continue</button><button type="button" class="link" id="askCancel">Cancel</button></div>
+  </form>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+(function () {
+'use strict';
+
+/* =========================================================
+   1. SETTINGS
+   ========================================================= */
+const CONFIG = {
+  firebase: {
+    apiKey: 'AIzaSyDOyKI3LamM2jvpzE2DaS-set_JxBvfYPA',
+    authDomain: 'sneh-elastic-account.firebaseapp.com',
+    projectId: 'sneh-elastic-account',
+    storageBucket: 'sneh-elastic-account.firebasestorage.app',
+    messagingSenderId: '578142434664',
+    appId: '1:578142434664:web:3c8237180bba44aa6992dd'
+  },
+  usersCollection: 'users',
+  invoicesCollection: 'invoices',
+  // 'hash' : account.snehelastic.com/#/login   (हर hosting पर चलता है)
+  // 'path' : account.snehelastic.com/login     (server rewrite ज़रूरी)
+  routing: 'hash',
+  idleLockMinutes: 10
+};
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const configured = !!CONFIG.firebase.apiKey;
+const isLocal = location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname);
+const store = {
+  get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { v === null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} }
+};
+
+/* =========================================================
+   2. BACKEND (Firebase, और local preview के लिए demo)
+   ========================================================= */
+function firebaseBackend() {
+  firebase.initializeApp(CONFIG.firebase);
+  const auth = firebase.auth(), db = firebase.firestore();
+  const ref = uid => db.collection(CONFIG.usersCollection).doc(uid);
+  const provider = name => {
+    if (name === 'google') return new firebase.auth.GoogleAuthProvider();
+    const p = new firebase.auth.OAuthProvider('apple.com');
+    p.addScope('email'); p.addScope('name');
+    return p;
+  };
+  return {
+    onAuth: cb => auth.onAuthStateChanged(cb),
+    user: () => auth.currentUser,
+    signIn: (e, p) => auth.signInWithEmailAndPassword(e, p),
+    signUp: async (e, p) => (await auth.createUserWithEmailAndPassword(e, p)).user,
+    social: async n => (await auth.signInWithPopup(provider(n))).user,
+    signOut: () => auth.signOut(),
+    now: () => firebase.firestore.FieldValue.serverTimestamp(),
+    setName: name => auth.currentUser.updateProfile({ displayName: name }),
+    resetPassword: e => auth.sendPasswordResetEmail(e),
+    verifyEmail: () => auth.currentUser.sendEmailVerification(),
+    changeEmail: e => auth.currentUser.verifyBeforeUpdateEmail(e),
+    async reauth(password) {
+      const u = auth.currentUser;
+      if (password === null) return u.reauthenticateWithPopup(provider(u.providerData[0].providerId === 'apple.com' ? 'apple' : 'google'));
+      return u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email, password));
+    },
+    hasPassword: () => auth.currentUser.providerData.some(p => p.providerId === 'password'),
+    async load(uid) { const s = await ref(uid).get(); return s.exists ? s.data() : null; },
+    save: (uid, data) => ref(uid).set(data, { merge: true }),
+    async remove() {
+      const u = auth.currentUser, backup = await this.load(u.uid);
+      await ref(u.uid).delete();
+      try { await u.delete(); }
+      catch (e) { if (backup) await ref(u.uid).set(backup); throw e; }
+    },
+    async invoice(number) {
+      try {
+        const s = await db.collection(CONFIG.invoicesCollection).doc(number.replace(/\//g, '-')).get();
+        return s.exists ? s.data() : null;
+      } catch (e) {
+        // rules के कारण न मिलने वाला और दूसरे का invoice, दोनों यही error देते हैं
+        if (e.code === 'permission-denied') return null;
+        throw e;
+      }
+    }
+  };
+}
+
+function demoBackend() {
+  let user = JSON.parse(store.get('demoUser') || 'null');
+  let data = JSON.parse(store.get('demoData') || 'null');
+  let listener = () => {};
+  const emit = u => { user = u; store.set('demoUser', u ? JSON.stringify(u) : null); listener(u); };
+  const make = email => ({ uid: 'DEMO-USER-0000', email, emailVerified: false });
+  return {
+    onAuth(cb) { listener = cb; setTimeout(() => cb(user), 200); },
+    user: () => user,
+    async signIn(e) { emit(make(e)); },
+    async signUp(e) { data = null; const u = make(e); emit(u); return u; },
+    async social() { const u = make('demo@example.com'); emit(u); return u; },
+    async signOut() { emit(null); },
+    now: () => new Date().toISOString(),
+    async setName() {},
+    async resetPassword() {}, async verifyEmail() {}, async changeEmail() {}, async reauth() {},
+    hasPassword: () => true,
+    async load() { return data; },
+    async save(uid, d) { data = Object.assign({}, data, d); store.set('demoData', JSON.stringify(data)); },
+    async remove() { data = null; store.set('demoData', null); emit(null); },
+    async invoice() { return null; }
+  };
+}
+
+/* =========================================================
+   3. UI HELPERS
+   ========================================================= */
+function toast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type; t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), 4500);
+}
+const ERRORS = {
+  'auth/invalid-credential': 'Email या password गलत है।',
+  'auth/invalid-login-credentials': 'Email या password गलत है।',
+  'auth/wrong-password': 'Password गलत है।',
+  'auth/user-not-found': 'Email या password गलत है।',
+  'auth/email-already-in-use': 'यह email पहले से registered है।',
+  'auth/weak-password': 'ज़्यादा मज़बूत password रखें।',
+  'auth/invalid-email': 'सही email address डालें।',
+  'auth/too-many-requests': 'बहुत ज़्यादा कोशिशें हुईं। थोड़ी देर बाद फिर try करें।',
+  'auth/popup-closed-by-user': 'Sign-in window बंद कर दी गई।',
+  'auth/popup-blocked': 'Browser में popup allow करें।',
+  'auth/account-exists-with-different-credential': 'इस email से पहले किसी और तरीके से account बना है।',
+  'auth/unauthorized-domain': 'यह domain Firebase के Authorized domains में नहीं है।',
+  'auth/operation-not-allowed': 'यह sign-in तरीका Firebase Console में enable नहीं है।',
+  'auth/network-request-failed': 'Internet connection जाँचें।'
+};
+const fail = e => { console.error(e); toast(ERRORS[e.code] || 'कुछ गड़बड़ हुई। दोबारा कोशिश करें।', 'error'); };
+
+async function busy(btn, fn) {
+  if (btn && btn.disabled) return;
+  if (btn) btn.disabled = true;
+  try { await fn(); } catch (e) { fail(e); } finally { if (btn) btn.disabled = false; }
+}
+function ask(title, text, type = 'text') {
+  return new Promise(resolve => {
+    const box = $('#ask'), input = $('#askInput');
+    $('#askTitle').textContent = title; $('#askText').textContent = text;
+    input.type = type; input.value = ''; box.hidden = false; input.focus();
+    const done = v => { box.hidden = true; $('#askForm').onsubmit = null; resolve(v); };
+    $('#askForm').onsubmit = e => { e.preventDefault(); done(input.value.trim() && (type === 'password' ? input.value : input.value.trim())); };
+    $('#askCancel').onclick = () => done(null);
+  });
+}
+
+/* =========================================================
+   4. COUNTRIES (searchable)
+   ========================================================= */
+const DIAL = 'AF93,AL355,DZ213,AD376,AO244,AG1,AR54,AM374,AU61,AT43,AZ994,BS1,BH973,BD880,BB1,BY375,BE32,BZ501,BJ229,BT975,BO591,BA387,BW267,BR55,BN673,BG359,BF226,BI257,CV238,KH855,CM237,CA1,CF236,TD235,CL56,CN86,CO57,KM269,CG242,CD243,CR506,CI225,HR385,CU53,CY357,CZ420,DK45,DJ253,DM1,DO1,EC593,EG20,SV503,GQ240,ER291,EE372,SZ268,ET251,FJ679,FI358,FR33,GA241,GM220,GE995,DE49,GH233,GR30,GD1,GT502,GN224,GW245,GY592,HT509,HN504,HK852,HU36,IS354,IN91,ID62,IR98,IQ964,IE353,IL972,IT39,JM1,JP81,JO962,KZ7,KE254,KI686,KP850,KR82,KW965,KG996,LA856,LV371,LB961,LS266,LR231,LY218,LI423,LT370,LU352,MO853,MG261,MW265,MY60,MV960,ML223,MT356,MH692,MR222,MU230,MX52,FM691,MD373,MC377,MN976,ME382,MA212,MZ258,MM95,NA264,NR674,NP977,NL31,NZ64,NI505,NE227,NG234,MK389,NO47,OM968,PK92,PW680,PS970,PA507,PG675,PY595,PE51,PH63,PL48,PT351,PR1,QA974,RO40,RU7,RW250,KN1,LC1,VC1,WS685,SM378,ST239,SA966,SN221,RS381,SC248,SL232,SG65,SK421,SI386,SB677,SO252,ZA27,SS211,ES34,LK94,SD249,SR597,SE46,CH41,SY963,TW886,TJ992,TZ255,TH66,TL670,TG228,TO676,TT1,TN216,TR90,TM993,TV688,UG256,UA380,AE971,GB44,US1,UY598,UZ998,VU678,VA39,VE58,VN84,YE967,ZM260,ZW263';
+const names = (window.Intl && Intl.DisplayNames) ? new Intl.DisplayNames(['en'], { type: 'region' }) : null;
+const COUNTRIES = DIAL.split(',').map(s => {
+  const code = s.slice(0, 2);
+  return { code, dial: '+' + s.slice(2), name: names ? names.of(code) : code };
+}).sort((a, b) => a.name.localeCompare(b.name));
+const country = code => COUNTRIES.find(c => c.code === code) || COUNTRIES.find(c => c.code === 'IN');
+
+const pickers = {};
+$$('[data-country]').forEach(host => {
+  const id = host.dataset.country, form = host.closest('form');
+  const input = document.createElement('input');
+  input.className = 'input'; input.autocomplete = 'off'; input.placeholder = 'Search country or code...';
+  input.setAttribute('aria-label', 'Search country');
+  const list = document.createElement('ul'); list.className = 'combo-list'; list.hidden = true;
+  host.append(input, list);
+  let value = 'IN', matches = [], index = 0;
+  function set(code) {
+    const c = country(code); value = c.code;
+    input.value = c.name; form.elements.phoneCode.value = c.dial; list.hidden = true;
+  }
+  function render(q) {
+    q = q.toLowerCase();
+    matches = COUNTRIES.filter(c => c.name.toLowerCase().includes(q) || c.dial.includes(q));
+    index = Math.min(index, Math.max(matches.length - 1, 0));
+    list.replaceChildren(...matches.map((c, i) => {
+      const li = document.createElement('li'), a = document.createElement('span'), b = document.createElement('span');
+      a.textContent = c.name; b.textContent = c.dial; li.append(a, b);
+      if (i === index) li.className = 'on';
+      li.onmousedown = e => { e.preventDefault(); set(c.code); };
+      return li;
+    }));
+    list.hidden = false;
+    if (list.children[index]) list.children[index].scrollIntoView({ block: 'nearest' });
+  }
+  input.onfocus = () => { input.select(); index = 0; render(''); };
+  input.onclick = () => { if (list.hidden) render(''); };
+  input.oninput = () => { index = 0; render(input.value); };
+  input.onblur = () => set(value);
+  input.onkeydown = e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      index = Math.max(0, Math.min(matches.length - 1, index + (e.key === 'ArrowDown' ? 1 : -1)));
+      render(input.value === country(value).name ? '' : input.value);
+    } else if (e.key === 'Enter' && !list.hidden) { e.preventDefault(); if (matches[index]) set(matches[index].code); }
+    else if (e.key === 'Escape') set(value);
+  };
+  pickers[id] = { set, get: () => value };
+  set('IN');
+});
+
+/* =========================================================
+   5. ROUTER (हर पेज का अलग URL)
+   ========================================================= */
+const TITLES = {
+  'login': 'Sign In', 'signup': 'Create Account', 'dashboard': 'Dashboard',
+  'dashboard/profile': 'Edit Profile', 'dashboard/business': 'Business Details',
+  'dashboard/invoices': 'Invoice Lookup', 'dashboard/settings': 'Account Settings', 'dashboard/apps': 'Apps'
+};
+const pathMode = CONFIG.routing === 'path' && location.protocol !== 'file:';
+const url = r => pathMode ? '/' + r : '#/' + r;
+const current = () => (pathMode ? location.pathname : location.hash.replace(/^#/, '')).replace(/^\/+|\/+$/g, '');
+
+let backend, session = null, profile = {}, ready = false, locked = false, wanted = null;
+
+function go(route, replace) {
+  scrollTo(0, 0);
+  if (current() !== route) history[replace ? 'replaceState' : 'pushState'](null, '', url(route));
+  render();
+}
+function render() {
+  if (!ready) return;
+  let r = current();
+  if (!Object.prototype.hasOwnProperty.call(TITLES, r)) r = session ? 'dashboard' : 'login';
+  const isAuth = r === 'login' || r === 'signup';
+  if (!session && !isAuth) { wanted = r; r = 'login'; }
+  if (session && isAuth) { r = wanted || 'dashboard'; wanted = null; }
+  if (current() !== r) history.replaceState(null, '', url(r));
+  document.title = TITLES[r] + ' | Sneh Elastic Account';
+  $('#loader').hidden = true;
+  $('#authView').hidden = !!session;
+  $('#appView').hidden = !session || locked;
+  $('#lock').hidden = !(session && locked);
+  if (!session) {
+    const signup = r === 'signup';
+    $('#authCard').classList.toggle('signup', signup);
+    $('#heroTitle').textContent = signup ? 'Welcome Back!' : 'Hey There!';
+    $('#heroText').textContent = signup ? 'पहले से अकाउंट है? अपने email से sign in करें।' : 'अपना अकाउंट बनाएँ और Sneh Elastic Threads Pvt. Ltd. के साथ नया सफ़र शुरू करें।';
+    const b = $('#heroBtn'); b.dataset.go = signup ? 'login' : 'signup';
+    b.textContent = signup ? 'Sign In' : 'Sign Up'; b.href = url(b.dataset.go);
+  } else {
+    $$('.tab').forEach(t => t.hidden = t.dataset.tab !== r);
+    $$('#nav a').forEach(a => a.dataset.go === r ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  }
+}
+$$('[data-go]').forEach(a => a.href = url(a.dataset.go));
+window.addEventListener('popstate', render);
+window.addEventListener('hashchange', render);
+
+/* =========================================================
+   6. SESSION + DASHBOARD
+   ========================================================= */
+let holdAuth = false;   // signup के दौरान profile save होने तक रुकें
+let loadId = 0;
+
+async function loadSession(user) {
+  const id = ++loadId;
+  if (!user) {
+    session = null; profile = {}; locked = false; ready = true;
+    $$('#appView form').forEach(f => f.reset()); $('#invoiceResult').hidden = true;
+    $$('.overlay').forEach(o => o.hidden = true);
+    render(); return;
+  }
+  try {
+    const data = await backend.load(user.uid);
+    if (id !== loadId) return;
+    session = user; profile = data || {};
+    locked = hasPin() && store.get('unlocked') !== user.uid;
+    ready = true; fill(); render(); scrollTo(0, 0);
+    if (data && user.email && data.email !== user.email) {
+      backend.save(user.uid, { email: user.email }).catch(e => console.error(e));
+    }
+    if (locked) $('#unlockForm').elements.pin.focus();
+  } catch (e) {
+    // profile न पढ़ पाने पर dashboard न खोलें, वरना PIN lock छूट सकता है
+    fail(e); await backend.signOut();
+  }
+}
+
+const hasPin = () => !!(profile.pinHash || (profile.is2FAEnabled && profile.customPin));
+
+const view = () => {
+  const c = profile.selectedCountry ? country(profile.selectedCountry) : null;
+  const phoneCode = profile.phoneCode || (c ? c.dial : '');
+  return {
+    fullName: profile.fullName || session.displayName || 'अपना नाम जोड़ें',
+    company: profile.companyName || 'Company name जोड़ें',
+    email: session.email || 'Not available',
+    countryName: c ? c.name : 'Not set',
+    fullPhone: profile.phone ? phoneCode + ' ' + profile.phone : 'Not set',
+    regionName: profile.regionMode === 'GLOBAL' ? 'Global' : 'India'
+  };
+};
+
+function fill() {
+  const v = view();
+  $$('[data-bind]').forEach(el => el.textContent = v[el.dataset.bind]);
+  $('#initials').textContent = v.fullName === 'अपना नाम जोड़ें' ? '--' : v.fullName.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  $('#shortUid').textContent = session.uid.slice(0, 8) + '...';
+  const h = new Date().getHours();
+  $('#greeting').textContent = (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + (profile.fullName ? ', ' + profile.fullName.split(' ')[0] : '');
+
+  const adv = profile.advanceDetails || {}, global = profile.regionMode === 'GLOBAL';
+  const checks = [profile.fullName, profile.companyName, profile.phone, profile.selectedCountry, adv.address, global ? adv.globalTaxID : (adv.gstin || adv.pan)];
+  const pct = Math.round(checks.filter(Boolean).length / checks.length * 100);
+  $('#pct').textContent = pct + '%';
+  $('#pctBar').style.width = pct + '%'; $('#pctBar').style.background = pct === 100 ? 'var(--ok)' : 'var(--brand)';
+  $('#emailState').textContent = session.emailVerified ? 'Verified' : 'Not verified';
+  $('#verifyBtn').hidden = !!session.emailVerified;
+  $('#pinState').textContent = hasPin() ? 'On' : 'Off';
+  $('#removePin').hidden = $('#lockNow').hidden = !hasPin();
+
+  const pf = $('#profileForm').elements;
+  pf.fullName.value = profile.fullName || session.displayName || '';
+  pf.company.value = profile.companyName || '';
+  pf.phone.value = profile.phone || '';
+  pickers.profile.set(profile.selectedCountry || 'IN');
+  const bf = $('#businessForm').elements;
+  ['gstin', 'cin', 'pan', 'globalTaxID', 'address'].forEach(k => bf[k].value = adv[k] || '');
+  $('#indiaFields').hidden = global; $('#globalFields').hidden = !global;
+  $('#region').value = global ? 'GLOBAL' : 'IN';
+  document.body.classList.toggle('global', global);
+}
+
+async function save(patch, message) {
+  await backend.save(session.uid, patch);
+  Object.assign(profile, patch); fill();
+  if (message) toast(message, 'success');
+}
+
+/* =========================================================
+   7. FORMS
+   ========================================================= */
+const onSubmit = (id, fn) => $(id).addEventListener('submit', e => {
+  e.preventDefault();
+  const form = e.target;
+  busy(e.submitter || $('button:not([type="button"])', form), () => fn(form.elements, form));
+});
+
+onSubmit('#loginForm', async (f, form) => {
+  await backend.signIn(f.email.value.trim(), f.password.value);
+  form.reset();
+});
+
+onSubmit('#signupForm', async (f, form) => {
+  const c = country(pickers.signup.get());
+  const data = {
+    fullName: f.fullName.value.trim(), companyName: f.company.value.trim(),
+    selectedCountry: c.code, phoneCode: c.dial, phone: f.phone.value.trim(),
+    email: f.email.value.trim(), regionMode: c.code === 'IN' ? 'IN' : 'GLOBAL',
+    is2FAEnabled: false, customPin: '', createdAt: backend.now(),
+    advanceDetails: { gstin: '', cin: '', pan: '', globalTaxID: '', address: '' }
+  };
+  let user;
+  holdAuth = true;
+  try {
+    user = await backend.signUp(data.email, f.password.value);
+    try { await backend.save(user.uid, data); }
+    catch (e) { console.error(e); toast('Account बन गया, पर profile save नहीं हुई। Edit Profile में दोबारा save करें।', 'error'); }
+    try { await backend.setName(data.fullName); }
+    catch (e) { console.error(e); }
+    try { await backend.verifyEmail(); toast('Verification link आपके email पर भेजा गया है।', 'success'); }
+    catch (e) { console.error(e); }
+  } finally { holdAuth = false; }
+  form.reset(); pickers.signup.set('IN'); strength('');
+  await loadSession(user);
+});
+
+async function social(name) {
+  let user;
+  holdAuth = true;
+  try {
+    user = await backend.social(name);
+    const existing = await backend.load(user.uid);
+    if (!existing) {
+      await backend.save(user.uid, { fullName: user.displayName || '', email: user.email || '', regionMode: 'IN', is2FAEnabled: false, customPin: '', createdAt: backend.now() });
+      wanted = 'dashboard/profile';
+    }
+  } finally {
+    holdAuth = false;
+    if (backend.user()) await loadSession(backend.user());
+  }
+}
+
+onSubmit('#profileForm', async f => {
+  const c = country(pickers.profile.get());
+  const fullName = f.fullName.value.trim();
+  await save({ fullName, companyName: f.company.value.trim(), selectedCountry: c.code, phoneCode: c.dial, phone: f.phone.value.trim() }, 'Profile save हो गई।');
+  try { await backend.setName(fullName); } catch (e) { console.error(e); }
+});
+
+const FORMATS = {
+  gstin: /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/,
+  cin: /^[LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/,
+  pan: /^[A-Z]{5}\d{4}[A-Z]$/
+};
+onSubmit('#businessForm', async f => {
+  const adv = {};
+  ['gstin', 'cin', 'pan', 'globalTaxID'].forEach(k => adv[k] = f[k].value.trim().toUpperCase());
+  adv.address = f.address.value.trim();
+  if (profile.regionMode !== 'GLOBAL') {
+    const bad = Object.keys(FORMATS).find(k => adv[k] && !FORMATS[k].test(adv[k]));
+    if (bad) { toast(bad.toUpperCase() + ' का format सही नहीं है।', 'error'); f[bad].focus(); return; }
+  }
+  await save({ advanceDetails: adv }, 'Business details save हो गए।');
+});
+
+onSubmit('#invoiceForm', async f => {
+  const number = f.number.value.trim().toUpperCase(), box = $('#invoiceResult');
+  box.hidden = false; box.textContent = 'Searching...';
+  let inv;
+  try { inv = await backend.invoice(number); }
+  catch (e) { box.hidden = true; throw e; }
+  box.replaceChildren();
+  if (!inv) { box.textContent = 'आपके अकाउंट में "' + number + '" नाम का कोई invoice नहीं मिला।'; return; }
+  const dl = document.createElement('dl');
+  [['Invoice', inv.number || number], ['Date', inv.date || '-'], ['Amount', typeof inv.amount === 'number' ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(inv.amount) : '-'], ['Status', inv.status || '-']].forEach(([k, val]) => {
+    const d = document.createElement('div'), t = document.createElement('dt'), x = document.createElement('dd');
+    t.textContent = k; x.textContent = val; d.append(t, x); dl.append(d);
+  });
+  box.append(dl);
+});
+
+/* ---------- PIN (नया PIN hash होकर save होता है) ---------- */
+const hex = b => Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, '0')).join('');
+async function hashPin(pin, salt) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
+  return hex(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: new TextEncoder().encode(salt), iterations: 150000 }, key, 256));
+}
+onSubmit('#pinForm', async (f, form) => {
+  if (!/^\d{4}$/.test(f.pin.value) || f.pin.value !== f.confirm.value) { toast('दोनों में एक जैसा 4 अंकों का PIN डालें।', 'error'); return; }
+  const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
+  const pinHash = await hashPin(f.pin.value, salt);
+  store.set('unlocked', session.uid);
+  await save({ pinHash, pinSalt: salt, is2FAEnabled: true, customPin: '' }, 'Screen lock PIN चालू हो गया।');
+  form.reset();
+});
+
+onSubmit('#unlockForm', async (f, form) => {
+  const entered = f.pin.value;
+  const ok = profile.pinHash
+    ? await hashPin(entered, profile.pinSalt) === profile.pinHash
+    : entered === profile.customPin;
+  form.reset();
+  if (ok) {
+    store.set('pinTries', null); store.set('unlocked', session.uid);
+    locked = false; lastActive = Date.now(); render();
+    if (!profile.pinHash) {
+      // पुराना plain-text PIN: सही PIN मिलने पर hash में बदलें
+      try {
+        const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
+        await save({ pinHash: await hashPin(entered, salt), pinSalt: salt, customPin: '' });
+      } catch (e) { console.error(e); }
+    }
+    return;
+  }
+  const tries = Number(store.get('pinTries') || 0) + 1;
+  store.set('pinTries', String(tries));
+  if (tries >= 5) { toast('5 गलत कोशिशें। दोबारा sign in करें।', 'error'); await logout(); }
+  else toast('गलत PIN। ' + (5 - tries) + ' कोशिशें बाकी।', 'error');
+});
+
+function lockScreen() {
+  if (!session || !hasPin() || locked) return;
+  locked = true; store.set('unlocked', null);
+  $$('.overlay').forEach(o => o.hidden = true);
+  if (!$('#ask').hidden) $('#askCancel').click();
+  render(); $('#unlockForm').elements.pin.focus();
+}
+let lastActive = Date.now();
+const idleCheck = () => { if (Date.now() - lastActive > CONFIG.idleLockMinutes * 60000) lockScreen(); };
+['pointerdown', 'keydown', 'scroll'].forEach(ev => addEventListener(ev, () => { idleCheck(); lastActive = Date.now(); }, { passive: true }));
+setInterval(idleCheck, 15000);
+
+async function logout() {
+  store.set('unlocked', null); store.set('pinTries', null); wanted = null;
+  await backend.signOut();
+  document.body.classList.remove('global');
+  go('login', true);
+}
+
+/* =========================================================
+   8. ACTIONS
+   ========================================================= */
+async function confirmIdentity() {
+  if (!backend.hasPassword()) { await backend.reauth(null); return true; }
+  const pw = await ask('पहचान की पुष्टि', 'आगे बढ़ने के लिए अपना password डालें।', 'password');
+  if (!pw) return false;
+  await backend.reauth(pw); return true;
+}
+
+const actions = {
+  eye(btn) {
+    const i = $('input', btn.parentElement), show = i.type === 'password';
+    i.type = show ? 'text' : 'password';
+    $('i', btn).className = 'fa-solid ' + (show ? 'fa-eye-slash' : 'fa-eye');
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  },
+  google: () => social('google'),
+  apple: () => social('apple'),
+  async forgot() {
+    const email = $('#loginForm').elements.email.value.trim() || await ask('Password reset', 'अपना registered email डालें।', 'email');
+    if (!email) return;
+    await backend.resetPassword(email);
+    toast('अगर यह email registered है, तो reset link भेज दिया गया है।', 'success');
+  },
+  logout,
+  async verify() { await backend.verifyEmail(); toast('Verification link भेज दिया गया है।', 'success'); },
+  async resetPassword() {
+    if (!backend.hasPassword()) { toast('आप Google/Apple से sign in करते हैं। Password वहीं से manage होता है।'); return; }
+    await backend.resetPassword(session.email); toast('Reset link आपके email पर भेजा गया है।', 'success');
+  },
+  async changeEmail() {
+    if (!backend.hasPassword()) { toast('Google/Apple account का email यहाँ से नहीं बदलता।'); return; }
+    const email = await ask('Change email', 'नया email address डालें।', 'email');
+    if (!email || !await confirmIdentity()) return;
+    await backend.changeEmail(email);
+    toast('नए email पर verification link भेजा है। Link खोलने के बाद ही email बदलेगा।', 'success');
+  },
+  async deleteAccount() {
+    const word = await ask('Delete account?', 'पक्का करने के लिए DELETE लिखें।');
+    if (word !== 'DELETE') return;
+    if (!await confirmIdentity()) return;
+    await backend.remove(); store.set('unlocked', null); toast('Account delete हो गया।', 'success');
+  },
+  async removePin() {
+    if (!await confirmIdentity()) return;
+    await save({ pinHash: '', pinSalt: '', is2FAEnabled: false, customPin: '' }, 'Screen lock बंद कर दिया गया।');
+  },
+  lockNow: lockScreen,
+  qr() {
+    if (typeof qrcode !== 'function') { toast('QR library load नहीं हुई।', 'error'); return; }
+    const q = qrcode(0, 'M'); q.addData(session.uid); q.make();
+    $('#qrBox').innerHTML = q.createImgTag(6, 0);
+    $('#qrBox img').alt = 'QR code of Account ID';
+    $('#fullUid').textContent = session.uid;
+    $('#qrModal').hidden = false; $('#qrModal [data-action="close"]').focus();
+  },
+  async copyUid() { await navigator.clipboard.writeText(session.uid); toast('Account ID copy हो गई।', 'success'); },
+  vcard() {
+    const clean = s => String(s || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, ' ').replace(/([,;])/g, '\\$1');
+    const card = ['BEGIN:VCARD', 'VERSION:3.0', 'FN:' + clean(profile.fullName), 'N:' + clean(profile.fullName) + ';;;;', 'ORG:' + clean(profile.companyName), 'EMAIL:' + clean(session.email), 'TEL:' + clean((profile.phoneCode || '') + (profile.phone || '')), 'END:VCARD'].join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([card], { type: 'text/vcard' }));
+    a.download = 'contact.vcf'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  },
+  cmd() { if (!session || locked) return; $('#cmdModal').hidden = false; $('#cmdInput').value = ''; commands(''); $('#cmdInput').focus(); },
+  close(btn) { btn.closest('.overlay').hidden = true; }
+};
+
+document.addEventListener('click', e => {
+  const link = e.target.closest('[data-go]');
+  if (link && !e.metaKey && !e.ctrlKey && !e.shiftKey) { e.preventDefault(); go(link.dataset.go); return; }
+  const el = e.target.closest('[data-action]');
+  if (el && actions[el.dataset.action]) busy(['eye', 'close'].includes(el.dataset.action) ? null : el, async () => actions[el.dataset.action](el));
+});
+
+function commands(q) {
+  const items = Object.keys(TITLES).filter(r => r.startsWith('dashboard')).map(r => [TITLES[r], () => go(r)])
+    .concat([['Show QR code', actions.qr], ['Download contact card', actions.vcard], ['Logout', () => busy(null, logout)]]);
+  $('#cmdList').replaceChildren(...items.filter(i => i[0].toLowerCase().includes(q.toLowerCase())).map(([label, fn]) => {
+    const li = document.createElement('li'), b = document.createElement('button');
+    b.type = 'button'; b.textContent = label; b.onclick = () => { $('#cmdModal').hidden = true; fn(); };
+    li.append(b); return li;
+  }));
+}
+$('#cmdInput').addEventListener('input', e => commands(e.target.value));
+$('#cmdInput').addEventListener('keydown', e => { if (e.key === 'Enter') { const b = $('#cmdList button'); if (b) b.click(); } });
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && session && !locked) { e.preventDefault(); actions.cmd(); }
+  if (e.key === 'Escape') {
+    $('#qrModal').hidden = $('#cmdModal').hidden = true;
+    if (!$('#ask').hidden) $('#askCancel').click();
+  }
+});
+
+$('#region').addEventListener('change', e => busy(null, async () => {
+  try { await save({ regionMode: e.target.value }, 'Region बदल गया।'); }
+  catch (err) { fill(); throw err; }
+}));
+
+/* password strength + caps lock */
+function strength(v) {
+  const score = [v.length >= 8, v.length >= 12, /[a-z]/.test(v) && /[A-Z]/.test(v), /\d/.test(v), /[^A-Za-z0-9]/.test(v)].filter(Boolean).length;
+  const bar = $('#strength');
+  bar.style.width = score * 20 + '%';
+  bar.style.background = score < 3 ? 'var(--danger)' : score < 4 ? '#e8a100' : 'var(--ok)';
+  $('#strengthText').textContent = !v ? '' : score < 3 ? 'Weak: बड़े अक्षर, अंक या symbol जोड़ें' : score < 4 ? 'Good' : 'Strong';
+}
+$('#signupForm').elements.password.addEventListener('input', e => strength(e.target.value));
+$('#loginForm').elements.password.addEventListener('keyup', e => {
+  $('.caps').textContent = e.getModifierState && e.getModifierState('CapsLock') ? 'Caps Lock चालू है' : '';
+});
+
+/* Apps */
+[['snehelastic.com', 'Main website', 'fa-globe', '#0f8a62'],
+ ['account.snehelastic.com', 'Account portal', 'fa-id-card', '#205252'],
+ ['blog.snehelastic.com', 'Company blog', 'fa-blog', '#0e7490'],
+ ['jobs.snehelastic.com', 'Careers & jobs', 'fa-briefcase', '#7c3aed'],
+ ['help.snehelastic.com', 'Support & help desk', 'fa-circle-question', '#4f46e5'],
+ ['app.snehelastic.com', 'Coming soon', 'fa-mobile-screen', '#7b8794', true]
+].forEach(([host, sub, icon, color, off]) => {
+  const el = document.createElement(off ? 'div' : 'a');
+  el.className = 'app' + (off ? ' off' : '');
+  if (!off) { el.href = 'https://' + host; el.target = '_blank'; el.rel = 'noopener'; }
+  el.innerHTML = '<span class="ic" style="background:' + color + '"><i class="fa-solid ' + icon + '"></i></span><span><b>' + host + '</b><span class="muted">' + sub + '</span></span>';
+  $('#apps').append(el);
+});
+
+/* =========================================================
+   9. ELASTIC STRINGS (माउस/उंगली से छेड़िए)
+   ========================================================= */
+(function () {
+  const cv = $('#strings'), ctx = cv.getContext('2d');
+  if (!ctx || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let w, h, lines = [], px = null, py = null;
+  function size() {
+    const d = Math.min(devicePixelRatio || 1, 2);
+    w = innerWidth; h = innerHeight; cv.width = w * d; cv.height = h * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+    const n = Math.max(6, Math.round(h / 85));
+    lines = Array.from({ length: n }, (_, i) => ({ y: (i + .5) * h / n, x: w / 2, off: 0, vel: (i % 2 ? 1 : -1) * 4, hue: i % 3 }));
+  }
+  addEventListener('resize', size); size();
+  addEventListener('pointermove', e => {
+    if (py !== null) lines.forEach(l => {
+      if ((py - l.y) * (e.clientY - l.y) < 0) {
+        l.x = Math.max(60, Math.min(w - 60, e.clientX));
+        l.vel += Math.max(-22, Math.min(22, (e.clientY - py) * .7 + (e.clientX - px) * .05));
+      }
+    });
+    px = e.clientX; py = e.clientY;
+  }, { passive: true });
+  const release = () => { py = null; };
+  addEventListener('pointerup', release);
+  addEventListener('pointercancel', release);
+  const pluck = (l, x, power) => { l.x = Math.max(60, Math.min(w - 60, x)); l.vel += power; };
+  // फ़ोन पर टैप करते ही पास वाला धागा हिलता है
+  addEventListener('pointerdown', e => {
+    if (!lines.length) return;
+    const near = lines.reduce((a, b) => Math.abs(b.y - e.clientY) < Math.abs(a.y - e.clientY) ? b : a);
+    pluck(near, e.clientX, near.y > e.clientY ? 14 : -14);
+  }, { passive: true });
+  // बीच-बीच में धागे अपने आप भी हिलते हैं
+  setInterval(() => {
+    if (!document.hidden && lines.length) pluck(lines[Math.floor(Math.random() * lines.length)], Math.random() * w, Math.random() > .5 ? 10 : -10);
+  }, 1800);
+  (function frame() {
+    if (!document.hidden) {
+      ctx.clearRect(0, 0, w, h);
+      lines.forEach(l => {
+        l.vel += -l.off * .06; l.vel *= .955; l.off += l.vel;
+        ctx.beginPath(); ctx.moveTo(0, l.y);
+        ctx.quadraticCurveTo(l.x, l.y + l.off * 2, w, l.y);
+        ctx.strokeStyle = ['#205252', '#00b8dd', '#7aa6a6'][l.hue]; ctx.lineWidth = l.hue === 1 ? 1 : 1.6; ctx.stroke();
+      });
+    }
+    requestAnimationFrame(frame);
+  })();
+})();
+
+/* टैप पर ripple और रंगीन चिंगारियाँ */
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  addEventListener('pointerdown', e => {
+    const el = e.target.closest('.btn, .chip, .seg a, #nav a');
+    if (!el || el.disabled) return;
+    if (el.classList.contains('btn')) {
+      const r = el.getBoundingClientRect(), dot = document.createElement('span');
+      dot.className = 'ripple';
+      dot.style.left = e.clientX - r.left + 'px'; dot.style.top = e.clientY - r.top + 'px';
+      el.append(dot); setTimeout(() => dot.remove(), 650);
+    }
+    for (let i = 0; i < 8; i++) {
+      const p = document.createElement('i'), a = i / 8 * Math.PI * 2;
+      p.className = 'spark';
+      p.style.cssText = 'left:' + e.clientX + 'px;top:' + e.clientY + 'px;background:' + (i % 2 ? '#00d4ff' : '#34d399');
+      p.style.setProperty('--x', Math.cos(a) * 34 + 'px'); p.style.setProperty('--y', Math.sin(a) * 34 + 'px');
+      document.body.append(p); setTimeout(() => p.remove(), 700);
+    }
+  }, { passive: true });
+}
+
+/* =========================================================
+   10. START
+   ========================================================= */
+function stop(msg) {
+  const p = document.createElement('p'); p.textContent = msg; p.style.cssText = 'padding:2rem;text-align:center';
+  $('#loader').replaceChildren(p);
+}
+const wantsDemo = isLocal && new URLSearchParams(location.search).has('demo');
+if (configured && !wantsDemo) {
+  if (!window.firebase) { stop('Service load नहीं हुई। Internet जाँचकर page refresh करें।'); return; }
+  backend = firebaseBackend();
+} else if (isLocal) {
+  backend = demoBackend(); $('#demoBar').hidden = false;
+} else {
+  stop('Portal अभी setup हो रहा है। (Firebase config missing)'); return;
+}
+backend.onAuth(user => { if (!holdAuth) loadSession(user); });
+})();
+</script>
 </body>
 </html>
