@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!--
   FIRESTORE SECURITY RULES (Firebase Console > Firestore > Rules)
-  पुराने rules हों तो पहले उनका backup लें और ध्यान से merge करें।
+  Back up your existing rules first and merge carefully.
 
   rules_version = '2';
   service cloud.firestore {
@@ -26,7 +26,7 @@
     }
   }
 
-  Invoice document ID: invoice number में "/" की जगह "-"   (SET/2026/00125 -> SET-2026-00125)
+  Invoice document ID: the invoice number with "/" replaced by "-"   (SET/2026/00125 -> SET-2026-00125)
   Fields: ownerUid, number, date (text), amount (number, INR), status (text)
 -->
 <style>
@@ -279,7 +279,7 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <canvas id="strings" aria-hidden="true"></canvas>
 <div id="loader"><div class="spin" role="status" aria-label="Loading"></div></div>
-<div id="demoBar" hidden>DEMO MODE: असली डेटाबेस से कनेक्शन नहीं है। असली password न डालें।</div>
+<div id="demoBar" hidden>DEMO MODE: Not connected to the real database. Do not enter a real password.</div>
 
 <!-- ================= AUTH: /login and /signup ================= -->
 <main id="authView" hidden>
@@ -324,9 +324,9 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
         <label class="field"><span>Full name</span><input class="input" name="fullName" autocomplete="name" required></label>
         <label class="field"><span>Company / business name</span><input class="input" name="company" autocomplete="organization" required></label>
         <div class="field"><span>Country</span><div data-country="signup"></div></div>
-        <div class="field"><span>Phone number</span><div class="row"><input class="input code" name="phoneCode" readonly aria-label="Dial code"><input class="input" name="phone" type="tel" autocomplete="tel-national" pattern="[0-9 \-]{5,15}" title="5 से 15 अंक" required aria-label="Phone number"></div></div>
+        <div class="field"><span>Phone number</span><div class="row"><input class="input code" name="phoneCode" readonly aria-label="Dial code"><input class="input" name="phone" type="tel" autocomplete="tel-national" pattern="[0-9 \-]{5,15}" title="5 to 15 digits" required aria-label="Phone number"></div></div>
         <label class="field"><span>Work email</span><input class="input" name="email" type="email" autocomplete="email" required></label>
-        <label class="field"><span>Password (कम से कम 8 अक्षर)</span>
+        <label class="field"><span>Password (at least 8 characters)</span>
           <div class="pw"><input class="input" name="password" type="password" autocomplete="new-password" minlength="8" required><button type="button" class="eye" data-action="eye" aria-label="Show password"><i class="fa-solid fa-eye"></i></button></div>
         </label>
         <div class="meter"><i id="strength"></i></div>
@@ -412,7 +412,7 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
       </section>
 
       <section class="tab" data-tab="dashboard/business">
-        <div class="head"><h2>Business Details</h2><p class="muted">Tax and address details for B2B invoicing. सिर्फ़ format जाँचा जाता है, सरकारी verification नहीं।</p></div>
+        <div class="head"><h2>Business Details</h2><p class="muted">Tax and address details for B2B invoicing. Only the format is checked; this is not government verification.</p></div>
         <form id="businessForm" class="stack">
           <div class="grid3" id="indiaFields">
             <label class="field"><span>GSTIN (optional)</span><input class="input upper" name="gstin" maxlength="15" placeholder="15 characters"></label>
@@ -426,7 +426,7 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
       </section>
 
       <section class="tab" data-tab="dashboard/invoices">
-        <div class="head"><h2>Invoice Lookup</h2><p class="muted">आपके अकाउंट से जुड़े invoices खोजें।</p></div>
+        <div class="head"><h2>Invoice Lookup</h2><p class="muted">Search invoices linked to your account.</p></div>
         <form id="invoiceForm" class="box row">
           <input class="input upper" name="number" placeholder="e.g. SET/2026/00125" required aria-label="Invoice number">
           <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
@@ -443,7 +443,7 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
           </div>
         </div>
         <div class="box"><h3><i class="fa-solid fa-lock"></i> 4-digit screen lock PIN</h3>
-          <p class="muted">नए browser session में और 10 मिनट निष्क्रिय रहने पर PIN माँगा जाएगा। यह सिर्फ़ स्क्रीन लॉक है, असली 2-Step Verification नहीं।</p>
+          <p class="muted">Your PIN is asked in a new browser session and after 10 minutes of inactivity. This is a screen lock, not true 2-Step Verification.</p>
           <form id="pinForm" class="stack" style="margin-top:.8rem">
             <div class="grid2">
               <label class="field"><span>New PIN</span><input class="input pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required></label>
@@ -455,8 +455,12 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
         <div class="box"><h3>Region</h3>
           <select class="input" id="region" aria-label="Region"><option value="IN">India</option><option value="GLOBAL">Global (International B2B)</option></select>
         </div>
+        <div class="box"><h3>Language</h3>
+          <p class="muted">Choose the language of this portal.</p>
+          <select class="input" id="language" aria-label="Language" style="margin-top:.6rem"><option value="en">English</option><option value="hi" lang="hi">हिंदी (Hindi)</option></select>
+        </div>
         <div class="box"><h3 style="color:var(--danger)">Danger zone</h3>
-          <p class="muted">अकाउंट और profile data हमेशा के लिए हट जाएँगे।</p>
+          <p class="muted">Your account and profile data will be permanently deleted.</p>
           <div class="actions"><button class="btn btn-danger" data-action="deleteAccount"><i class="fa-solid fa-trash"></i>Delete account</button></div>
         </div>
       </section>
@@ -475,7 +479,7 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
     <h3><i class="fa-solid fa-lock"></i> Enter your PIN</h3>
     <div class="stack"><input class="input pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required aria-label="4 digit PIN">
     <button class="btn btn-primary block">Unlock</button>
-    <button type="button" class="link" data-action="logout">Logout / PIN भूल गए</button></div>
+    <button type="button" class="link" data-action="logout">Logout / Forgot PIN</button></div>
   </form>
 </div>
 
@@ -507,6 +511,199 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
 'use strict';
 
 /* =========================================================
+   LANGUAGE (English is the default; Hindi is optional)
+   ========================================================= */
+const HI = {
+ "DEMO MODE: Not connected to the real database. Do not enter a real password.": "डेमो मोड: असली डेटाबेस से कनेक्शन नहीं है। असली पासवर्ड न डालें।",
+ "Password (at least 8 characters)": "पासवर्ड (कम से कम 8 अक्षर)",
+ "Tax and address details for B2B invoicing. Only the format is checked; this is not government verification.": "B2B इनवॉइस के लिए टैक्स और पते की जानकारी। सिर्फ़ फ़ॉर्मैट जाँचा जाता है, सरकारी वेरिफ़िकेशन नहीं।",
+ "Search invoices linked to your account.": "अपने अकाउंट से जुड़े इनवॉइस खोजें।",
+ "Your PIN is asked in a new browser session and after 10 minutes of inactivity. This is a screen lock, not true 2-Step Verification.": "नए ब्राउज़र सेशन में और 10 मिनट निष्क्रिय रहने पर PIN माँगा जाएगा। यह सिर्फ़ स्क्रीन लॉक है, असली 2-Step Verification नहीं।",
+ "Your account and profile data will be permanently deleted.": "आपका अकाउंट और प्रोफ़ाइल डेटा हमेशा के लिए हट जाएगा।",
+ "Logout / Forgot PIN": "लॉगआउट / PIN भूल गए",
+ "5 to 15 digits": "5 से 15 अंक",
+ "Incorrect email or password.": "ईमेल या पासवर्ड गलत है।",
+ "Incorrect password.": "पासवर्ड गलत है।",
+ "This email is already registered.": "यह ईमेल पहले से रजिस्टर्ड है।",
+ "Please use a stronger password.": "ज़्यादा मज़बूत पासवर्ड रखें।",
+ "Please enter a valid email address.": "सही ईमेल पता डालें।",
+ "Too many attempts. Please try again later.": "बहुत ज़्यादा कोशिशें हुईं। थोड़ी देर बाद फिर कोशिश करें।",
+ "The sign-in window was closed.": "साइन-इन विंडो बंद कर दी गई।",
+ "Please allow pop-ups in your browser.": "ब्राउज़र में पॉप-अप की अनुमति दें।",
+ "This email already uses a different sign-in method.": "इस ईमेल से पहले किसी और तरीके से अकाउंट बना है।",
+ "This domain is not in Firebase Authorized domains.": "यह डोमेन Firebase के Authorized domains में नहीं है।",
+ "This sign-in method is not enabled in Firebase Console.": "यह साइन-इन तरीका Firebase Console में चालू नहीं है।",
+ "Please check your internet connection.": "इंटरनेट कनेक्शन जाँचें।",
+ "Something went wrong. Please try again.": "कुछ गड़बड़ हुई। दोबारा कोशिश करें।",
+ "Already have an account? Sign in with your email.": "पहले से अकाउंट है? अपने ईमेल से साइन इन करें।",
+ "Create your account and start a new journey with Sneh Elastic Threads Pvt. Ltd.": "अपना अकाउंट बनाएँ और Sneh Elastic Threads Pvt. Ltd. के साथ नया सफ़र शुरू करें।",
+ "Add your name": "अपना नाम जोड़ें",
+ "Add company name": "कंपनी का नाम जोड़ें",
+ "Not available": "उपलब्ध नहीं",
+ "Not set": "सेट नहीं",
+ "Account created, but the profile was not saved. Please save it again in Edit Profile.": "अकाउंट बन गया, पर प्रोफ़ाइल सेव नहीं हुई। Edit Profile में दोबारा सेव करें।",
+ "A verification link has been sent to your email.": "वेरिफ़िकेशन लिंक आपके ईमेल पर भेजा गया है।",
+ "{field} format is not valid.": "{field} का फ़ॉर्मैट सही नहीं है।",
+ "Profile saved.": "प्रोफ़ाइल सेव हो गई।",
+ "Business details saved.": "बिज़नेस जानकारी सेव हो गई।",
+ "Searching...": "खोज रहे हैं...",
+ "No invoice \"{number}\" was found in your account.": "आपके अकाउंट में \"{number}\" नाम का कोई इनवॉइस नहीं मिला।",
+ "Invoice": "इनवॉइस",
+ "Date": "तारीख",
+ "Amount": "राशि",
+ "Status": "स्थिति",
+ "Enter the same 4-digit PIN in both fields.": "दोनों में एक जैसा 4 अंकों का PIN डालें।",
+ "Screen lock PIN turned on.": "स्क्रीन लॉक PIN चालू हो गया।",
+ "5 wrong attempts. Please sign in again.": "5 गलत कोशिशें। दोबारा साइन इन करें।",
+ "Wrong PIN. Attempts left: {n}": "गलत PIN। बाकी कोशिशें: {n}",
+ "Confirm your identity": "पहचान की पुष्टि करें",
+ "Enter your password to continue.": "आगे बढ़ने के लिए अपना पासवर्ड डालें।",
+ "Enter your registered email.": "अपना रजिस्टर्ड ईमेल डालें।",
+ "Password reset": "पासवर्ड रीसेट",
+ "If this email is registered, a reset link has been sent.": "अगर यह ईमेल रजिस्टर्ड है, तो रीसेट लिंक भेज दिया गया है।",
+ "Verification link sent.": "वेरिफ़िकेशन लिंक भेज दिया गया है।",
+ "You sign in with Google/Apple. Your password is managed there.": "आप Google/Apple से साइन इन करते हैं। पासवर्ड वहीं से मैनेज होता है।",
+ "A reset link has been sent to your email.": "रीसेट लिंक आपके ईमेल पर भेजा गया है।",
+ "The email of a Google/Apple account cannot be changed here.": "Google/Apple अकाउंट का ईमेल यहाँ से नहीं बदल सकता।",
+ "Enter your new email address.": "नया ईमेल पता डालें।",
+ "Change email": "ईमेल बदलें",
+ "A verification link was sent to the new email. It changes only after you open the link.": "नए ईमेल पर वेरिफ़िकेशन लिंक भेजा है। लिंक खोलने के बाद ही ईमेल बदलेगा।",
+ "Type DELETE to confirm.": "पक्का करने के लिए DELETE लिखें।",
+ "Delete account?": "अकाउंट डिलीट करें?",
+ "Account deleted.": "अकाउंट डिलीट हो गया।",
+ "Screen lock turned off.": "स्क्रीन लॉक बंद कर दिया गया।",
+ "The QR library did not load.": "QR लाइब्रेरी लोड नहीं हुई।",
+ "Account ID copied.": "Account ID कॉपी हो गई।",
+ "Region updated.": "क्षेत्र बदल गया।",
+ "Weak: add capital letters, numbers or symbols": "कमज़ोर: बड़े अक्षर, अंक या चिह्न जोड़ें",
+ "Good": "ठीक",
+ "Strong": "मज़बूत",
+ "Caps Lock is on": "Caps Lock चालू है",
+ "The service did not load. Check your internet and refresh the page.": "सेवा लोड नहीं हुई। इंटरनेट जाँचकर पेज रिफ़्रेश करें।",
+ "The portal is being set up. (Firebase config missing)": "पोर्टल अभी सेटअप हो रहा है। (Firebase config missing)",
+ "Sign In": "साइन इन",
+ "Sign Up": "साइन अप",
+ "Create Account": "अकाउंट बनाएँ",
+ "Dashboard": "डैशबोर्ड",
+ "Edit Profile": "प्रोफ़ाइल बदलें",
+ "Business Details": "बिज़नेस जानकारी",
+ "Invoice Lookup": "इनवॉइस खोज",
+ "Account Settings": "अकाउंट सेटिंग्स",
+ "Apps": "ऐप्स",
+ "Overview": "सारांश",
+ "Home": "होम",
+ "Profile": "प्रोफ़ाइल",
+ "Business": "बिज़नेस",
+ "Invoices": "इनवॉइस",
+ "Settings": "सेटिंग्स",
+ "One account for all Sneh Elastic services": "सभी Sneh Elastic सेवाओं के लिए एक अकाउंट",
+ "Sign in with Google": "Google से साइन इन करें",
+ "Sign in with Apple": "Apple से साइन इन करें",
+ "or use your work email": "या अपना ऑफ़िस ईमेल इस्तेमाल करें",
+ "Email address": "ईमेल पता",
+ "Password": "पासवर्ड",
+ "Forgot your password?": "पासवर्ड भूल गए?",
+ "New here?": "नए हैं?",
+ "Create account": "अकाउंट बनाएँ",
+ "Join our B2B Procurement Network": "हमारे B2B प्रोक्योरमेंट नेटवर्क से जुड़ें",
+ "Full name": "पूरा नाम",
+ "Company / business name": "कंपनी / बिज़नेस का नाम",
+ "Company name": "कंपनी का नाम",
+ "Country": "देश",
+ "Phone number": "फ़ोन नंबर",
+ "Work email": "ऑफ़िस ईमेल",
+ "Already registered?": "पहले से रजिस्टर्ड हैं?",
+ "Sign in": "साइन इन",
+ "Hey There!": "नमस्ते!",
+ "Welcome Back!": "वापसी पर स्वागत है!",
+ "One login for your business account": "आपके बिज़नेस अकाउंट के लिए एक लॉगिन",
+ "Invoice lookup": "इनवॉइस खोज",
+ "Look up your invoices": "अपने इनवॉइस खोजें",
+ "QR code for your Account ID": "आपकी Account ID का QR कोड",
+ "Search country or code...": "देश या कोड खोजें...",
+ "Account ID": "अकाउंट ID",
+ "My QR": "मेरा QR",
+ "Quick actions": "क्विक एक्शन",
+ "Actions": "एक्शन",
+ "Logout": "लॉगआउट",
+ "Welcome": "स्वागत है",
+ "Good morning": "सुप्रभात",
+ "Good afternoon": "नमस्कार",
+ "Good evening": "शुभ संध्या",
+ "Sneh Elastic Threads Manufacturing Network": "Sneh Elastic Threads मैन्युफ़ैक्चरिंग नेटवर्क",
+ "Profile complete": "प्रोफ़ाइल पूरी",
+ "Email status": "ईमेल स्थिति",
+ "Verified": "वेरिफ़ाइड",
+ "Not verified": "वेरिफ़ाइड नहीं",
+ "Send verification link": "वेरिफ़िकेशन लिंक भेजें",
+ "Screen lock PIN": "स्क्रीन लॉक PIN",
+ "On": "चालू",
+ "Off": "बंद",
+ "Manage": "मैनेज करें",
+ "Registered corporate details": "रजिस्टर्ड कंपनी जानकारी",
+ "Primary contact": "मुख्य संपर्क",
+ "Email": "ईमेल",
+ "Phone": "फ़ोन",
+ "Mode": "मोड",
+ "India": "भारत",
+ "Global": "ग्लोबल",
+ "Download contact card": "कॉन्टैक्ट कार्ड डाउनलोड करें",
+ "Show QR": "QR दिखाएँ",
+ "Show QR code": "QR कोड दिखाएँ",
+ "Update your contact and business details.": "अपनी संपर्क और बिज़नेस जानकारी बदलें।",
+ "Save changes": "बदलाव सेव करें",
+ "GSTIN (optional)": "GSTIN (वैकल्पिक)",
+ "CIN (optional)": "CIN (वैकल्पिक)",
+ "PAN (optional)": "PAN (वैकल्पिक)",
+ "15 characters": "15 अक्षर",
+ "21 characters": "21 अक्षर",
+ "10 characters": "10 अक्षर",
+ "Company registration / Tax ID": "कंपनी रजिस्ट्रेशन / टैक्स ID",
+ "Factory / office address": "फ़ैक्ट्री / ऑफ़िस का पता",
+ "Save details": "जानकारी सेव करें",
+ "e.g. SET/2026/00125": "जैसे SET/2026/00125",
+ "Search": "खोजें",
+ "Password, email, screen lock and region.": "पासवर्ड, ईमेल, स्क्रीन लॉक और क्षेत्र।",
+ "Sign-in credentials": "साइन-इन जानकारी",
+ "Reset password": "पासवर्ड रीसेट करें",
+ "4-digit screen lock PIN": "4 अंकों का स्क्रीन लॉक PIN",
+ "New PIN": "नया PIN",
+ "Confirm PIN": "PIN दोबारा डालें",
+ "Save PIN": "PIN सेव करें",
+ "Turn off": "बंद करें",
+ "Lock now": "अभी लॉक करें",
+ "Region": "क्षेत्र",
+ "Global (International B2B)": "ग्लोबल (अंतरराष्ट्रीय B2B)",
+ "Language": "भाषा",
+ "Choose the language of this portal.": "इस पोर्टल की भाषा चुनें।",
+ "Danger zone": "सावधानी क्षेत्र",
+ "Delete account": "अकाउंट डिलीट करें",
+ "Sneh Elastic Web Apps": "Sneh Elastic वेब ऐप्स",
+ "Quick access across our websites.": "हमारी सभी वेबसाइटों तक आसान पहुँच।",
+ "Main website": "मुख्य वेबसाइट",
+ "Account portal": "अकाउंट पोर्टल",
+ "Company blog": "कंपनी ब्लॉग",
+ "AI assistant": "AI असिस्टेंट",
+ "Support & help desk": "सहायता और हेल्प डेस्क",
+ "Coming soon": "जल्द आ रहा है",
+ "Enter your PIN": "अपना PIN डालें",
+ "Unlock": "अनलॉक करें",
+ "Copy": "कॉपी करें",
+ "Close": "बंद करें",
+ "Close (Esc)": "बंद करें (Esc)",
+ "Type to search actions...": "एक्शन खोजने के लिए लिखें...",
+ "Continue": "आगे बढ़ें",
+ "Cancel": "रद्द करें"
+};
+let lang = 'en';
+try { if (localStorage.getItem('lang') === 'hi') lang = 'hi'; } catch (e) {}
+function tr(text, vars) {
+  let out = lang === 'hi' && Object.prototype.hasOwnProperty.call(HI, text) ? HI[text] : text;
+  if (vars) Object.keys(vars).forEach(k => out = out.replace('{' + k + '}', () => vars[k]));
+  return out;
+}
+
+/* =========================================================
    1. SETTINGS
    ========================================================= */
 const CONFIG = {
@@ -520,8 +717,8 @@ const CONFIG = {
   },
   usersCollection: 'users',
   invoicesCollection: 'invoices',
-  // 'hash' : account.snehelastic.com/#/login   (हर hosting पर चलता है)
-  // 'path' : account.snehelastic.com/login     (server rewrite ज़रूरी)
+  // 'hash' : account.snehelastic.com/#/login   (works on any hosting)
+  // 'path' : account.snehelastic.com/login     (needs a server rewrite)
   routing: 'hash',
   idleLockMinutes: 10
 };
@@ -536,7 +733,7 @@ const store = {
 };
 
 /* =========================================================
-   2. BACKEND (Firebase, और local preview के लिए demo)
+   2. BACKEND (Firebase, plus a demo for local preview)
    ========================================================= */
 function firebaseBackend() {
   firebase.initializeApp(CONFIG.firebase);
@@ -579,7 +776,7 @@ function firebaseBackend() {
         const s = await db.collection(CONFIG.invoicesCollection).doc(number.replace(/\//g, '-')).get();
         return s.exists ? s.data() : null;
       } catch (e) {
-        // rules के कारण न मिलने वाला और दूसरे का invoice, दोनों यही error देते हैं
+        // a missing invoice and someone else's invoice both raise this error
         if (e.code === 'permission-denied') return null;
         throw e;
       }
@@ -614,29 +811,29 @@ function demoBackend() {
 /* =========================================================
    3. UI HELPERS
    ========================================================= */
-function toast(msg, type = 'info') {
+function toast(msg, type = 'info', vars) {
   const t = document.createElement('div');
-  t.className = 'toast ' + type; t.textContent = msg;
+  t.className = 'toast ' + type; t.textContent = tr(msg, vars);
   $('#toasts').appendChild(t);
   setTimeout(() => t.remove(), 4500);
 }
 const ERRORS = {
-  'auth/invalid-credential': 'Email या password गलत है।',
-  'auth/invalid-login-credentials': 'Email या password गलत है।',
-  'auth/wrong-password': 'Password गलत है।',
-  'auth/user-not-found': 'Email या password गलत है।',
-  'auth/email-already-in-use': 'यह email पहले से registered है।',
-  'auth/weak-password': 'ज़्यादा मज़बूत password रखें।',
-  'auth/invalid-email': 'सही email address डालें।',
-  'auth/too-many-requests': 'बहुत ज़्यादा कोशिशें हुईं। थोड़ी देर बाद फिर try करें।',
-  'auth/popup-closed-by-user': 'Sign-in window बंद कर दी गई।',
-  'auth/popup-blocked': 'Browser में popup allow करें।',
-  'auth/account-exists-with-different-credential': 'इस email से पहले किसी और तरीके से account बना है।',
-  'auth/unauthorized-domain': 'यह domain Firebase के Authorized domains में नहीं है।',
-  'auth/operation-not-allowed': 'यह sign-in तरीका Firebase Console में enable नहीं है।',
-  'auth/network-request-failed': 'Internet connection जाँचें।'
+  'auth/invalid-credential': 'Incorrect email or password.',
+  'auth/invalid-login-credentials': 'Incorrect email or password.',
+  'auth/wrong-password': 'Incorrect password.',
+  'auth/user-not-found': 'Incorrect email or password.',
+  'auth/email-already-in-use': 'This email is already registered.',
+  'auth/weak-password': 'Please use a stronger password.',
+  'auth/invalid-email': 'Please enter a valid email address.',
+  'auth/too-many-requests': 'Too many attempts. Please try again later.',
+  'auth/popup-closed-by-user': 'The sign-in window was closed.',
+  'auth/popup-blocked': 'Please allow pop-ups in your browser.',
+  'auth/account-exists-with-different-credential': 'This email already uses a different sign-in method.',
+  'auth/unauthorized-domain': 'This domain is not in Firebase Authorized domains.',
+  'auth/operation-not-allowed': 'This sign-in method is not enabled in Firebase Console.',
+  'auth/network-request-failed': 'Please check your internet connection.'
 };
-const fail = e => { console.error(e); toast(ERRORS[e.code] || 'कुछ गड़बड़ हुई। दोबारा कोशिश करें।', 'error'); };
+const fail = e => { console.error(e); toast(ERRORS[e.code] || 'Something went wrong. Please try again.', 'error'); };
 
 async function busy(btn, fn) {
   if (btn && btn.disabled) return;
@@ -646,7 +843,7 @@ async function busy(btn, fn) {
 function ask(title, text, type = 'text') {
   return new Promise(resolve => {
     const box = $('#ask'), input = $('#askInput');
-    $('#askTitle').textContent = title; $('#askText').textContent = text;
+    $('#askTitle').textContent = tr(title); $('#askText').textContent = tr(text);
     input.type = type; input.value = ''; box.hidden = false; input.focus();
     const done = v => { box.hidden = true; $('#askForm').onsubmit = null; resolve(v); };
     $('#askForm').onsubmit = e => { e.preventDefault(); done(input.value.trim() && (type === 'password' ? input.value : input.value.trim())); };
@@ -709,7 +906,7 @@ $$('[data-country]').forEach(host => {
 });
 
 /* =========================================================
-   5. ROUTER (हर पेज का अलग URL)
+   5. ROUTER (a separate URL for every page)
    ========================================================= */
 const TITLES = {
   'login': 'Sign In', 'signup': 'Create Account', 'dashboard': 'Dashboard',
@@ -735,7 +932,7 @@ function render() {
   if (!session && !isAuth) { wanted = r; r = 'login'; }
   if (session && isAuth) { r = wanted || 'dashboard'; wanted = null; }
   if (current() !== r) history.replaceState(null, '', url(r));
-  document.title = TITLES[r] + ' | Sneh Elastic Account';
+  document.title = tr(TITLES[r]) + ' | Sneh Elastic Account';
   $('#loader').hidden = true;
   $('#authView').hidden = !!session;
   $('#appView').hidden = !session || locked;
@@ -743,10 +940,10 @@ function render() {
   if (!session) {
     const signup = r === 'signup';
     $('#authCard').classList.toggle('signup', signup);
-    $('#heroTitle').textContent = signup ? 'Welcome Back!' : 'Hey There!';
-    $('#heroText').textContent = signup ? 'पहले से अकाउंट है? अपने email से sign in करें।' : 'अपना अकाउंट बनाएँ और Sneh Elastic Threads Pvt. Ltd. के साथ नया सफ़र शुरू करें।';
+    $('#heroTitle').textContent = tr(signup ? 'Welcome Back!' : 'Hey There!');
+    $('#heroText').textContent = tr(signup ? 'Already have an account? Sign in with your email.' : 'Create your account and start a new journey with Sneh Elastic Threads Pvt. Ltd.');
     const b = $('#heroBtn'); b.dataset.go = signup ? 'login' : 'signup';
-    b.textContent = signup ? 'Sign In' : 'Sign Up'; b.href = url(b.dataset.go);
+    b.textContent = tr(signup ? 'Sign In' : 'Sign Up'); b.href = url(b.dataset.go);
   } else {
     $$('.tab').forEach(t => t.hidden = t.dataset.tab !== r);
     $$('#nav a').forEach(a => a.dataset.go === r ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
@@ -759,7 +956,7 @@ window.addEventListener('hashchange', render);
 /* =========================================================
    6. SESSION + DASHBOARD
    ========================================================= */
-let holdAuth = false;   // signup के दौरान profile save होने तक रुकें
+let holdAuth = false;   // wait until the profile is saved during signup
 let loadId = 0;
 
 async function loadSession(user) {
@@ -781,7 +978,7 @@ async function loadSession(user) {
     }
     if (locked) $('#unlockForm').elements.pin.focus();
   } catch (e) {
-    // profile न पढ़ पाने पर dashboard न खोलें, वरना PIN lock छूट सकता है
+    // never open the dashboard if the profile cannot be read, or the PIN lock could be skipped
     fail(e); await backend.signOut();
   }
 }
@@ -792,31 +989,31 @@ const view = () => {
   const c = profile.selectedCountry ? country(profile.selectedCountry) : null;
   const phoneCode = profile.phoneCode || (c ? c.dial : '');
   return {
-    fullName: profile.fullName || session.displayName || 'अपना नाम जोड़ें',
-    company: profile.companyName || 'Company name जोड़ें',
-    email: session.email || 'Not available',
-    countryName: c ? c.name : 'Not set',
-    fullPhone: profile.phone ? phoneCode + ' ' + profile.phone : 'Not set',
-    regionName: profile.regionMode === 'GLOBAL' ? 'Global' : 'India'
+    fullName: profile.fullName || session.displayName || tr('Add your name'),
+    company: profile.companyName || tr('Add company name'),
+    email: session.email || tr('Not available'),
+    countryName: c ? c.name : tr('Not set'),
+    fullPhone: profile.phone ? phoneCode + ' ' + profile.phone : tr('Not set'),
+    regionName: tr(profile.regionMode === 'GLOBAL' ? 'Global' : 'India')
   };
 };
 
 function fill() {
   const v = view();
   $$('[data-bind]').forEach(el => el.textContent = v[el.dataset.bind]);
-  $('#initials').textContent = v.fullName === 'अपना नाम जोड़ें' ? '--' : v.fullName.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  $('#initials').textContent = !(profile.fullName || session.displayName) ? '--' : v.fullName.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
   $('#shortUid').textContent = session.uid.slice(0, 8) + '...';
   const h = new Date().getHours();
-  $('#greeting').textContent = (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + (profile.fullName ? ', ' + profile.fullName.split(' ')[0] : '');
+  $('#greeting').textContent = tr(h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + (profile.fullName ? ', ' + profile.fullName.split(' ')[0] : '');
 
   const adv = profile.advanceDetails || {}, global = profile.regionMode === 'GLOBAL';
   const checks = [profile.fullName, profile.companyName, profile.phone, profile.selectedCountry, adv.address, global ? adv.globalTaxID : (adv.gstin || adv.pan)];
   const pct = Math.round(checks.filter(Boolean).length / checks.length * 100);
   $('#pct').textContent = pct + '%';
   $('#pctBar').style.width = pct + '%'; $('#pctBar').style.background = pct === 100 ? 'var(--ok)' : 'var(--brand)';
-  $('#emailState').textContent = session.emailVerified ? 'Verified' : 'Not verified';
+  $('#emailState').textContent = tr(session.emailVerified ? 'Verified' : 'Not verified');
   $('#verifyBtn').hidden = !!session.emailVerified;
-  $('#pinState').textContent = hasPin() ? 'On' : 'Off';
+  $('#pinState').textContent = tr(hasPin() ? 'On' : 'Off');
   $('#removePin').hidden = $('#lockNow').hidden = !hasPin();
 
   const pf = $('#profileForm').elements;
@@ -865,10 +1062,10 @@ onSubmit('#signupForm', async (f, form) => {
   try {
     user = await backend.signUp(data.email, f.password.value);
     try { await backend.save(user.uid, data); }
-    catch (e) { console.error(e); toast('Account बन गया, पर profile save नहीं हुई। Edit Profile में दोबारा save करें।', 'error'); }
+    catch (e) { console.error(e); toast('Account created, but the profile was not saved. Please save it again in Edit Profile.', 'error'); }
     try { await backend.setName(data.fullName); }
     catch (e) { console.error(e); }
-    try { await backend.verifyEmail(); toast('Verification link आपके email पर भेजा गया है।', 'success'); }
+    try { await backend.verifyEmail(); toast('A verification link has been sent to your email.', 'success'); }
     catch (e) { console.error(e); }
   } finally { holdAuth = false; }
   form.reset(); pickers.signup.set('IN'); strength('');
@@ -894,7 +1091,7 @@ async function social(name) {
 onSubmit('#profileForm', async f => {
   const c = country(pickers.profile.get());
   const fullName = f.fullName.value.trim();
-  await save({ fullName, companyName: f.company.value.trim(), selectedCountry: c.code, phoneCode: c.dial, phone: f.phone.value.trim() }, 'Profile save हो गई।');
+  await save({ fullName, companyName: f.company.value.trim(), selectedCountry: c.code, phoneCode: c.dial, phone: f.phone.value.trim() }, 'Profile saved.');
   try { await backend.setName(fullName); } catch (e) { console.error(e); }
 });
 
@@ -909,39 +1106,39 @@ onSubmit('#businessForm', async f => {
   adv.address = f.address.value.trim();
   if (profile.regionMode !== 'GLOBAL') {
     const bad = Object.keys(FORMATS).find(k => adv[k] && !FORMATS[k].test(adv[k]));
-    if (bad) { toast(bad.toUpperCase() + ' का format सही नहीं है।', 'error'); f[bad].focus(); return; }
+    if (bad) { toast('{field} format is not valid.', 'error', { field: bad.toUpperCase() }); f[bad].focus(); return; }
   }
-  await save({ advanceDetails: adv }, 'Business details save हो गए।');
+  await save({ advanceDetails: adv }, 'Business details saved.');
 });
 
 onSubmit('#invoiceForm', async f => {
   const number = f.number.value.trim().toUpperCase(), box = $('#invoiceResult');
-  box.hidden = false; box.textContent = 'Searching...';
+  box.hidden = false; box.textContent = tr('Searching...');
   let inv;
   try { inv = await backend.invoice(number); }
   catch (e) { box.hidden = true; throw e; }
   box.replaceChildren();
-  if (!inv) { box.textContent = 'आपके अकाउंट में "' + number + '" नाम का कोई invoice नहीं मिला।'; return; }
+  if (!inv) { box.textContent = tr('No invoice "{number}" was found in your account.', { number }); return; }
   const dl = document.createElement('dl');
   [['Invoice', inv.number || number], ['Date', inv.date || '-'], ['Amount', typeof inv.amount === 'number' ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(inv.amount) : '-'], ['Status', inv.status || '-']].forEach(([k, val]) => {
     const d = document.createElement('div'), t = document.createElement('dt'), x = document.createElement('dd');
-    t.textContent = k; x.textContent = val; d.append(t, x); dl.append(d);
+    t.textContent = tr(k); x.textContent = val; d.append(t, x); dl.append(d);
   });
   box.append(dl);
 });
 
-/* ---------- PIN (नया PIN hash होकर save होता है) ---------- */
+/* ---------- PIN (new PINs are saved as a hash) ---------- */
 const hex = b => Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, '0')).join('');
 async function hashPin(pin, salt) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
   return hex(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: new TextEncoder().encode(salt), iterations: 150000 }, key, 256));
 }
 onSubmit('#pinForm', async (f, form) => {
-  if (!/^\d{4}$/.test(f.pin.value) || f.pin.value !== f.confirm.value) { toast('दोनों में एक जैसा 4 अंकों का PIN डालें।', 'error'); return; }
+  if (!/^\d{4}$/.test(f.pin.value) || f.pin.value !== f.confirm.value) { toast('Enter the same 4-digit PIN in both fields.', 'error'); return; }
   const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
   const pinHash = await hashPin(f.pin.value, salt);
   store.set('unlocked', session.uid);
-  await save({ pinHash, pinSalt: salt, is2FAEnabled: true, customPin: '' }, 'Screen lock PIN चालू हो गया।');
+  await save({ pinHash, pinSalt: salt, is2FAEnabled: true, customPin: '' }, 'Screen lock PIN turned on.');
   form.reset();
 });
 
@@ -955,7 +1152,7 @@ onSubmit('#unlockForm', async (f, form) => {
     store.set('pinTries', null); store.set('unlocked', session.uid);
     locked = false; lastActive = Date.now(); render();
     if (!profile.pinHash) {
-      // पुराना plain-text PIN: सही PIN मिलने पर hash में बदलें
+      // legacy plain-text PIN: convert to a hash after a correct entry
       try {
         const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
         await save({ pinHash: await hashPin(entered, salt), pinSalt: salt, customPin: '' });
@@ -965,8 +1162,8 @@ onSubmit('#unlockForm', async (f, form) => {
   }
   const tries = Number(store.get('pinTries') || 0) + 1;
   store.set('pinTries', String(tries));
-  if (tries >= 5) { toast('5 गलत कोशिशें। दोबारा sign in करें।', 'error'); await logout(); }
-  else toast('गलत PIN। ' + (5 - tries) + ' कोशिशें बाकी।', 'error');
+  if (tries >= 5) { toast('5 wrong attempts. Please sign in again.', 'error'); await logout(); }
+  else toast('Wrong PIN. Attempts left: {n}', 'error', { n: 5 - tries });
 });
 
 function lockScreen() {
@@ -993,7 +1190,7 @@ async function logout() {
    ========================================================= */
 async function confirmIdentity() {
   if (!backend.hasPassword()) { await backend.reauth(null); return true; }
-  const pw = await ask('पहचान की पुष्टि', 'आगे बढ़ने के लिए अपना password डालें।', 'password');
+  const pw = await ask('Confirm your identity', 'Enter your password to continue.', 'password');
   if (!pw) return false;
   await backend.reauth(pw); return true;
 }
@@ -1008,44 +1205,44 @@ const actions = {
   google: () => social('google'),
   apple: () => social('apple'),
   async forgot() {
-    const email = $('#loginForm').elements.email.value.trim() || await ask('Password reset', 'अपना registered email डालें।', 'email');
+    const email = $('#loginForm').elements.email.value.trim() || await ask('Password reset', 'Enter your registered email.', 'email');
     if (!email) return;
     await backend.resetPassword(email);
-    toast('अगर यह email registered है, तो reset link भेज दिया गया है।', 'success');
+    toast('If this email is registered, a reset link has been sent.', 'success');
   },
   logout,
-  async verify() { await backend.verifyEmail(); toast('Verification link भेज दिया गया है।', 'success'); },
+  async verify() { await backend.verifyEmail(); toast('Verification link sent.', 'success'); },
   async resetPassword() {
-    if (!backend.hasPassword()) { toast('आप Google/Apple से sign in करते हैं। Password वहीं से manage होता है।'); return; }
-    await backend.resetPassword(session.email); toast('Reset link आपके email पर भेजा गया है।', 'success');
+    if (!backend.hasPassword()) { toast('You sign in with Google/Apple. Your password is managed there.'); return; }
+    await backend.resetPassword(session.email); toast('A reset link has been sent to your email.', 'success');
   },
   async changeEmail() {
-    if (!backend.hasPassword()) { toast('Google/Apple account का email यहाँ से नहीं बदलता।'); return; }
-    const email = await ask('Change email', 'नया email address डालें।', 'email');
+    if (!backend.hasPassword()) { toast('The email of a Google/Apple account cannot be changed here.'); return; }
+    const email = await ask('Change email', 'Enter your new email address.', 'email');
     if (!email || !await confirmIdentity()) return;
     await backend.changeEmail(email);
-    toast('नए email पर verification link भेजा है। Link खोलने के बाद ही email बदलेगा।', 'success');
+    toast('A verification link was sent to the new email. It changes only after you open the link.', 'success');
   },
   async deleteAccount() {
-    const word = await ask('Delete account?', 'पक्का करने के लिए DELETE लिखें।');
+    const word = await ask('Delete account?', 'Type DELETE to confirm.');
     if (word !== 'DELETE') return;
     if (!await confirmIdentity()) return;
-    await backend.remove(); store.set('unlocked', null); toast('Account delete हो गया।', 'success');
+    await backend.remove(); store.set('unlocked', null); toast('Account deleted.', 'success');
   },
   async removePin() {
     if (!await confirmIdentity()) return;
-    await save({ pinHash: '', pinSalt: '', is2FAEnabled: false, customPin: '' }, 'Screen lock बंद कर दिया गया।');
+    await save({ pinHash: '', pinSalt: '', is2FAEnabled: false, customPin: '' }, 'Screen lock turned off.');
   },
   lockNow: lockScreen,
   qr() {
-    if (typeof qrcode !== 'function') { toast('QR library load नहीं हुई।', 'error'); return; }
+    if (typeof qrcode !== 'function') { toast('The QR library did not load.', 'error'); return; }
     const q = qrcode(0, 'M'); q.addData(session.uid); q.make();
     $('#qrBox').innerHTML = q.createImgTag(6, 0);
     $('#qrBox img').alt = 'QR code of Account ID';
     $('#fullUid').textContent = session.uid;
     $('#qrModal').hidden = false; $('#qrModal [data-action="close"]').focus();
   },
-  async copyUid() { await navigator.clipboard.writeText(session.uid); toast('Account ID copy हो गई।', 'success'); },
+  async copyUid() { await navigator.clipboard.writeText(session.uid); toast('Account ID copied.', 'success'); },
   vcard() {
     const clean = s => String(s || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, ' ').replace(/([,;])/g, '\\$1');
     const card = ['BEGIN:VCARD', 'VERSION:3.0', 'FN:' + clean(profile.fullName), 'N:' + clean(profile.fullName) + ';;;;', 'ORG:' + clean(profile.companyName), 'EMAIL:' + clean(session.email), 'TEL:' + clean((profile.phoneCode || '') + (profile.phone || '')), 'END:VCARD'].join('\r\n');
@@ -1068,9 +1265,9 @@ document.addEventListener('click', e => {
 function commands(q) {
   const items = Object.keys(TITLES).filter(r => r.startsWith('dashboard')).map(r => [TITLES[r], () => go(r)])
     .concat([['Show QR code', actions.qr], ['Download contact card', actions.vcard], ['Logout', () => busy(null, logout)]]);
-  $('#cmdList').replaceChildren(...items.filter(i => i[0].toLowerCase().includes(q.toLowerCase())).map(([label, fn]) => {
+  $('#cmdList').replaceChildren(...items.filter(i => tr(i[0]).toLowerCase().includes(q.toLowerCase())).map(([label, fn]) => {
     const li = document.createElement('li'), b = document.createElement('button');
-    b.type = 'button'; b.textContent = label; b.onclick = () => { $('#cmdModal').hidden = true; fn(); };
+    b.type = 'button'; b.textContent = tr(label); b.onclick = () => { $('#cmdModal').hidden = true; fn(); };
     li.append(b); return li;
   }));
 }
@@ -1085,7 +1282,7 @@ document.addEventListener('keydown', e => {
 });
 
 $('#region').addEventListener('change', e => busy(null, async () => {
-  try { await save({ regionMode: e.target.value }, 'Region बदल गया।'); }
+  try { await save({ regionMode: e.target.value }, 'Region updated.'); }
   catch (err) { fill(); throw err; }
 }));
 
@@ -1095,30 +1292,32 @@ function strength(v) {
   const bar = $('#strength');
   bar.style.width = score * 20 + '%';
   bar.style.background = score < 3 ? 'var(--danger)' : score < 4 ? '#e8a100' : 'var(--ok)';
-  $('#strengthText').textContent = !v ? '' : score < 3 ? 'Weak: बड़े अक्षर, अंक या symbol जोड़ें' : score < 4 ? 'Good' : 'Strong';
+  $('#strengthText').textContent = !v ? '' : score < 3 ? tr('Weak: add capital letters, numbers or symbols') : tr(score < 4 ? 'Good' : 'Strong');
 }
 $('#signupForm').elements.password.addEventListener('input', e => strength(e.target.value));
 $('#loginForm').elements.password.addEventListener('keyup', e => {
-  $('.caps').textContent = e.getModifierState && e.getModifierState('CapsLock') ? 'Caps Lock चालू है' : '';
+  $('.caps').textContent = e.getModifierState && e.getModifierState('CapsLock') ? tr('Caps Lock is on') : '';
 });
 
 /* Apps */
+const SNEH_AI_ICON = 'data:image/webp;base64,UklGRiAMAABXRUJQVlA4IBQMAACwNACdASqQAJAAPjEWiUKiISEXu0yQIAMEswBnkA6KQki1r+qfez8mPkB5HRp/YD5P/U/3f8du1596nuCfpd/oP6x+MXez81H7L/s77xfos/uvqD/1L+ydZ56AHlm/tx8GX7Wftl8CP6+/+rUulL+Xi9g8ra+nznn+a/HvOAu8nFFpJpl37K+d/6Z/9HuE/rn/wvW99iH7Ve0YgYvkjR3A2YX+CW0uVhOqFpPSZvMZEFrnHozLSDMZh7BdFhOHeJ1hjFmMNbEJ/T4BTeH8kb9RF3v3Nw3229X/Nt4RQmvJIJnwOiVRrT7iff9Kq7GNsl9Pzw////yq4y7QmUXLpoyZKFNEHrzPIn/2BMtHbvaLC92gCLwcoS+LXbItk7LazOgPxzRqkX3g9vSGB/vejY6vkJf9v37CaXJreLN7lO3FlomCoaWAUxKsRddT9/riwwCpeoeERd8FwOGiv9U/7KPln19c6KD+vroECR24GaL2yO9S1RKgh/Za64nCB3jKEj4bP8d8dHqMKZQEStYydTeY8ha9j4jHOchUcywGTADUji534+AMkTY7kVdw4IJQAP7+7q4Ep5B5MVPTQB/SfD/ZO8q33SpqmNrwqFqflm1TZV58rH8f7GcPBVTq0i67taWQODvZ/vl25pzC2GsXmK2Ja/imnOyraloPNGzpuN8FfdGcTCLC+vrTRSzEXQLLkqwHls54h/iREjG+QNWZNe/dRVK4Odgoh/N91WcAPtnYi3/VWPd89W+QIxP4pA8TmD8ohu/wgPJQQ2aXx+ut8fDyul9I9CJSV4ojHICH25q1TTomCk6ytFjiRbQPvWTQEH7LjCTF960MPQ7z9tl2+3haEX2n6M2BZrZkcudQTd1nviWHu1JuL8+WskXvPhbPtcSwGV2hsxFAr9g+b0ToTmRaz45I/8uPtjGhDly710nxxYDQ841PQrubLJiHM6d3GkqpjrsxcG506DsmbzAheyj3vxD3d1tCx3OK5Y78cfUH2wr9F2E2f4i+q/ydyKzPtWZlmtbn5A6oNUhNkMUvGXCysVy/IHMHC6fYH6sMPYXSasF+MISaBO9vMW9jWdmFRSOlLHbnUS3mRJ1anNf34vdMSNwwP8fDSWqCYxLoIAe4v5BcDqR7C3+ercwlW5X0hbKWaQfBgakLgOW4ixhMTurQDNCxmbdJ9G09yfFKxsKeA/Qroztl3wMEtOPEOL1Kh6hgWv62LjDO9qSwqdWfxu3ughxI4TzvemPftV0efRd5421F+GxcpKIio28AaGwd0jV4F9fiFy8yIQwdAUdYQWtCk7MoMNG2RJdhhp0Mdw/fvNV58A//kD05qW/3XeGwvIxS+iLSsm8y2RZ4+jex/vMA85EEqY2/tSwMJWHJ69WNp+1AT4/qzcEhjcXnmo8FMjsJlwD5/hLL7uHJIUV2Q/MbgWxI8dxX/JtJ4B4L0ImblDgJplY/VTV4ADS5ug0QwCbMlk1TUfTGKp/llH32Jn/RRDnacHgaSEUFevNEdoQOMKCldvv7Lqo/ymWSxBv3TMuD+4bLbF6Mtl2ppd9c9AbQGh4pfbgTuaKAjKt5divyEqyfm4gSHY8XUfmXnD8qxNzZsNqdxCb1nbaJWGghsnW3LRK2pRyeFQN5jgJMSR5zMMAIeC3G+M+xjzV4cIFDC/IhD3cbvcIrYhma+pBJa29ZdLl3AvNe1q1W41FafAFP77l+buvhcJCWjk4FHLXiM2/j/5h/zLuQwe4XwVBZJVyfGZfv+6HmuqUq/iy14Vkk08t0GYbSHr5WS99bjuwDREJtlblvCWVSK5vYihKvWjgZmdtSm3l9TmNwH1jjsamr//p/kCaq2nL/K980faIrxsmaVGbpz+ciw/kQJoC3FGy8IRWkqkO0JLKPGJKebxVob5nM/l3ETAD6QJQgcnYtevRVevyOkQOium91hji/mzXNISNHu3w/GtTwNlCnaCPe88NJvw/nkVXabK/g1dYCZsScQo3UMHrlkI8hbiXcsTRaG1Z+oTNl5qlZcXD6mufTYY4yCAXr/tisdEiDg8+a/2mobMFAM7o5mYJYF4h6NyXJS30awFlGdvAwOsQxlEqR3jrsJRpwgmtCDAPnXsQneJDQKo+AcrIU3Bi1y1zbqMh2YYoLuh1+uC1TdAitxu8w/1immaIc6/HFmjLCCtTbh2TlW9zY5nLVwASYYD933Q3wUrOGLmbBUcJh/ilAH4XsYs2TpuBFZLUEUAyUQUnlRF8cBjeo0//3+sL+Cg3TckLZ1D3xzCmHOvrsM53a4FP7LloQFecB82CZbfLPpeKmrC0fSDJFO9dCbPl8BDCuLT5IYAdq9DgTR3H6bDDLfJRAAChU7k0ANNq1cFUg28+CfeHgJboTuwsQabdgcNItTb4TcEHmbHSScAIJ3gB+SXwlyoFWeQZ2Xr8Fq9MJ+L/oobZ3ezgH7K6AgDFYdkh3wJM5PRNunGlGBfXCnhcv81+/keHJd5SEgAi3m54OoLt42/iFuBurZkNFRFbZvZDpWxZWGYCRcAZFwdR//lTD67Y6EQaTlP/k0Uw0UGPdvFCNGRkB7KzvxCCLj5w98a2+J/lqZjIS6RoWaS+Bit9QM+6QwAUIMSax5B69U0k6fPa1roJmuuu3qnmyXyMK9IWxgEC9GqNx26xcvBaeEM1rR42w0wcoaNipQZTPaqVZqujFNWqs+YlbmwZzrxg5Ist1PD+2mxl3EQjpKJbcr3DKVlbM+SrXjfkxqN048IjlM7bhiI55xfYKE1MpW6+SHbLSmZpM6dmHFTE2rhn99DtP7rGllS46JVTe0GOsp1Hd1Jqtedr+Kx6Lub73K78gIlY+76mjhvE3J/hbzlSVdMZCTghS7yNWj/1tA5Ah0okKFWC4yxH+705eT1h94zfKt6NPGhBYSnho++jTOpwOcb5MfLAS9tLPdzd1+X4PD1pD/TFKuYBUNx/7RplcE/3bORdFHPH9nYCg8E7sXbBVosa2aDrOatgRSKxKIG2VsMRpz/6F2ymKNRGPF/p6to5fE1my0XwhxkNRSFHdrhoiQxOUH5i4IoTZaHNHp9JkdmBzwINMKacZyyIQujRC9wskkeCXnu9nRUKXNQmpH+JQFz699KZe3RFz7oiLlxR+4IgYAVCCsyORj1g9/GqaRDF7SjhJvhEPl6eNT7ktAsfn0ds/xbP2f1gNADMV9CgRdXVc4buh7Jvef9UGQ4f6jw8w/rDDIAHW9yogz5z6Z1R/Ig59EeaXQ8ub8CRKWOKmP7NAjsKhndr6HzVPqXnevgbCo8Q++1Osf9/zpTsuFTyTR/HK5PTJ+qBDzCqkexzXj0I27iq3u5X39cJEgV/EwT+uwrbNQk+NPFNlQX3+VOAvuPjhNm1B99bSXZlWntTbl7HiLeYtsmu+ntlf/+cBPGIHugkwyD/pK8IW/nh1YPJep3M6R+dIt4zUyw7FD+LYnHJ1H2CoVLOJxQ4a6lsrk/vP3mxDThyGkAawZaTv9njfwXUiDaOzt/ox5vV2jJIWfmD5mZGoY+8WrHpjOoTasc3mS58Ty0Y7AZ/tLbLa4L3wjFWgJkQw1cegVSDkev1AdpcBheYofjmklSsh//UNkGTIS7RZZUpie6xJ2UD2r4TWMZtvwZCn3tT5j1qOfehv8m9HfmzDRmVkLzaYchJ/yilIb+h/XPeDwHz7eEZQbAfiokO7NTCOvc5EYwItYVWjuf49DKXtsmUGlmgZa1pmwHsX83RAtJNJWfuEGvHC0s/khaRAzn1Y78BvGDtq/FJF+aTOdNztbB5hD7li2xe+2j+a2GJBA1FM/k/GRXl176ChM6MG9XyL3U7CVhCt86+AryedkSS+gqlw9wkaelxtvTtba/FfRwYOBLf9f+AFNRf5CGN/FID1g4jkJmTup2c9v4X/17q622z6M7P7kds+81wguRvDwnxuo5kz7LQmWecisLtpcWFLZZ59Aj5C11vqBAmRvc7Szu7ShcFCM1jfHJpOVHe7OAhmDS+tAojGgzXcI3mTzFybkXkJJbJaXRyWW37dTrpYknmMyOPEWxULL1cBoxHPP2hI9irAPb9OobYM1+F0pw2Jir1oeCdliiuLqI8E7TFOKms2yP03hP+vZG+tOKCUzQYWoEAAAA==';
 [['snehelastic.com', 'Main website', 'fa-globe', '#0f8a62'],
  ['account.snehelastic.com', 'Account portal', 'fa-id-card', '#205252'],
  ['blog.snehelastic.com', 'Company blog', 'fa-blog', '#0e7490'],
- ['jobs.snehelastic.com', 'Careers & jobs', 'fa-briefcase', '#7c3aed'],
+ ['snehai.snehelastic.workers.dev', 'AI assistant', '', '#000', false, 'SNEH AI', SNEH_AI_ICON],
  ['help.snehelastic.com', 'Support & help desk', 'fa-circle-question', '#4f46e5'],
  ['app.snehelastic.com', 'Coming soon', 'fa-mobile-screen', '#7b8794', true]
-].forEach(([host, sub, icon, color, off]) => {
+].forEach(([host, sub, icon, color, off, label, image]) => {
   const el = document.createElement(off ? 'div' : 'a');
   el.className = 'app' + (off ? ' off' : '');
   if (!off) { el.href = 'https://' + host; el.target = '_blank'; el.rel = 'noopener'; }
-  el.innerHTML = '<span class="ic" style="background:' + color + '"><i class="fa-solid ' + icon + '"></i></span><span><b>' + host + '</b><span class="muted">' + sub + '</span></span>';
+  const art = image ? '<img class="ic" src="' + image + '" alt="">' : '<span class="ic" style="background:' + color + '"><i class="fa-solid ' + icon + '"></i></span>';
+  el.innerHTML = art + '<span><b>' + (label || host) + '</b><span class="muted">' + sub + '</span></span>';
   $('#apps').append(el);
 });
 
 /* =========================================================
-   9. ELASTIC STRINGS (माउस/उंगली से छेड़िए)
+   9. ELASTIC STRINGS (pluck with mouse or finger)
    ========================================================= */
 (function () {
   const cv = $('#strings'), ctx = cv.getContext('2d');
@@ -1144,13 +1343,13 @@ $('#loginForm').elements.password.addEventListener('keyup', e => {
   addEventListener('pointerup', release);
   addEventListener('pointercancel', release);
   const pluck = (l, x, power) => { l.x = Math.max(60, Math.min(w - 60, x)); l.vel += power; };
-  // फ़ोन पर टैप करते ही पास वाला धागा हिलता है
+  // a tap plucks the nearest string
   addEventListener('pointerdown', e => {
     if (!lines.length) return;
     const near = lines.reduce((a, b) => Math.abs(b.y - e.clientY) < Math.abs(a.y - e.clientY) ? b : a);
     pluck(near, e.clientX, near.y > e.clientY ? 14 : -14);
   }, { passive: true });
-  // बीच-बीच में धागे अपने आप भी हिलते हैं
+  // strings also move on their own now and then
   setInterval(() => {
     if (!document.hidden && lines.length) pluck(lines[Math.floor(Math.random() * lines.length)], Math.random() * w, Math.random() > .5 ? 10 : -10);
   }, 1800);
@@ -1168,7 +1367,7 @@ $('#loginForm').elements.password.addEventListener('keyup', e => {
   })();
 })();
 
-/* टैप पर ripple और रंगीन चिंगारियाँ */
+/* ripple and sparks on tap */
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
   addEventListener('pointerdown', e => {
     const el = e.target.closest('.btn, .chip, .seg a, #nav a');
@@ -1189,21 +1388,52 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
   }, { passive: true });
 }
 
+/* Translate fixed page text. English originals are remembered so we can switch back. */
+const fixedText = [];
+(function () {
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let node; (node = walker.nextNode());) {
+    if (node.parentElement.closest('script, #language')) continue;
+    const key = node.nodeValue.trim().replace(/\s+/g, ' ');
+    if (HI[key]) { const raw = node.nodeValue; fixedText.push(() => node.nodeValue = raw.replace(raw.trim(), () => tr(key))); }
+  }
+  $$('[placeholder], [title], [aria-label]').forEach(el => ['placeholder', 'title', 'aria-label'].forEach(attr => {
+    const key = el.getAttribute(attr);
+    if (key && HI[key]) fixedText.push(() => el.setAttribute(attr, tr(key)));
+  }));
+})();
+function applyLanguage() {
+  document.documentElement.lang = lang;
+  $('#language').value = lang;
+  fixedText.forEach(update => update());
+  strength($('#signupForm').elements.password.value);
+  $('.caps').textContent = '';
+  $('#invoiceResult').hidden = true;
+  if (session) fill();
+  render();
+}
+$('#language').addEventListener('change', e => {
+  lang = e.target.value === 'hi' ? 'hi' : 'en';
+  try { localStorage.setItem('lang', lang); } catch (err) {}
+  applyLanguage();
+});
+applyLanguage();
+
 /* =========================================================
    10. START
    ========================================================= */
 function stop(msg) {
-  const p = document.createElement('p'); p.textContent = msg; p.style.cssText = 'padding:2rem;text-align:center';
+  const p = document.createElement('p'); p.textContent = tr(msg); p.style.cssText = 'padding:2rem;text-align:center';
   $('#loader').replaceChildren(p);
 }
 const wantsDemo = isLocal && new URLSearchParams(location.search).has('demo');
 if (configured && !wantsDemo) {
-  if (!window.firebase) { stop('Service load नहीं हुई। Internet जाँचकर page refresh करें।'); return; }
+  if (!window.firebase) { stop('The service did not load. Check your internet and refresh the page.'); return; }
   backend = firebaseBackend();
 } else if (isLocal) {
   backend = demoBackend(); $('#demoBar').hidden = false;
 } else {
-  stop('Portal अभी setup हो रहा है। (Firebase config missing)'); return;
+  stop('The portal is being set up. (Firebase config missing)'); return;
 }
 backend.onAuth(user => { if (!holdAuth) loadSession(user); });
 })();
