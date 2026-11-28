@@ -208,6 +208,26 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
 .stat,.apps .app{animation:rise .55s cubic-bezier(.2,.9,.3,1.25) backwards}
 .grid3>:nth-child(2),.apps>:nth-child(2){animation-delay:.08s}.grid3>:nth-child(3),.apps>:nth-child(3){animation-delay:.16s}.apps>:nth-child(4){animation-delay:.24s}.apps>:nth-child(5){animation-delay:.32s}.apps>:nth-child(6){animation-delay:.4s}
 
+.note{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:.7rem .9rem;font-size:.82rem;overflow-wrap:anywhere}
+dl .full{grid-column:1/-1}
+.box .stack>.grid2{gap:.85rem}
+.mapsearch{margin:.8rem 0}
+.mapsearch .input{min-width:0}
+#map{height:320px;border-radius:16px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;position:relative;z-index:0;isolation:isolate;overflow:hidden}
+.mappin{width:30px;height:30px;border-radius:50% 50% 50% 0;background:#d92d20;border:3px solid #fff;transform:rotate(-45deg);box-shadow:0 4px 10px rgba(0,0,0,.4)}
+.switch{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.7rem 0;cursor:pointer;font-size:.86rem}
+.switch small{display:block;color:var(--muted)}
+.switch input{appearance:none;-webkit-appearance:none;flex:none;width:46px;height:26px;border-radius:20px;background:#b9c8cb;position:relative;cursor:pointer;transition:background .25s}
+.switch input::after{content:"";position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .3s cubic-bezier(.3,1.8,.5,1)}
+.switch input:checked{background:var(--brand)}
+.switch input:checked::after{transform:translateX(20px)}
+.rows{list-style:none;margin-top:.5rem}
+.rows li{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.55rem 0;border-bottom:1px solid var(--line);font-size:.86rem;font-weight:600}
+.rows li:last-child{border:0}
+.calm *,.calm *::before,.calm *::after{animation:none!important;transition:none!important}
+.calm #strings,.calm .aurora{display:none}
+.calm .rotator span:first-child{opacity:1}
+
 .tools{display:flex;gap:.6rem}
 .chip{justify-content:center}
 .narrow{display:none}
@@ -393,6 +413,7 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
             <div><dt>Phone</dt><dd data-bind="fullPhone"></dd></div>
             <div><dt>Country</dt><dd data-bind="countryName"></dd></div>
             <div><dt>Mode</dt><dd data-bind="regionName"></dd></div>
+            <div class="full"><dt>Address</dt><dd data-bind="address"></dd></div>
           </dl>
           <div class="actions"><button class="btn btn-ghost" data-action="vcard"><i class="fa-solid fa-address-card"></i>Download contact card</button><button class="btn btn-ghost" data-action="qr"><i class="fa-solid fa-qrcode"></i>Show QR</button></div>
         </div>
@@ -420,7 +441,42 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
             <label class="field"><span>PAN (optional)</span><input class="input upper" name="pan" maxlength="10" placeholder="10 characters"></label>
           </div>
           <label class="field" id="globalFields"><span>Company registration / Tax ID</span><input class="input upper" name="globalTaxID" maxlength="40"></label>
-          <label class="field"><span>Factory / office address</span><textarea class="input" name="address" rows="3" maxlength="500"></textarea></label>
+          <div class="box">
+            <h3><i class="fa-solid fa-location-dot"></i> Factory / office address</h3>
+            <div class="stack">
+              <p class="note" id="oldAddress" hidden><b>Previously saved address:</b> <span></span></p>
+              <div class="grid2">
+                <label class="field"><span>Address type</span><select class="input" name="type"><option value="Factory">Factory</option><option value="Office">Office</option><option value="Warehouse">Warehouse</option><option value="Billing">Billing</option></select></label>
+                <label class="field"><span>Contact person at this address (optional)</span><input class="input" name="contact" maxlength="80" autocomplete="name"></label>
+              </div>
+              <label class="field"><span>Address line 1 (building, plot, shop no.) *</span><input class="input" name="line1" maxlength="120" autocomplete="address-line1"></label>
+              <label class="field"><span>Address line 2 (street, area, sector) (optional)</span><input class="input" name="line2" maxlength="120" autocomplete="address-line2"></label>
+              <label class="field"><span>Landmark (optional)</span><input class="input" name="landmark" maxlength="80"></label>
+              <div class="grid2">
+                <label class="field"><span>PIN / postal code *</span><input class="input" name="pincode" maxlength="12" autocomplete="postal-code"></label>
+                <label class="field"><span>City / town *</span><input class="input" name="city" maxlength="60" autocomplete="address-level2"></label>
+                <label class="field"><span>District (optional)</span><input class="input" name="district" maxlength="60"></label>
+                <label class="field"><span>State / province *</span><input class="input" name="state" maxlength="60" autocomplete="address-level1" list="states"></label>
+              </div>
+              <datalist id="states"></datalist>
+              <div class="field"><span>Country</span><div data-country="address"></div><input type="hidden" name="phoneCode"></div>
+              <p class="hint" id="pinHint" aria-live="polite"></p>
+            </div>
+          </div>
+          <div class="box">
+            <h3><i class="fa-solid fa-map-location-dot"></i> Pin your location on the map</h3>
+            <p class="muted">Tap the map or drag the pin to the exact spot. Then press Save details.</p>
+            <div class="row mapsearch"><input class="input" id="mapQuery" aria-label="Search a place" placeholder="Search area, street or city"><button type="button" class="btn btn-ghost" data-action="mapSearch" aria-label="Search map"><i class="fa-solid fa-magnifying-glass"></i></button></div>
+            <div id="map"><button type="button" class="btn btn-primary" data-action="openMap"><i class="fa-solid fa-map"></i>Open map</button></div>
+            <p class="hint" id="coords" aria-live="polite"></p>
+            <div class="actions">
+              <button type="button" class="btn btn-ghost" data-action="locate"><i class="fa-solid fa-location-crosshairs"></i>Use my current location</button>
+              <button type="button" class="btn btn-ghost" data-action="fillFromPin" data-needs-pin><i class="fa-solid fa-wand-magic-sparkles"></i>Fill address from pin</button>
+              <a class="btn btn-ghost" id="gmaps" target="_blank" rel="noopener" data-needs-pin><i class="fa-solid fa-diamond-turn-right"></i>Open in Google Maps</a>
+              <button type="button" class="btn btn-danger" data-action="clearPin" data-needs-pin><i class="fa-solid fa-xmark"></i>Remove pin</button>
+            </div>
+            <p class="muted" style="margin-top:.6rem">Map data from OpenStreetMap. Your map searches and pin go to OpenStreetMap services, and an Indian PIN code is sent to postalpincode.in to suggest the city and state.</p>
+          </div>
           <div><button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i>Save details</button></div>
         </form>
       </section>
@@ -443,7 +499,7 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
           </div>
         </div>
         <div class="box"><h3><i class="fa-solid fa-lock"></i> 4-digit screen lock PIN</h3>
-          <p class="muted">Your PIN is asked in a new browser session and after 10 minutes of inactivity. This is a screen lock, not true 2-Step Verification.</p>
+          <p class="muted">Your PIN is asked in a new browser session and after the inactivity time set below. This is a screen lock, not true 2-Step Verification.</p>
           <form id="pinForm" class="stack" style="margin-top:.8rem">
             <div class="grid2">
               <label class="field"><span>New PIN</span><input class="input pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required></label>
@@ -451,6 +507,27 @@ a.app:hover{transform:translateY(-4px);border-color:var(--accent)}
             </div>
             <div class="actions" style="margin:0"><button class="btn btn-primary">Save PIN</button><button type="button" class="btn btn-ghost" data-action="removePin" id="removePin">Turn off</button><button type="button" class="btn btn-ghost" data-action="lockNow" id="lockNow">Lock now</button></div>
           </form>
+        </div>
+        <div class="box"><h3>Sign-in methods</h3>
+          <p class="muted">Link more ways to sign in to this same account.</p>
+          <ul class="rows" id="methods"></ul>
+        </div>
+        <div class="box"><h3>Account activity</h3>
+          <dl><div><dt>Account created</dt><dd id="createdAt"></dd></div><div><dt>Last sign-in</dt><dd id="lastLogin"></dd></div></dl>
+        </div>
+        <div class="box"><h3>Security preferences</h3>
+          <label class="switch"><span><b>Keep me signed in on this device</b><small>Turn this off on a shared computer.</small></span><input type="checkbox" id="persist"></label>
+          <label class="field"><span>Lock the screen after inactivity (needs a PIN)</span><select class="input" id="lockAfter"><option value="1">1 minute</option><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="30">30 minutes</option></select></label>
+        </div>
+        <div class="box"><h3>Communication preferences</h3>
+          <p class="muted">These choices are saved to your profile. They do not send or stop messages automatically.</p>
+          <label class="field" style="margin-top:.7rem"><span>Preferred contact method</span><select class="input" data-pref="contact"><option value="email">Email</option><option value="phone">Phone call</option><option value="whatsapp">WhatsApp</option></select></label>
+          <label class="switch"><span><b>Order and invoice updates</b></span><input type="checkbox" data-pref="orderUpdates"></label>
+          <label class="switch"><span><b>Offers and new products</b></span><input type="checkbox" data-pref="offers"></label>
+        </div>
+        <div class="box"><h3>Display and privacy</h3>
+          <label class="switch"><span><b>Reduce animations</b><small>Useful on slower phones. Saved on this device.</small></span><input type="checkbox" id="calm"></label>
+          <div class="actions"><button class="btn btn-ghost" data-action="exportData"><i class="fa-solid fa-download"></i>Download my data</button></div>
         </div>
         <div class="box"><h3>Region</h3>
           <select class="input" id="region" aria-label="Region"><option value="IN">India</option><option value="GLOBAL">Global (International B2B)</option></select>
@@ -518,7 +595,7 @@ const HI = {
  "Password (at least 8 characters)": "पासवर्ड (कम से कम 8 अक्षर)",
  "Tax and address details for B2B invoicing. Only the format is checked; this is not government verification.": "B2B इनवॉइस के लिए टैक्स और पते की जानकारी। सिर्फ़ फ़ॉर्मैट जाँचा जाता है, सरकारी वेरिफ़िकेशन नहीं।",
  "Search invoices linked to your account.": "अपने अकाउंट से जुड़े इनवॉइस खोजें।",
- "Your PIN is asked in a new browser session and after 10 minutes of inactivity. This is a screen lock, not true 2-Step Verification.": "नए ब्राउज़र सेशन में और 10 मिनट निष्क्रिय रहने पर PIN माँगा जाएगा। यह सिर्फ़ स्क्रीन लॉक है, असली 2-Step Verification नहीं।",
+ "Your PIN is asked in a new browser session and after the inactivity time set below. This is a screen lock, not true 2-Step Verification.": "नए ब्राउज़र सेशन में और नीचे चुने गए निष्क्रिय समय के बाद PIN माँगा जाएगा। यह सिर्फ़ स्क्रीन लॉक है, असली 2-Step Verification नहीं।",
  "Your account and profile data will be permanently deleted.": "आपका अकाउंट और प्रोफ़ाइल डेटा हमेशा के लिए हट जाएगा।",
  "Logout / Forgot PIN": "लॉगआउट / PIN भूल गए",
  "5 to 15 digits": "5 से 15 अंक",
@@ -693,7 +770,77 @@ const HI = {
  "Close (Esc)": "बंद करें (Esc)",
  "Type to search actions...": "एक्शन खोजने के लिए लिखें...",
  "Continue": "आगे बढ़ें",
- "Cancel": "रद्द करें"
+ "Cancel": "रद्द करें",
+ "Address": "पता",
+ "Previously saved address:": "पहले से सेव पता:",
+ "Address type": "पते का प्रकार",
+ "Factory": "फ़ैक्ट्री",
+ "Office": "ऑफ़िस",
+ "Warehouse": "गोदाम",
+ "Billing": "बिलिंग",
+ "Contact person at this address (optional)": "इस पते पर संपर्क व्यक्ति (वैकल्पिक)",
+ "Address line 1 (building, plot, shop no.) *": "पता लाइन 1 (बिल्डिंग, प्लॉट, दुकान नं.) *",
+ "Address line 2 (street, area, sector) (optional)": "पता लाइन 2 (गली, इलाका, सेक्टर) (वैकल्पिक)",
+ "Landmark (optional)": "लैंडमार्क (वैकल्पिक)",
+ "PIN / postal code *": "पिन कोड *",
+ "City / town *": "शहर / कस्बा *",
+ "District (optional)": "ज़िला (वैकल्पिक)",
+ "State / province *": "राज्य / प्रांत *",
+ "Pin your location on the map": "मैप पर अपनी लोकेशन पिन करें",
+ "Tap the map or drag the pin to the exact spot. Then press Save details.": "मैप पर टैप करें या पिन को सही जगह खींचें। फिर जानकारी सेव करें।",
+ "Search area, street or city": "इलाका, गली या शहर खोजें",
+ "Open map": "मैप खोलें",
+ "Use my current location": "मेरी मौजूदा लोकेशन लें",
+ "Fill address from pin": "पिन से पता भरें",
+ "Open in Google Maps": "Google Maps में खोलें",
+ "Remove pin": "पिन हटाएँ",
+ "Map data from OpenStreetMap. Your map searches and pin go to OpenStreetMap services, and an Indian PIN code is sent to postalpincode.in to suggest the city and state.": "मैप डेटा OpenStreetMap से है। आपकी मैप खोज और पिन OpenStreetMap सेवाओं को जाते हैं, और शहर व राज्य सुझाने के लिए पिन कोड postalpincode.in को भेजा जाता है।",
+ "Sign-in methods": "साइन-इन के तरीके",
+ "Link more ways to sign in to this same account.": "इसी अकाउंट में साइन इन के और तरीके जोड़ें।",
+ "Email and password": "ईमेल और पासवर्ड",
+ "Link": "जोड़ें",
+ "Linked": "जुड़ा है",
+ "Account activity": "अकाउंट गतिविधि",
+ "Account created": "अकाउंट कब बना",
+ "Last sign-in": "पिछला साइन-इन",
+ "Security preferences": "सुरक्षा पसंद",
+ "Keep me signed in on this device": "इस डिवाइस पर साइन इन रखें",
+ "Turn this off on a shared computer.": "साझा कंप्यूटर पर इसे बंद रखें।",
+ "Lock the screen after inactivity (needs a PIN)": "निष्क्रिय रहने पर स्क्रीन लॉक करें (PIN ज़रूरी)",
+ "1 minute": "1 मिनट",
+ "5 minutes": "5 मिनट",
+ "10 minutes": "10 मिनट",
+ "30 minutes": "30 मिनट",
+ "Communication preferences": "संपर्क पसंद",
+ "These choices are saved to your profile. They do not send or stop messages automatically.": "ये पसंद आपकी प्रोफ़ाइल में सेव होती हैं। इनसे संदेश अपने-आप शुरू या बंद नहीं होते।",
+ "Preferred contact method": "संपर्क का पसंदीदा तरीका",
+ "Phone call": "फ़ोन कॉल",
+ "Order and invoice updates": "ऑर्डर और इनवॉइस की जानकारी",
+ "Offers and new products": "ऑफ़र और नए प्रोडक्ट",
+ "Display and privacy": "डिस्प्ले और प्राइवेसी",
+ "Reduce animations": "एनिमेशन कम करें",
+ "Useful on slower phones. Saved on this device.": "धीमे फ़ोन के लिए उपयोगी। इसी डिवाइस पर सेव होता है।",
+ "Download my data": "मेरा डेटा डाउनलोड करें",
+ "Please complete address line 1, PIN code, city and state.": "पता लाइन 1, पिन कोड, शहर और राज्य भरें।",
+ "Please enter a valid PIN / postal code.": "सही पिन कोड डालें।",
+ "Checking PIN code...": "पिन कोड जाँच रहे हैं...",
+ "PIN code not found. Please enter city and state yourself.": "पिन कोड नहीं मिला। शहर और राज्य खुद भरें।",
+ "Suggestions added. Please check city and state.": "सुझाव भर दिए हैं। शहर और राज्य जाँच लें।",
+ "Could not check the PIN code. Please enter city and state yourself.": "पिन कोड जाँच नहीं हो सका। शहर और राज्य खुद भरें।",
+ "The map did not load. Check your internet and try again.": "मैप लोड नहीं हुआ। इंटरनेट जाँचकर फिर कोशिश करें।",
+ "Pinned location: {lat}, {lng}": "पिन की गई लोकेशन: {lat}, {lng}",
+ "No location pinned yet.": "अभी कोई लोकेशन पिन नहीं की है।",
+ "Place not found. Try a nearby area or city.": "जगह नहीं मिली। पास का इलाका या शहर खोजें।",
+ "Now tap your exact spot on the map.": "अब मैप पर अपनी सही जगह पर टैप करें।",
+ "Location is not available in this browser.": "इस ब्राउज़र में लोकेशन उपलब्ध नहीं है।",
+ "Could not get your location. Allow location access or pin it on the map.": "लोकेशन नहीं मिली। अनुमति दें या मैप पर पिन करें।",
+ "Location found. Drag the pin if needed, then save.": "लोकेशन मिल गई। ज़रूरत हो तो पिन खिसकाएँ, फिर सेव करें।",
+ "No address was found for this pin.": "इस पिन के लिए पता नहीं मिला।",
+ "Address filled from the map. Please check it and add line 1.": "मैप से पता भर दिया है। जाँचें और लाइन 1 जोड़ें।",
+ "Preference saved.": "पसंद सेव हो गई।",
+ "Sign-in method linked.": "साइन-इन तरीका जुड़ गया।",
+ "That sign-in is already used by another account.": "यह साइन-इन किसी दूसरे अकाउंट में इस्तेमाल हो रहा है।",
+ "This sign-in method is already linked.": "यह साइन-इन तरीका पहले से जुड़ा है।"
 };
 let lang = 'en';
 try { if (localStorage.getItem('lang') === 'hi') lang = 'hi'; } catch (e) {}
@@ -753,6 +900,10 @@ function firebaseBackend() {
     social: async n => (await auth.signInWithPopup(provider(n))).user,
     signOut: () => auth.signOut(),
     now: () => firebase.firestore.FieldValue.serverTimestamp(),
+    setPersistence: keep => auth.setPersistence(firebase.auth.Auth.Persistence[keep ? 'LOCAL' : 'SESSION']),
+    link: name => auth.currentUser.linkWithPopup(provider(name)),
+    providers: () => auth.currentUser.providerData.map(p => p.providerId),
+    meta: () => auth.currentUser.metadata,
     setName: name => auth.currentUser.updateProfile({ displayName: name }),
     resetPassword: e => auth.sendPasswordResetEmail(e),
     verifyEmail: () => auth.currentUser.sendEmailVerification(),
@@ -788,6 +939,7 @@ function demoBackend() {
   let user = JSON.parse(store.get('demoUser') || 'null');
   let data = JSON.parse(store.get('demoData') || 'null');
   let listener = () => {};
+  const linked = ['password'];
   const emit = u => { user = u; store.set('demoUser', u ? JSON.stringify(u) : null); listener(u); };
   const make = email => ({ uid: 'DEMO-USER-0000', email, emailVerified: false });
   return {
@@ -798,6 +950,10 @@ function demoBackend() {
     async social() { const u = make('demo@example.com'); emit(u); return u; },
     async signOut() { emit(null); },
     now: () => new Date().toISOString(),
+    async setPersistence() {},
+    async link(name) { linked.push(name + '.com'); },
+    providers: () => linked.slice(),
+    meta: () => ({ creationTime: new Date().toUTCString(), lastSignInTime: new Date().toUTCString() }),
     async setName() {},
     async resetPassword() {}, async verifyEmail() {}, async changeEmail() {}, async reauth() {},
     hasPassword: () => true,
@@ -831,6 +987,8 @@ const ERRORS = {
   'auth/account-exists-with-different-credential': 'This email already uses a different sign-in method.',
   'auth/unauthorized-domain': 'This domain is not in Firebase Authorized domains.',
   'auth/operation-not-allowed': 'This sign-in method is not enabled in Firebase Console.',
+  'auth/credential-already-in-use': 'That sign-in is already used by another account.',
+  'auth/provider-already-linked': 'This sign-in method is already linked.',
   'auth/network-request-failed': 'Please check your internet connection.'
 };
 const fail = e => { console.error(e); toast(ERRORS[e.code] || 'Something went wrong. Please try again.', 'error'); };
@@ -946,6 +1104,7 @@ function render() {
     b.textContent = tr(signup ? 'Sign In' : 'Sign Up'); b.href = url(b.dataset.go);
   } else {
     $$('.tab').forEach(t => t.hidden = t.dataset.tab !== r);
+    if (map && r === 'dashboard/business') setTimeout(() => map.invalidateSize(), 60);
     $$('#nav a').forEach(a => a.dataset.go === r ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
   }
 }
@@ -994,6 +1153,7 @@ const view = () => {
     email: session.email || tr('Not available'),
     countryName: c ? c.name : tr('Not set'),
     fullPhone: profile.phone ? phoneCode + ' ' + profile.phone : tr('Not set'),
+    address: (profile.advanceDetails || {}).address || tr('Not set'),
     regionName: tr(profile.regionMode === 'GLOBAL' ? 'Global' : 'India')
   };
 };
@@ -1022,7 +1182,9 @@ function fill() {
   pf.phone.value = profile.phone || '';
   pickers.profile.set(profile.selectedCountry || 'IN');
   const bf = $('#businessForm').elements;
-  ['gstin', 'cin', 'pan', 'globalTaxID', 'address'].forEach(k => bf[k].value = adv[k] || '');
+  ['gstin', 'cin', 'pan', 'globalTaxID'].forEach(k => bf[k].value = adv[k] || '');
+  fillAddress(adv);
+  fillSettings();
   $('#indiaFields').hidden = global; $('#globalFields').hidden = !global;
   $('#region').value = global ? 'GLOBAL' : 'IN';
   document.body.classList.toggle('global', global);
@@ -1044,6 +1206,7 @@ const onSubmit = (id, fn) => $(id).addEventListener('submit', e => {
 });
 
 onSubmit('#loginForm', async (f, form) => {
+  await backend.setPersistence(keepSignedIn());
   await backend.signIn(f.email.value.trim(), f.password.value);
   form.reset();
 });
@@ -1060,6 +1223,7 @@ onSubmit('#signupForm', async (f, form) => {
   let user;
   holdAuth = true;
   try {
+    await backend.setPersistence(keepSignedIn());
     user = await backend.signUp(data.email, f.password.value);
     try { await backend.save(user.uid, data); }
     catch (e) { console.error(e); toast('Account created, but the profile was not saved. Please save it again in Edit Profile.', 'error'); }
@@ -1076,6 +1240,7 @@ async function social(name) {
   let user;
   holdAuth = true;
   try {
+    backend.setPersistence(keepSignedIn()).catch(e => console.error(e));   // not awaited, so the popup is not blocked
     user = await backend.social(name);
     const existing = await backend.load(user.uid);
     if (!existing) {
@@ -1103,11 +1268,25 @@ const FORMATS = {
 onSubmit('#businessForm', async f => {
   const adv = {};
   ['gstin', 'cin', 'pan', 'globalTaxID'].forEach(k => adv[k] = f[k].value.trim().toUpperCase());
-  adv.address = f.address.value.trim();
+  const parts = {};
+  ADDRESS_KEYS.forEach(k => parts[k] = f[k].value.trim());
+  parts.countryCode = pickers.address.get();
+  const started = ADDRESS_KEYS.some(k => k !== 'type' && parts[k]);
+  if (started) {
+    const missing = ['line1', 'pincode', 'city', 'state'].find(k => !parts[k]);
+    if (missing) { toast('Please complete address line 1, PIN code, city and state.', 'error'); f[missing].focus(); return; }
+    const pinOk = parts.countryCode === 'IN' ? /^[1-9]\d{5}$/.test(parts.pincode) : /^[A-Za-z0-9 \-]{2,12}$/.test(parts.pincode);
+    if (!pinOk) { toast('Please enter a valid PIN / postal code.', 'error'); f.pincode.focus(); return; }
+  }
   if (profile.regionMode !== 'GLOBAL') {
     const bad = Object.keys(FORMATS).find(k => adv[k] && !FORMATS[k].test(adv[k]));
     if (bad) { toast('{field} format is not valid.', 'error', { field: bad.toUpperCase() }); f[bad].focus(); return; }
   }
+  const old = profile.advanceDetails || {};
+  // "address" stays as one line of text; an older address is kept until the new form is filled in
+  adv.address = started ? composeAddress(parts) : (old.addressParts && old.addressParts.line1 ? '' : old.address || '');
+  adv.addressParts = parts;
+  adv.location = pin ? { lat: pin.lat, lng: pin.lng } : null;
   await save({ advanceDetails: adv }, 'Business details saved.');
 });
 
@@ -1174,7 +1353,7 @@ function lockScreen() {
   render(); $('#unlockForm').elements.pin.focus();
 }
 let lastActive = Date.now();
-const idleCheck = () => { if (Date.now() - lastActive > CONFIG.idleLockMinutes * 60000) lockScreen(); };
+const idleCheck = () => { if (Date.now() - lastActive > (Number((profile.preferences || {}).lockMinutes) || CONFIG.idleLockMinutes) * 60000) lockScreen(); };
 ['pointerdown', 'keydown', 'scroll'].forEach(ev => addEventListener(ev, () => { idleCheck(); lastActive = Date.now(); }, { passive: true }));
 setInterval(idleCheck, 15000);
 
@@ -1183,6 +1362,216 @@ async function logout() {
   await backend.signOut();
   document.body.classList.remove('global');
   go('login', true);
+}
+
+/* =========================================================
+   ADDRESS + MAP
+   ========================================================= */
+const ADDRESS_KEYS = ['type', 'contact', 'line1', 'line2', 'landmark', 'pincode', 'city', 'district', 'state'];
+const bform = () => $('#businessForm').elements;
+$('#states').replaceChildren(...'Andaman and Nicobar Islands|Andhra Pradesh|Arunachal Pradesh|Assam|Bihar|Chandigarh|Chhattisgarh|Dadra and Nagar Haveli and Daman and Diu|Delhi|Goa|Gujarat|Haryana|Himachal Pradesh|Jammu and Kashmir|Jharkhand|Karnataka|Kerala|Ladakh|Lakshadweep|Madhya Pradesh|Maharashtra|Manipur|Meghalaya|Mizoram|Nagaland|Odisha|Puducherry|Punjab|Rajasthan|Sikkim|Tamil Nadu|Telangana|Tripura|Uttar Pradesh|Uttarakhand|West Bengal'.split('|').map(n => new Option(n, n)));
+const statesList = Array.from($('#states').children);
+
+function composeAddress(a) {
+  return [a.line1, a.line2, a.landmark && 'Landmark: ' + a.landmark, a.city, a.district !== a.city && a.district, a.state, a.pincode, country(a.countryCode).name].filter(Boolean).join(', ');
+}
+function fillAddress(adv) {
+  const a = adv.addressParts || {}, f = bform();
+  ADDRESS_KEYS.forEach(k => f[k].value = a[k] || (k === 'type' ? 'Factory' : ''));
+  pickers.address.set(a.countryCode || profile.selectedCountry || 'IN');
+  const legacy = !a.line1 && adv.address;
+  $('#oldAddress').hidden = !legacy;
+  $('#oldAddress span').textContent = legacy ? adv.address : '';
+  $('#pinHint').textContent = ''; $('#mapQuery').value = '';
+  setStates();
+  setPin(adv.location || null, true);
+}
+function setStates() { $('#states').replaceChildren(...(pickers.address.get() === 'IN' ? statesList : [])); }
+
+/* Indian PIN code: suggest city, district and state (only fills empty boxes) */
+let pinRequest = 0;
+bform().pincode.addEventListener('input', async e => {
+  const code = e.target.value.trim(), id = ++pinRequest, hint = $('#pinHint');
+  hint.textContent = '';
+  if (pickers.address.get() !== 'IN' || !/^[1-9]\d{5}$/.test(code)) return;
+  hint.textContent = tr('Checking PIN code...');
+  try {
+    const res = await fetch('https://api.postalpincode.in/pincode/' + code);
+    const data = await res.json();
+    if (id !== pinRequest) return;
+    const office = data[0] && data[0].PostOffice && data[0].PostOffice[0];
+    if (!office) { hint.textContent = tr('PIN code not found. Please enter city and state yourself.'); return; }
+    const f = bform();
+    if (!f.city.value) f.city.value = office.Block && office.Block !== 'NA' ? office.Block : office.District;
+    if (!f.district.value) f.district.value = office.District;
+    if (!f.state.value) f.state.value = office.State;
+    hint.textContent = tr('Suggestions added. Please check city and state.');
+  } catch (err) {
+    if (id === pinRequest) hint.textContent = tr('Could not check the PIN code. Please enter city and state yourself.');
+  }
+});
+
+let map = null, marker = null, pin = null, leafletLoading = null;
+function loadLeaflet() {
+  if (window.L) return Promise.resolve();
+  if (!leafletLoading) leafletLoading = new Promise((resolve, reject) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet'; css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    const js = document.createElement('script');
+    js.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    css.onload = () => document.head.append(js);
+    js.onload = resolve;
+    css.onerror = js.onerror = () => { leafletLoading = null; css.remove(); js.remove(); reject(new Error('map')); };
+    document.head.append(css);
+  });
+  return leafletLoading;
+}
+async function openMap() {
+  try { await loadLeaflet(); }
+  catch (e) { toast('The map did not load. Check your internet and try again.', 'error'); return false; }
+  if (!map) {
+    $('#map').replaceChildren(); $('#map').style.display = 'block';
+    map = L.map('map').setView([22.6, 79], 4);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' }).addTo(map);
+    map.on('click', e => setPin(e.latlng.wrap()));
+  }
+  map.invalidateSize();
+  drawPin(true);
+  return true;
+}
+function drawPin(center) {
+  if (!map) return;
+  if (!pin) {
+    if (marker) { marker.remove(); marker = null; }
+    if (center) map.setView([22.6, 79], 4);
+    return;
+  }
+  if (!marker) {
+    marker = L.marker(pin, { draggable: true, icon: L.divIcon({ className: '', html: '<div class="mappin"></div>', iconSize: [30, 30], iconAnchor: [15, 36] }) }).addTo(map);
+    marker.on('dragend', () => setPin(marker.getLatLng().wrap()));
+  } else marker.setLatLng(pin);
+  if (center) map.setView(pin, 17);
+}
+function setPin(point, center) {
+  pin = point ? { lat: Number(Number(point.lat).toFixed(6)), lng: Number(Number(point.lng).toFixed(6)) } : null;
+  $('#coords').textContent = pin ? tr('Pinned location: {lat}, {lng}', { lat: pin.lat, lng: pin.lng }) : tr('No location pinned yet.');
+  $$('[data-needs-pin]').forEach(el => el.hidden = !pin);
+  if (pin) $('#gmaps').href = 'https://www.google.com/maps/search/?api=1&query=' + pin.lat + ',' + pin.lng;
+  drawPin(center);
+}
+/* OpenStreetMap search: only on a button press, at most one request per second */
+let lastGeo = 0;
+async function geo(path) {
+  const wait = lastGeo + 1100 - Date.now();
+  lastGeo = Date.now() + Math.max(wait, 0);
+  if (wait > 0) await new Promise(r => setTimeout(r, wait));
+  const res = await fetch('https://nominatim.openstreetmap.org/' + path + '&format=jsonv2&addressdetails=1&accept-language=' + lang);
+  if (!res.ok) throw new Error('geo ' + res.status);
+  return res.json();
+}
+async function mapSearch() {
+  const q = $('#mapQuery').value.trim();
+  if (!q || !await openMap()) return;
+  const found = await geo('search?limit=1&q=' + encodeURIComponent(q));
+  if (!found.length) { toast('Place not found. Try a nearby area or city.'); return; }
+  map.setView([Number(found[0].lat), Number(found[0].lon)], 16);
+  toast('Now tap your exact spot on the map.');
+}
+async function locate() {
+  if (!navigator.geolocation) { toast('Location is not available in this browser.', 'error'); return; }
+  const uid = session.uid;
+  const position = await new Promise(resolve => navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), { enableHighAccuracy: true, timeout: 15000 }));
+  if (!session || session.uid !== uid) return;
+  if (!position) { toast('Could not get your location. Allow location access or pin it on the map.', 'error'); return; }
+  await openMap();
+  setPin({ lat: position.coords.latitude, lng: position.coords.longitude }, true);
+  toast('Location found. Drag the pin if needed, then save.', 'success');
+}
+async function fillFromPin() {
+  if (!pin) return;
+  const result = await geo('reverse?lat=' + pin.lat + '&lon=' + pin.lng);
+  const a = result.address;
+  if (!a) { toast('No address was found for this pin.'); return; }
+  const found = {
+    line2: [a.road, a.neighbourhood || a.suburb].filter(Boolean).join(', '),
+    pincode: a.postcode, city: a.city || a.town || a.village || a.municipality,
+    district: a.state_district || a.county, state: a.state
+  };
+  if (a.country_code) pickers.address.set(a.country_code.toUpperCase());
+  setStates();
+  const f = bform();
+  Object.keys(found).forEach(k => { if (found[k]) f[k].value = String(found[k]).slice(0, f[k].maxLength); });
+  toast('Address filled from the map. Please check it and add line 1.', 'success');
+}
+$('#mapQuery').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); $('[data-action="mapSearch"]').click(); }
+});
+$('#businessForm [data-country="address"]').addEventListener('focusout', () => setTimeout(setStates, 0));
+
+/* =========================================================
+   EXTRA SETTINGS
+   ========================================================= */
+const prefs = () => profile.preferences || {};
+const keepSignedIn = () => { try { return localStorage.getItem('persist') !== 'session'; } catch (e) { return true; } };
+function fillSettings() {
+  const p = prefs();
+  $('#lockAfter').value = String(p.lockMinutes || CONFIG.idleLockMinutes);
+  $$('[data-pref]').forEach(el => {
+    if (el.type === 'checkbox') el.checked = !!p[el.dataset.pref];
+    else el.value = p[el.dataset.pref] || 'email';
+  });
+  $('#persist').checked = keepSignedIn();
+  const meta = backend.meta(), when = t => t ? new Date(t).toLocaleString(lang === 'hi' ? 'hi-IN' : 'en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : tr('Not available');
+  $('#createdAt').textContent = when(meta.creationTime);
+  $('#lastLogin').textContent = when(meta.lastSignInTime);
+  const have = backend.providers();
+  $('#methods').replaceChildren(...[['password', 'Email and password'], ['google.com', 'Google'], ['apple.com', 'Apple']].map(([id, label]) => {
+    const li = document.createElement('li'), name = document.createElement('span');
+    name.textContent = tr(label); li.append(name);
+    const linked = have.includes(id);
+    if (!linked && id !== 'password') {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn btn-ghost'; b.dataset.action = 'link'; b.dataset.provider = id.split('.')[0]; b.textContent = tr('Link');
+      li.append(b);
+    } else {
+      const tag = document.createElement('span');
+      tag.className = 'badge'; tag.textContent = tr(linked ? 'Linked' : 'Not set'); li.append(tag);
+    }
+    return li;
+  }));
+}
+/* these controls save on change; fill() would wipe unsaved forms, so refresh settings only */
+async function updatePreference(key, value) {
+  const next = Object.assign({}, prefs(), { [key]: value });
+  try { await backend.save(session.uid, { preferences: next }); profile.preferences = next; toast('Preference saved.', 'success'); }
+  catch (e) { fillSettings(); throw e; }
+}
+$$('[data-pref]').forEach(el => el.addEventListener('change', () => busy(null, () => updatePreference(el.dataset.pref, el.type === 'checkbox' ? el.checked : el.value))));
+$('#lockAfter').addEventListener('change', e => busy(null, () => updatePreference('lockMinutes', Number(e.target.value))));
+$('#persist').addEventListener('change', e => busy(null, async () => {
+  const keep = e.target.checked;
+  try { await backend.setPersistence(keep); }
+  catch (err) { e.target.checked = !keep; throw err; }
+  try { localStorage.setItem('persist', keep ? 'local' : 'session'); } catch (err) {}
+  toast('Preference saved.', 'success');
+}));
+let calm = false;
+try { calm = localStorage.getItem('calm') === '1'; } catch (e) {}
+document.body.classList.toggle('calm', calm);
+$('#calm').checked = calm;
+$('#calm').addEventListener('change', e => {
+  document.body.classList.toggle('calm', e.target.checked);
+  try { localStorage.setItem('calm', e.target.checked ? '1' : '0'); } catch (err) {}
+});
+
+function exportData() {
+  const copy = Object.assign({}, profile);
+  delete copy.pinHash; delete copy.pinSalt; delete copy.customPin;
+  if (copy.createdAt && copy.createdAt.toDate) copy.createdAt = copy.createdAt.toDate().toISOString();
+  const file = new Blob([JSON.stringify({ accountId: session.uid, email: session.email, profile: copy }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file); a.download = 'my-account-data.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 /* =========================================================
@@ -1201,6 +1590,12 @@ const actions = {
     i.type = show ? 'text' : 'password';
     $('i', btn).className = 'fa-solid ' + (show ? 'fa-eye-slash' : 'fa-eye');
     btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  },
+  openMap, mapSearch, locate, fillFromPin, exportData,
+  clearPin: () => setPin(null),
+  async link(btn) {
+    await backend.link(btn.dataset.provider);
+    fillSettings(); toast('Sign-in method linked.', 'success');
   },
   google: () => social('google'),
   apple: () => social('apple'),
@@ -1371,7 +1766,7 @@ const SNEH_AI_ICON = 'data:image/webp;base64,UklGRiAMAABXRUJQVlA4IBQMAACwNACdASq
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
   addEventListener('pointerdown', e => {
     const el = e.target.closest('.btn, .chip, .seg a, #nav a');
-    if (!el || el.disabled) return;
+    if (!el || el.disabled || document.body.classList.contains('calm')) return;
     if (el.classList.contains('btn')) {
       const r = el.getBoundingClientRect(), dot = document.createElement('span');
       dot.className = 'ripple';
